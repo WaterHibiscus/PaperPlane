@@ -1,0 +1,1 @@
+<view class="mood-tag data-v-a2ea2a7e" style="{{'border-color:' + c + ';' + ('color:' + d)}}"><text class="mood-icon data-v-a2ea2a7e">{{a}}</text><text class="mood-text data-v-a2ea2a7e">{{b}}</text></view>

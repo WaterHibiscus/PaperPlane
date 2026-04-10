@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "投掷纸飞机",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "app-tabbar": "../../components/AppTabbar",
+    "page-transition": "../../components/PageTransition"
+  }
+}

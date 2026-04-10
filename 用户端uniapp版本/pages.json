@@ -1,0 +1,84 @@
+{
+	"pages": [
+		{
+			"path": "pages/login/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false,
+					"background": "#F7F2E9",
+					"statusbar": {
+						"background": "#F7F2E9"
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/register/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false,
+					"background": "#F7F2E9",
+					"statusbar": {
+						"background": "#F7F2E9"
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/home/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/discover/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/throw/index",
+			"style": {
+				"navigationBarTitleText": "投掷纸飞机",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/trending/index",
+			"style": {
+				"navigationBarTitleText": "热门飞机",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"style": {
+				"navigationBarTitleText": "我的飞机",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/profile-edit/index",
+			"style": {
+				"navigationBarTitleText": "资料设置",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/detail/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarBackgroundColor": "#F7F2E9",
+		"backgroundColor": "#F7F2E9"
+	},
+	"uniIdRouter": {}
+}

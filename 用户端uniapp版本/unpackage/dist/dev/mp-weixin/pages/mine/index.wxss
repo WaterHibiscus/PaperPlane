@@ -1,0 +1,563 @@
+
+.mine-page {
+		padding-top: 0;
+		padding-left: 0;
+		padding-right: 0;
+		background: rgba(247, 250, 248, 1);
+}
+.mine-page .profile-hero {
+		position: relative;
+		height: 344rpx;
+		padding: calc(env(safe-area-inset-top) + 80rpx) 32rpx 0;
+		background: linear-gradient(180deg, rgba(225, 245, 235, 1), rgba(247, 250, 248, 1));
+}
+.mine-page .hero-top {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		margin-bottom: 24rpx;
+}
+.mine-page .hero-profile {
+		display: flex;
+		align-items: center;
+		gap: 18rpx;
+		flex: 1;
+		min-width: 0;
+}
+.mine-page .hero-copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 6rpx;
+		min-width: 0;
+}
+.mine-page .hero-name-row {
+		display: flex;
+		align-items: center;
+		gap: 10rpx;
+		flex-wrap: wrap;
+}
+.mine-page .avatar-shell {
+		width: 112rpx;
+		height: 112rpx;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 1);
+		box-shadow: 0 12rpx 30rpx rgba(0, 0, 0, 0.05);
+		border: 6rpx solid #ffffff;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		flex-shrink: 0;
+}
+.mine-page .avatar-image {
+		width: 100%;
+		height: 100%;
+}
+.mine-page .avatar-text {
+		font-size: 42rpx;
+		font-weight: 700;
+		color: rgba(180, 200, 190, 1);
+}
+.mine-page .hero-name {
+		display: block;
+		font-size: 34rpx;
+		font-weight: 700;
+		line-height: 1.15;
+		color: rgba(30, 40, 35, 1);
+}
+.mine-page .hero-meta {
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+		margin-top: 0;
+		flex-wrap: wrap;
+}
+.mine-page .hero-id {
+		display: inline-flex;
+		padding: 4rpx 10rpx;
+		border-radius: 999rpx;
+		font-size: 18rpx;
+		color: rgba(100, 110, 105, 1);
+		background: rgba(255, 255, 255, 0.8);
+		border: 2rpx solid rgba(235, 245, 240, 1);
+}
+.mine-page .hero-tag {
+		display: inline-flex;
+		padding: 4rpx 10rpx;
+		border-radius: 999rpx;
+		font-size: 18rpx;
+		color: rgba(46, 164, 116, 1);
+		background: rgba(235, 245, 240, 1);
+}
+.mine-page .hero-bio {
+		display: block;
+		margin-top: 0;
+		font-size: 21rpx;
+		line-height: 1.45;
+		color: rgba(100, 110, 105, 1);
+}
+.mine-page .hero-session {
+		display: none;
+}
+.mine-page .hero-tools {
+		display: flex;
+		align-items: center;
+		gap: 10rpx;
+		margin-left: 12rpx;
+}
+.mine-page .logout-btn {
+		height: 58rpx;
+		padding: 0 20rpx;
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.72);
+		border: 2rpx solid rgba(255, 231, 236, 1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: rgba(255, 100, 120, 1);
+		font-size: 20rpx;
+		font-weight: 600;
+}
+.mine-page .settings-btn {
+		width: 58rpx;
+		height: 58rpx;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.6);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: rgba(100, 110, 105, 1);
+		font-size: 24rpx;
+}
+.mine-page .stats-card {
+		position: absolute;
+		left: 32rpx;
+		right: 32rpx;
+		bottom: -30rpx;
+		display: flex;
+		align-items: stretch;
+		padding: 28rpx 18rpx;
+		border-radius: 28rpx;
+		background: rgba(255, 255, 255, 1);
+		box-shadow: 0 16rpx 40rpx rgba(0, 0, 0, 0.04);
+}
+.mine-page .stats-item {
+		flex: 1;
+		text-align: center;
+}
+.mine-page .stats-value {
+		display: block;
+		font-size: 36rpx;
+		font-weight: 700;
+		color: rgba(30, 40, 35, 1);
+}
+.mine-page .stats-label {
+		display: block;
+		margin-top: 6rpx;
+		font-size: 18rpx;
+		color: rgba(140, 150, 145, 1);
+}
+.mine-page .stats-divider {
+		width: 2rpx;
+		margin: 8rpx 0;
+		background: rgba(240, 245, 242, 1);
+}
+.mine-page .hero-spacer {
+		height: 42rpx;
+}
+.settings-panel,
+	.draft-tip,
+	.glass-card,
+	.mine-page .picked-panel {
+		margin: 0 28rpx 20rpx;
+		padding: 24rpx;
+		text-align: center;
+}
+.glass-card {
+		display: flex;
+		flex-direction: column;
+}
+.settings-title,
+	.mine-page .draft-tip-title {
+		display: block;
+		font-size: 28rpx;
+		font-weight: 700;
+		color: rgba(30, 40, 35, 1);
+}
+.settings-note,
+	.mine-page .draft-tip-desc {
+		display: block;
+		margin-top: 10rpx;
+		font-size: 22rpx;
+		line-height: 1.6;
+		color: rgba(120, 130, 125, 1);
+}
+.mine-page .settings-editor {
+		display: flex;
+		gap: 12rpx;
+		margin-top: 18rpx;
+}
+.mine-page .settings-section {
+		margin-top: 18rpx;
+		text-align: left;
+}
+.mine-page .settings-section-label {
+		display: block;
+		font-size: 22rpx;
+		font-weight: 600;
+		color: rgba(30, 40, 35, 1);
+		margin-bottom: 12rpx;
+}
+.mine-page .gender-row {
+		display: flex;
+		gap: 12rpx;
+		flex-wrap: wrap;
+}
+.mine-page .gender-chip {
+		padding: 10rpx 18rpx;
+		border-radius: 999rpx;
+		background: rgba(247, 250, 248, 1);
+		border: 2rpx solid rgba(235, 240, 238, 1);
+		font-size: 22rpx;
+		color: rgba(120, 130, 125, 1);
+}
+.mine-page .gender-chip.active {
+		background: rgba(235, 245, 240, 1);
+		border-color: rgba(46, 164, 116, 0.24);
+		color: rgba(46, 164, 116, 1);
+		font-weight: 600;
+}
+.mine-page .bio-input {
+		width: 100%;
+		min-height: 132rpx;
+		padding: 18rpx 20rpx;
+		border-radius: 20rpx;
+		background: rgba(247, 250, 248, 1);
+		font-size: 24rpx;
+		line-height: 1.55;
+		color: var(--ink);
+}
+.mine-page .settings-actions {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 18rpx;
+}
+.mine-page .settings-input {
+		flex: 1;
+		height: 80rpx;
+		padding: 0 20rpx;
+		border-radius: 20rpx;
+		background: rgba(247, 250, 248, 1);
+		font-size: 26rpx;
+		color: var(--ink);
+}
+.mine-page .save-btn {
+		height: 80rpx;
+		padding: 0 22rpx;
+		border-radius: 20rpx;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(135deg, rgba(46, 164, 116, 1), rgba(76, 189, 143, 1));
+		color: #ffffff;
+		font-size: 24rpx;
+}
+.mine-page .save-btn.disabled {
+		background: rgba(210, 216, 220, 1);
+		color: rgba(110, 118, 124, 1);
+}
+.mine-page .draft-tip-title {
+		color: rgba(46, 164, 116, 1);
+}
+.mine-page .tab-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16rpx;
+		margin: 8rpx 28rpx 0;
+		padding-bottom: 6rpx;
+		border-bottom: 2rpx solid rgba(235, 240, 238, 1);
+		flex-wrap: wrap;
+}
+.mine-page .tab-main {
+		display: flex;
+		gap: 24rpx;
+		flex-wrap: wrap;
+		flex: 1;
+		min-width: 0;
+}
+.mine-page .tab-btn {
+		padding-bottom: 18rpx;
+		border-bottom: 4rpx solid transparent;
+		font-size: 28rpx;
+		font-weight: 500;
+		color: rgba(150, 160, 155, 1);
+}
+.mine-page .tab-btn.active {
+		border-bottom-color: rgba(46, 164, 116, 1);
+		font-weight: 700;
+		color: rgba(30, 40, 35, 1);
+}
+.mine-page .tab-search {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 10rpx;
+		flex-shrink: 0;
+}
+.mine-page .search-shell {
+		width: 0;
+		opacity: 0;
+		overflow: hidden;
+		transition: width 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease;
+}
+.mine-page .search-shell.open {
+		width: 230rpx;
+		opacity: 1;
+}
+.mine-page .search-input {
+		width: 230rpx;
+		height: 62rpx;
+		padding: 0 18rpx;
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.92);
+		border: 2rpx solid rgba(235, 240, 238, 1);
+		font-size: 22rpx;
+		color: rgba(30, 40, 35, 1);
+}
+.mine-page .search-btn {
+		width: 62rpx;
+		height: 62rpx;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.72);
+		border: 2rpx solid rgba(235, 240, 238, 1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 42rpx;
+		color: rgba(100, 110, 105, 1);
+}
+.mine-page .filter-btn {
+		width: 62rpx;
+		height: 62rpx;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.72);
+		border: 2rpx solid rgba(235, 240, 238, 1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 26rpx;
+		color: rgba(100, 110, 105, 1);
+}
+.mine-page .filter-dropdown {
+		position: absolute;
+		right: 0;
+		top: 74rpx;
+		min-width: 150rpx;
+		padding: 10rpx;
+		border-radius: 20rpx;
+		background: rgba(255, 255, 255, 0.98);
+		border: 2rpx solid rgba(235, 240, 238, 1);
+		box-shadow: 0 16rpx 32rpx rgba(0, 0, 0, 0.06);
+		z-index: 20;
+}
+.mine-page .filter-option {
+		padding: 14rpx 16rpx;
+		border-radius: 14rpx;
+		font-size: 22rpx;
+		color: rgba(100, 110, 105, 1);
+}
+.mine-page .filter-option.active {
+		background: rgba(235, 245, 240, 1);
+		color: rgba(46, 164, 116, 1);
+		font-weight: 600;
+}
+.mine-page .hangar-list {
+		padding: 18rpx 28rpx 0;
+}
+.mine-page .flight-card {
+		padding: 24rpx;
+		border-radius: 24rpx;
+		margin-bottom: 18rpx;
+		border: 2rpx solid rgba(240, 245, 242, 1);
+		background: rgba(255, 255, 255, 1);
+		box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.02);
+}
+.mine-page .flight-card.landed {
+		background: rgba(248, 250, 249, 1);
+		opacity: 0.72;
+		box-shadow: none;
+}
+.mine-page .flight-card.fueled-card {
+		border-color: rgba(226, 236, 248, 1);
+		background: rgba(252, 254, 255, 1);
+}
+.mine-page .flight-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12rpx;
+		margin-bottom: 16rpx;
+}
+.mine-page .flight-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 8rpx;
+		padding: 6rpx 12rpx;
+		border-radius: 999rpx;
+		font-size: 18rpx;
+		font-weight: 500;
+}
+.mine-page .flight-badge.active {
+		background: rgba(235, 245, 240, 1);
+		color: rgba(46, 164, 116, 1);
+}
+.mine-page .flight-badge.recalled {
+		background: rgba(255, 244, 233, 1);
+		color: rgba(212, 135, 65, 1);
+}
+.mine-page .flight-badge.fueled {
+		background: rgba(232, 244, 255, 1);
+		color: rgba(79, 137, 214, 1);
+}
+.mine-page .flight-badge.landed {
+		background: rgba(240, 245, 242, 1);
+		color: rgba(140, 150, 145, 1);
+}
+.mine-page .flight-dot {
+		width: 10rpx;
+		height: 10rpx;
+		border-radius: 50%;
+		background: rgba(46, 164, 116, 1);
+}
+.mine-page .flight-date {
+		font-size: 20rpx;
+		color: rgba(160, 170, 165, 1);
+}
+.mine-page .flight-content {
+		display: block;
+		font-size: 28rpx;
+		line-height: 1.65;
+		color: rgba(50, 60, 55, 1);
+}
+.mine-page .flight-content.muted {
+		color: rgba(100, 110, 105, 1);
+}
+.mine-page .flight-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16rpx;
+		margin-top: 18rpx;
+		padding-top: 18rpx;
+		border-top: 2rpx solid rgba(245, 248, 246, 1);
+}
+.mine-page .flight-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 20rpx;
+		font-size: 22rpx;
+		color: rgba(140, 150, 145, 1);
+}
+.mine-page .flight-actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 12rpx;
+		flex-shrink: 0;
+}
+.mine-page .flight-action {
+		padding: 8rpx 16rpx;
+		border-radius: 999rpx;
+		font-size: 22rpx;
+		font-weight: 500;
+}
+.mine-page .flight-action.secondary {
+		background: rgba(235, 245, 240, 1);
+		color: rgba(46, 164, 116, 1);
+}
+.mine-page .flight-action.danger {
+		background: rgba(255, 240, 244, 1);
+		color: rgba(255, 100, 120, 1);
+}
+.mine-page.theme-dark {
+		background: rgba(15, 20, 22, 1);
+}
+.mine-page.theme-dark .profile-hero {
+		background: linear-gradient(180deg, rgba(31, 52, 44, 1), rgba(15, 20, 22, 1));
+}
+.mine-page.theme-dark .search-input,
+	.mine-page.theme-dark .search-btn,
+	.mine-page.theme-dark .filter-btn,
+	.mine-page.theme-dark .filter-dropdown {
+		background: rgba(255, 255, 255, 0.06);
+		border-color: rgba(230, 237, 241, 0.08);
+		color: rgba(190, 198, 202, 0.9);
+}
+.mine-page.theme-dark .filter-option.active {
+		background: rgba(54, 192, 141, 0.14);
+		color: rgba(126, 223, 183, 1);
+}
+.mine-page.theme-dark .hero-tag,
+	.mine-page.theme-dark .gender-chip.active {
+		background: rgba(54, 192, 141, 0.14);
+		color: rgba(126, 223, 183, 1);
+}
+.mine-page.theme-dark .hero-bio,
+	.mine-page.theme-dark .settings-section-label {
+		color: rgba(190, 198, 202, 0.86);
+}
+.mine-page.theme-dark .logout-btn {
+		background: rgba(255, 255, 255, 0.06);
+		border-color: rgba(230, 237, 241, 0.08);
+}
+.mine-page.theme-dark .logout-btn {
+		color: rgba(255, 149, 164, 1);
+}
+.mine-page.theme-dark .gender-chip,
+	.mine-page.theme-dark .bio-input {
+		background: rgba(255, 255, 255, 0.06);
+		border-color: rgba(230, 237, 241, 0.08);
+		color: rgba(190, 198, 202, 0.86);
+}
+.theme-dark .stats-card,
+	.theme-dark .flight-card,
+	.theme-dark .settings-panel,
+	.theme-dark .draft-tip,
+	.mine-page.theme-dark .picked-panel {
+		background: rgba(24, 32, 36, 0.96);
+		border-color: rgba(230, 237, 241, 0.08);
+}
+.mine-page.theme-dark .flight-card.landed {
+		background: rgba(21, 28, 31, 0.96);
+}
+.theme-dark .hero-name,
+	.theme-dark .stats-value,
+	.theme-dark .settings-title,
+	.theme-dark .draft-tip-title,
+	.theme-dark .tab-btn.active,
+	.mine-page.theme-dark .flight-content {
+		color: var(--ink);
+}
+.theme-dark .hero-id,
+	.theme-dark .settings-btn,
+	.theme-dark .stats-label,
+	.theme-dark .settings-note,
+	.theme-dark .draft-tip-desc,
+	.theme-dark .tab-btn,
+	.theme-dark .flight-date,
+	.theme-dark .flight-meta,
+	.mine-page.theme-dark .flight-content.muted {
+		color: rgba(190, 198, 202, 0.78);
+}
+.theme-dark .hero-id,
+	.theme-dark .settings-btn,
+	.mine-page.theme-dark .settings-input {
+		background: rgba(255, 255, 255, 0.06);
+		border-color: rgba(230, 237, 241, 0.08);
+}
+.theme-dark .tab-header,
+	.mine-page.theme-dark .flight-footer {
+		border-color: rgba(230, 237, 241, 0.06);
+}

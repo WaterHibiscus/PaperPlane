@@ -1,0 +1,751 @@
+
+.throw-page.data-v-c19b2228 {
+	padding-top: 0;
+	padding-left: 0;
+	padding-right: 0;
+	background:
+		radial-gradient(circle at 14% 8%, rgba(208, 221, 239, 0.78), transparent 36%),
+		radial-gradient(circle at 88% 100%, rgba(244, 222, 230, 0.72), transparent 30%),
+		linear-gradient(180deg, rgba(247, 245, 241, 0.98), rgba(244, 239, 235, 0.98));
+}
+.throw-shell.data-v-c19b2228 {
+	min-height: calc(100vh - 200rpx);
+	display: flex;
+}
+.throw-shell.is-launching.data-v-c19b2228 {
+	pointer-events: none;
+}
+.throw-frame.data-v-c19b2228 {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	padding: calc(env(safe-area-inset-top) + 22rpx) 28rpx 28rpx;
+	background: transparent;
+	transform-origin: center 18%;
+	transition:
+		transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.28s ease,
+		filter 0.32s ease;
+}
+.theme-dark .throw-frame.data-v-c19b2228 {
+	background: transparent;
+}
+.throw-frame.is-launching.data-v-c19b2228 {
+	opacity: 0.18;
+	filter: blur(10rpx);
+	transform: scale(0.95) translateY(26rpx);
+}
+.throw-topbar.data-v-c19b2228 {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16rpx;
+}
+.top-icon-btn.data-v-c19b2228 {
+	width: 62rpx;
+	height: 62rpx;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, 0.52);
+	color: var(--muted);
+}
+.theme-dark .top-icon-btn.data-v-c19b2228 {
+	background: rgba(255, 255, 255, 0.06);
+}
+.top-icon.data-v-c19b2228 {
+	font-size: 34rpx;
+	line-height: 1;
+}
+.mode-pill.data-v-c19b2228 {
+	display: inline-flex;
+	align-items: center;
+	gap: 12rpx;
+	padding: 10rpx 14rpx 10rpx 18rpx;
+	border-radius: 999rpx;
+	background: rgba(255, 255, 255, 0.58);
+}
+.theme-dark .mode-pill.data-v-c19b2228 {
+	background: rgba(255, 255, 255, 0.06);
+}
+.mode-text.data-v-c19b2228 {
+	font-size: 22rpx;
+	color: var(--ink);
+}
+.mode-switch.data-v-c19b2228 {
+	width: 50rpx;
+	height: 30rpx;
+	padding: 4rpx;
+	border-radius: 999rpx;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	background: #39b087;
+}
+.mode-switch.named.data-v-c19b2228 {
+	justify-content: flex-start;
+	background: rgba(28, 36, 40, 0.18);
+}
+.mode-dot.data-v-c19b2228 {
+	width: 22rpx;
+	height: 22rpx;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.96);
+}
+.draft-stage.data-v-c19b2228 {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	padding: 56rpx 8rpx 28rpx;
+}
+.draft-mode-note.data-v-c19b2228 {
+	display: block;
+	margin-bottom: 18rpx;
+	font-size: 22rpx;
+	line-height: 1.5;
+	color: var(--muted);
+}
+.draft-input.data-v-c19b2228 {
+	width: 100%;
+	flex: 1;
+	min-height: 200rpx;
+	font-size: 42rpx;
+	line-height: 1.55;
+	color: rgba(92, 102, 110, 0.94);
+	background: transparent;
+}
+.theme-dark .draft-input.data-v-c19b2228 {
+	color: rgba(222, 231, 236, 0.96);
+}
+.draft-placeholder.data-v-c19b2228 {
+	color: rgba(168, 176, 184, 0.88);
+}
+.draft-count.data-v-c19b2228 {
+	align-self: flex-end;
+	margin-top: 16rpx;
+	font-size: 20rpx;
+	color: var(--muted);
+}
+.image-strip.data-v-c19b2228 {
+	margin-top: 18rpx;
+}
+.image-strip-head.data-v-c19b2228 {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16rpx;
+	margin-bottom: 12rpx;
+}
+.image-strip-title.data-v-c19b2228,
+.image-strip-note.data-v-c19b2228 {
+	font-size: 20rpx;
+	color: var(--muted);
+}
+.image-grid.data-v-c19b2228 {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12rpx;
+}
+.image-tile.data-v-c19b2228,
+.image-picker-tile.data-v-c19b2228 {
+	position: relative;
+	width: 132rpx;
+	height: 132rpx;
+	border-radius: 20rpx;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+.image-tile.data-v-c19b2228 {
+	background: rgba(255, 255, 255, 0.74);
+}
+.image-preview.data-v-c19b2228 {
+	width: 100%;
+	height: 100%;
+}
+.image-remove.data-v-c19b2228 {
+	position: absolute;
+	right: 8rpx;
+	top: 8rpx;
+	width: 34rpx;
+	height: 34rpx;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(15, 20, 22, 0.54);
+	color: rgba(255, 255, 255, 0.94);
+	font-size: 24rpx;
+	line-height: 1;
+}
+.image-picker-tile.data-v-c19b2228 {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8rpx;
+	border: 2rpx dashed rgba(28, 36, 40, 0.12);
+	background: rgba(255, 255, 255, 0.34);
+}
+.theme-dark .image-picker-tile.data-v-c19b2228 {
+	border-color: rgba(230, 237, 241, 0.12);
+	background: rgba(255, 255, 255, 0.03);
+}
+.image-picker-icon.data-v-c19b2228 {
+	font-size: 34rpx;
+	line-height: 1;
+	color: var(--muted);
+}
+.image-picker-text.data-v-c19b2228 {
+	font-size: 18rpx;
+	color: var(--muted);
+}
+.control-card.data-v-c19b2228 {
+	padding: 20rpx;
+	border-radius: 34rpx;
+	background: rgba(255, 255, 255, 0.82);
+	box-shadow: 0 14rpx 28rpx rgba(196, 190, 182, 0.12);
+}
+.theme-dark .control-card.data-v-c19b2228 {
+	background: rgba(255, 255, 255, 0.05);
+	box-shadow: none;
+}
+.setting-row.data-v-c19b2228 {
+	min-height: 78rpx;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16rpx;
+}
+.setting-row + .setting-row.data-v-c19b2228 {
+	border-top: 2rpx solid rgba(28, 36, 40, 0.05);
+}
+.theme-dark .setting-row + .setting-row.data-v-c19b2228 {
+	border-top-color: rgba(230, 237, 241, 0.06);
+}
+.setting-meta.data-v-c19b2228 {
+	display: inline-flex;
+	align-items: center;
+	gap: 12rpx;
+	min-width: 0;
+}
+.setting-icon.data-v-c19b2228 {
+	font-size: 24rpx;
+	line-height: 1;
+	color: var(--muted);
+}
+.setting-label.data-v-c19b2228 {
+	font-size: 24rpx;
+	color: var(--muted);
+}
+.setting-value.data-v-c19b2228 {
+	display: inline-flex;
+	align-items: center;
+	gap: 8rpx;
+	flex-shrink: 0;
+	font-size: 24rpx;
+	color: var(--ink);
+}
+.setting-arrow.data-v-c19b2228 {
+	font-size: 28rpx;
+	line-height: 1;
+	color: var(--muted);
+}
+.expand-arrow.data-v-c19b2228 {
+	transition: transform 0.18s ease;
+}
+.expand-arrow.expanded.data-v-c19b2228 {
+	transform: rotate(90deg);
+}
+.vote-row.data-v-c19b2228 {
+	margin-top: 2rpx;
+}
+.vote-editor-wrap.data-v-c19b2228 {
+	display: grid;
+	grid-template-rows: 0fr;
+	opacity: 0;
+	transition: grid-template-rows 0.26s ease, opacity 0.2s ease;
+}
+.vote-editor-wrap.open.data-v-c19b2228 {
+	grid-template-rows: 1fr;
+	opacity: 1;
+}
+.vote-editor.data-v-c19b2228 {
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	gap: 12rpx;
+	padding-top: 0;
+	border-top: 0 solid rgba(28, 36, 40, 0.05);
+}
+.vote-editor-wrap.open .vote-editor.data-v-c19b2228 {
+	padding-top: 14rpx;
+	border-top-width: 2rpx;
+}
+.theme-dark .vote-editor-wrap.open .vote-editor.data-v-c19b2228 {
+	border-top-color: rgba(230, 237, 241, 0.06);
+}
+.vote-input.data-v-c19b2228 {
+	width: 100%;
+	height: 76rpx;
+	padding: 0 18rpx;
+	border-radius: 18rpx;
+	background: rgba(247, 245, 241, 0.88);
+	font-size: 24rpx;
+	color: var(--ink);
+}
+.theme-dark .vote-input.data-v-c19b2228 {
+	background: rgba(255, 255, 255, 0.05);
+}
+.launch-btn.data-v-c19b2228 {
+	margin-top: 18rpx;
+	height: 92rpx;
+	border-radius: 20rpx;
+	border: 2rpx solid rgba(255, 255, 255, 0.22);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12rpx;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 42%),
+		linear-gradient(135deg, var(--throw-accent), var(--throw-accent-strong));
+	color: rgba(255, 255, 255, 0.94);
+	font-size: 30rpx;
+	font-weight: 700;
+	box-shadow:
+		0 22rpx 38rpx var(--throw-accent-glow),
+		0 4rpx 0 rgba(255, 255, 255, 0.16) inset;
+	transition:
+		transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+		background 0.22s ease,
+		color 0.22s ease,
+		opacity 0.2s ease;
+}
+.launch-btn.disabled.data-v-c19b2228 {
+	background: linear-gradient(135deg, rgba(201, 207, 212, 0.78), rgba(219, 224, 228, 0.94));
+	border-color: transparent;
+	color: rgba(101, 110, 116, 0.86);
+	box-shadow: none;
+}
+.launch-btn.loading.data-v-c19b2228 {
+	opacity: 0.82;
+}
+.launch-btn.data-v-c19b2228:active {
+	transform: scale(0.985) translateY(2rpx);
+	box-shadow: 0 12rpx 22rpx rgba(49, 188, 125, 0.22);
+}
+.launch-btn.launching.data-v-c19b2228 {
+	transform: scale(0.97);
+	box-shadow: 0 12rpx 22rpx rgba(49, 188, 125, 0.2);
+}
+.launch-btn.disabled .launch-icon.data-v-c19b2228 {
+	opacity: 0.7;
+}
+.theme-dark .launch-btn.disabled.data-v-c19b2228 {
+	background: linear-gradient(135deg, rgba(61, 70, 76, 0.9), rgba(74, 83, 90, 0.94));
+	border-color: transparent;
+	color: rgba(186, 196, 202, 0.72);
+	box-shadow: none;
+}
+.launch-icon.data-v-c19b2228 {
+	font-size: 28rpx;
+	line-height: 1;
+}
+.origami-launch-scene.data-v-c19b2228 {
+	position: fixed;
+	inset: 0;
+	z-index: 90;
+	overflow: hidden;
+	pointer-events: none;
+	background:
+		radial-gradient(circle at 16% 18%, rgba(208, 221, 239, 0.28), transparent 30%),
+		radial-gradient(circle at 84% 76%, rgba(244, 222, 230, 0.28), transparent 28%),
+		linear-gradient(180deg, rgba(247, 245, 241, 0.22), rgba(244, 239, 235, 0.12));
+	-webkit-backdrop-filter: blur(2rpx);
+	        backdrop-filter: blur(2rpx);
+}
+.launch-haze.data-v-c19b2228 {
+	position: absolute;
+	border-radius: 50%;
+	filter: blur(18rpx);
+	opacity: 0.9;
+	animation: haze-float-c19b2228 1.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.haze-left.data-v-c19b2228 {
+	left: -60rpx;
+	bottom: 220rpx;
+	width: 260rpx;
+	height: 260rpx;
+	background: radial-gradient(circle, rgba(207, 223, 244, 0.5), transparent 68%);
+}
+.haze-right.data-v-c19b2228 {
+	right: -40rpx;
+	top: 220rpx;
+	width: 220rpx;
+	height: 220rpx;
+	background: radial-gradient(circle, rgba(244, 220, 229, 0.48), transparent 68%);
+	animation-delay: 0.08s;
+}
+.launch-wind-track.data-v-c19b2228 {
+	position: absolute;
+	left: 50%;
+	border-top: 4rpx dashed rgba(151, 168, 183, 0.34);
+	border-radius: 999rpx;
+	opacity: 0;
+	transform-origin: center;
+	animation: wind-sweep-c19b2228 1.64s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.track-one.data-v-c19b2228 {
+	top: 54%;
+	width: 320rpx;
+	height: 80rpx;
+	margin-left: -200rpx;
+	--wind-rotate: -10deg;
+	transform: rotate(-10deg);
+}
+.track-two.data-v-c19b2228 {
+	top: 45%;
+	width: 420rpx;
+	height: 112rpx;
+	margin-left: -80rpx;
+	--wind-rotate: -26deg;
+	transform: rotate(-26deg);
+	animation-delay: 0.1s;
+}
+.track-three.data-v-c19b2228 {
+	top: 32%;
+	width: 360rpx;
+	height: 88rpx;
+	margin-left: 10rpx;
+	--wind-rotate: -34deg;
+	transform: rotate(-34deg);
+	animation-delay: 0.18s;
+}
+.origami-plane.data-v-c19b2228 {
+	position: absolute;
+	left: 50%;
+	bottom: 208rpx;
+	width: 360rpx;
+	height: 248rpx;
+	transform: translateX(-50%);
+	perspective: 1400rpx;
+	animation: plane-flight-c19b2228 1.64s cubic-bezier(0.2, 0.95, 0.32, 1) forwards;
+}
+.origami-plane-shadow.data-v-c19b2228 {
+	position: absolute;
+	left: 50%;
+	bottom: 2rpx;
+	width: 210rpx;
+	height: 40rpx;
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba(115, 123, 135, 0.24), transparent 68%);
+	transform: translateX(-50%);
+	animation: plane-shadow-c19b2228 1.64s cubic-bezier(0.2, 0.95, 0.32, 1) forwards;
+}
+.origami-plane-body.data-v-c19b2228 {
+	position: absolute;
+	inset: 0;
+	transform-style: preserve-3d;
+	animation: plane-body-bank-c19b2228 1.64s cubic-bezier(0.2, 0.95, 0.32, 1) forwards;
+}
+.origami-wing.data-v-c19b2228,
+.origami-core.data-v-c19b2228,
+.origami-nose.data-v-c19b2228 {
+	position: absolute;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 243, 236, 0.98) 72%),
+		repeating-linear-gradient(180deg, transparent 0 28rpx, rgba(154, 164, 175, 0.08) 28rpx 30rpx);
+	border: 2rpx solid rgba(198, 187, 171, 0.52);
+	box-shadow: 0 18rpx 26rpx rgba(104, 108, 113, 0.12);
+}
+.origami-wing.data-v-c19b2228 {
+	top: 30rpx;
+	width: 176rpx;
+	height: 128rpx;
+	padding: 18rpx 18rpx 0;
+	overflow: hidden;
+	transform-origin: bottom center;
+}
+.wing-left.data-v-c19b2228 {
+	left: 10rpx;
+	-webkit-clip-path: polygon(0 0, 100% 18%, 66% 100%, 0 74%);
+	        clip-path: polygon(0 0, 100% 18%, 66% 100%, 0 74%);
+	animation: wing-fold-left-c19b2228 1.64s cubic-bezier(0.2, 0.95, 0.32, 1) forwards;
+}
+.wing-right.data-v-c19b2228 {
+	right: 10rpx;
+	-webkit-clip-path: polygon(0 18%, 100% 0, 100% 74%, 34% 100%);
+	        clip-path: polygon(0 18%, 100% 0, 100% 74%, 34% 100%);
+	animation: wing-fold-right-c19b2228 1.64s cubic-bezier(0.2, 0.95, 0.32, 1) forwards;
+}
+.origami-wing-copy.data-v-c19b2228 {
+	display: block;
+	font-size: 18rpx;
+	line-height: 1.5;
+	color: rgba(106, 116, 124, 0.72);
+	letter-spacing: 1rpx;
+	transform: rotate(-4deg);
+}
+.wing-right .origami-wing-copy.data-v-c19b2228 {
+	transform: rotate(4deg);
+	text-align: right;
+}
+.origami-core.data-v-c19b2228 {
+	left: 50%;
+	top: 42rpx;
+	width: 118rpx;
+	height: 164rpx;
+	border-radius: 14rpx 14rpx 40rpx 40rpx;
+	transform: translateX(-50%);
+	-webkit-clip-path: polygon(50% 0, 100% 28%, 74% 100%, 26% 100%, 0 28%);
+	        clip-path: polygon(50% 0, 100% 28%, 74% 100%, 26% 100%, 0 28%);
+	animation: core-fold-c19b2228 1.64s cubic-bezier(0.2, 0.95, 0.32, 1) forwards;
+}
+.origami-core-line.data-v-c19b2228 {
+	position: absolute;
+	background: rgba(147, 158, 169, 0.26);
+}
+.line-left.data-v-c19b2228,
+.line-right.data-v-c19b2228 {
+	top: 36rpx;
+	bottom: 24rpx;
+	width: 2rpx;
+}
+.line-left.data-v-c19b2228 {
+	left: 34rpx;
+	transform: rotate(22deg);
+}
+.line-right.data-v-c19b2228 {
+	right: 34rpx;
+	transform: rotate(-22deg);
+}
+.line-center.data-v-c19b2228 {
+	left: 50%;
+	top: 18rpx;
+	bottom: 20rpx;
+	width: 2rpx;
+	transform: translateX(-50%);
+}
+.origami-nose.data-v-c19b2228 {
+	left: 50%;
+	top: 4rpx;
+	width: 136rpx;
+	height: 82rpx;
+	transform: translateX(-50%);
+	-webkit-clip-path: polygon(50% 0, 100% 100%, 0 100%);
+	        clip-path: polygon(50% 0, 100% 100%, 0 100%);
+	animation: nose-fold-c19b2228 1.64s cubic-bezier(0.2, 0.95, 0.32, 1) forwards;
+}
+.origami-launch-copy.data-v-c19b2228 {
+	position: absolute;
+	left: 50%;
+	bottom: 118rpx;
+	width: 520rpx;
+	max-width: calc(100vw - 96rpx);
+	text-align: center;
+	transform: translateX(-50%);
+	animation: launch-copy-rise-c19b2228 0.92s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.launch-copy-kicker.data-v-c19b2228 {
+	display: block;
+	font-size: 20rpx;
+	letter-spacing: 6rpx;
+	text-transform: uppercase;
+	color: rgba(112, 122, 132, 0.84);
+}
+.launch-copy-title.data-v-c19b2228 {
+	display: block;
+	margin-top: 12rpx;
+	font-size: 38rpx;
+	font-weight: 700;
+	line-height: 1.28;
+	color: rgba(44, 54, 58, 0.96);
+}
+.launch-copy-note.data-v-c19b2228 {
+	display: block;
+	margin-top: 12rpx;
+	font-size: 22rpx;
+	line-height: 1.65;
+	color: rgba(112, 122, 132, 0.92);
+}
+.theme-dark .origami-launch-scene.data-v-c19b2228 {
+	background:
+		radial-gradient(circle at 16% 18%, rgba(86, 104, 121, 0.28), transparent 30%),
+		radial-gradient(circle at 84% 76%, rgba(111, 92, 101, 0.24), transparent 28%),
+		linear-gradient(180deg, rgba(15, 20, 22, 0.16), rgba(15, 20, 22, 0.08));
+}
+.theme-dark .launch-copy-kicker.data-v-c19b2228,
+.theme-dark .launch-copy-note.data-v-c19b2228 {
+	color: rgba(197, 206, 212, 0.78);
+}
+.theme-dark .launch-copy-title.data-v-c19b2228 {
+	color: rgba(233, 239, 243, 0.96);
+}
+.theme-dark .launch-wind-track.data-v-c19b2228 {
+	border-top-color: rgba(173, 187, 199, 0.18);
+}
+.theme-dark .origami-wing.data-v-c19b2228,
+.theme-dark .origami-core.data-v-c19b2228,
+.theme-dark .origami-nose.data-v-c19b2228 {
+	background:
+		linear-gradient(180deg, rgba(37, 45, 50, 0.96), rgba(26, 33, 37, 0.98) 72%),
+		repeating-linear-gradient(180deg, transparent 0 28rpx, rgba(139, 154, 166, 0.08) 28rpx 30rpx);
+	border-color: rgba(230, 237, 241, 0.08);
+	box-shadow: 0 18rpx 26rpx rgba(0, 0, 0, 0.24);
+}
+.theme-dark .origami-wing-copy.data-v-c19b2228 {
+	color: rgba(187, 197, 205, 0.48);
+}
+@keyframes haze-float-c19b2228 {
+0% {
+		opacity: 0;
+		transform: scale(0.86) translateY(24rpx);
+}
+100% {
+		opacity: 0.9;
+		transform: scale(1) translateY(0);
+}
+}
+@keyframes launch-copy-rise-c19b2228 {
+0% {
+		opacity: 0;
+		transform: translateX(-50%) translateY(22rpx);
+}
+100% {
+		opacity: 1;
+		transform: translateX(-50%) translateY(0);
+}
+}
+@keyframes wind-sweep-c19b2228 {
+0% {
+		opacity: 0;
+		transform: translate3d(-80rpx, 34rpx, 0) scale(0.82) rotate(var(--wind-rotate, 0deg));
+}
+28% {
+		opacity: 0.55;
+}
+100% {
+		opacity: 0;
+		transform: translate3d(240rpx, -170rpx, 0) scale(1.08) rotate(var(--wind-rotate, 0deg));
+}
+}
+@keyframes plane-flight-c19b2228 {
+0% {
+		transform: translateX(-50%) translate3d(0, 34rpx, 0) scale(1.02);
+}
+42% {
+		transform: translateX(-50%) translate3d(0, 0, 0) scale(1);
+}
+68% {
+		transform: translateX(-50%) translate3d(42rpx, -96rpx, 0) scale(0.92);
+}
+100% {
+		transform: translateX(-50%) translate3d(246rpx, -560rpx, 0) scale(0.54);
+}
+}
+@keyframes plane-body-bank-c19b2228 {
+0% {
+		transform: rotate(0deg) rotateX(0deg) rotateY(0deg);
+}
+40% {
+		transform: rotate(-8deg) rotateX(6deg) rotateY(0deg);
+}
+68% {
+		transform: rotate(-12deg) rotateX(10deg) rotateY(-6deg);
+}
+100% {
+		transform: rotate(-24deg) rotateX(14deg) rotateY(-18deg);
+}
+}
+@keyframes plane-shadow-c19b2228 {
+0% {
+		opacity: 0.18;
+		transform: translateX(-50%) scale(1);
+}
+100% {
+		opacity: 0;
+		transform: translateX(-10%) scale(0.46);
+}
+}
+@keyframes wing-fold-left-c19b2228 {
+0% {
+		transform: translate3d(0, 44rpx, 0) rotate(0deg) rotateY(0deg);
+}
+34% {
+		transform: translate3d(0, 0, 0) rotate(-6deg) rotateY(0deg);
+}
+62% {
+		transform: translate3d(18rpx, -6rpx, 0) rotate(-14deg) rotateY(58deg);
+}
+100% {
+		transform: translate3d(42rpx, 4rpx, 0) rotate(-24deg) rotateY(72deg);
+}
+}
+@keyframes wing-fold-right-c19b2228 {
+0% {
+		transform: translate3d(0, 44rpx, 0) rotate(0deg) rotateY(0deg);
+}
+34% {
+		transform: translate3d(0, 0, 0) rotate(6deg) rotateY(0deg);
+}
+62% {
+		transform: translate3d(-18rpx, -6rpx, 0) rotate(14deg) rotateY(-58deg);
+}
+100% {
+		transform: translate3d(-42rpx, 4rpx, 0) rotate(24deg) rotateY(-72deg);
+}
+}
+@keyframes core-fold-c19b2228 {
+0% {
+		transform: translateX(-50%) translateY(36rpx) scaleY(1.08);
+}
+38% {
+		transform: translateX(-50%) translateY(0) scaleY(1);
+}
+66% {
+		transform: translateX(-50%) translateY(-4rpx) rotateX(12deg);
+}
+100% {
+		transform: translateX(-50%) translateY(-8rpx) rotateX(18deg);
+}
+}
+@keyframes nose-fold-c19b2228 {
+0% {
+		transform: translateX(-50%) translateY(56rpx) rotateX(-28deg);
+}
+42% {
+		transform: translateX(-50%) translateY(8rpx) rotateX(-6deg);
+}
+68% {
+		transform: translateX(-50%) translateY(2rpx) rotateX(4deg);
+}
+100% {
+		transform: translateX(-50%) translateY(-2rpx) rotateX(12deg);
+}
+}
+@media (prefers-reduced-motion: reduce) {
+.throw-frame.data-v-c19b2228,
+	.launch-btn.data-v-c19b2228,
+	.origami-launch-scene.data-v-c19b2228,
+	.origami-plane.data-v-c19b2228,
+	.origami-plane-body.data-v-c19b2228,
+	.origami-wing.data-v-c19b2228,
+	.origami-core.data-v-c19b2228,
+	.origami-nose.data-v-c19b2228,
+	.launch-haze.data-v-c19b2228,
+	.launch-wind-track.data-v-c19b2228,
+	.origami-launch-copy.data-v-c19b2228 {
+		animation: none !important;
+		transition-duration: 0.01ms !important;
+}
+.throw-frame.is-launching.data-v-c19b2228 {
+		opacity: 0.3;
+		filter: none;
+		transform: none;
+}
+.origami-plane.data-v-c19b2228 {
+		transform: translateX(-50%) translate3d(180rpx, -380rpx, 0) scale(0.6);
+}
+}

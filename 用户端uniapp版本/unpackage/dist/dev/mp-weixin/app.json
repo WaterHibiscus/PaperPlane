@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/login/index",
+    "pages/register/index",
+    "pages/home/index",
+    "pages/discover/index",
+    "pages/throw/index",
+    "pages/trending/index",
+    "pages/mine/index",
+    "pages/profile-edit/index",
+    "pages/detail/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#F7F2E9",
+    "backgroundColor": "#F7F2E9"
+  },
+  "usingComponents": {}
+}

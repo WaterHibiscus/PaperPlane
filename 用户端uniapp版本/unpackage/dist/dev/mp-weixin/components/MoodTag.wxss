@@ -1,0 +1,18 @@
+
+.mood-tag.data-v-a2ea2a7e {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8rpx 18rpx;
+	border-radius: 999rpx;
+	border: 2rpx solid currentColor;
+	background: rgba(255, 255, 255, 0.7);
+}
+.mood-icon.data-v-a2ea2a7e {
+	font-size: 22rpx;
+	margin-right: 8rpx;
+}
+.mood-text.data-v-a2ea2a7e {
+	font-size: 22rpx;
+	line-height: 1;
+}

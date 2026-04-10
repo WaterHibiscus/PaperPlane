@@ -1,0 +1,1 @@
+{"version":3,"file":"config.js","sources":["common/config.js"],"sourcesContent":["const config = {\n\t// H5/模拟器调试可直连本机，真机请改成你电脑的局域网 IP。\n\tbaseURL: 'http://192.168.3.34:5004/api',\n\ttimeout: 10000,\n}\n\nexport default config\n"],"names":[],"mappings":";AAAK,MAAC,SAAS;AAAA;AAAA,EAEd,SAAS;AAAA,EACT,SAAS;AACV;;"}

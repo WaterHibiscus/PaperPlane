@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "热门飞机",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "app-tabbar": "../../components/AppTabbar",
+    "detail-open-transition": "../../components/DetailOpenTransition",
+    "page-transition": "../../components/PageTransition",
+    "plane-card": "../../components/PlaneCard"
+  }
+}

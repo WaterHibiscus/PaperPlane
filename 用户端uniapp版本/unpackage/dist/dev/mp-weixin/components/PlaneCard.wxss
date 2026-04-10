@@ -1,0 +1,193 @@
+
+.plane-card.data-v-c98ee2ae {
+	display: flex;
+	gap: 20rpx;
+	padding: 24rpx 24rpx 22rpx;
+	margin-bottom: 18rpx;
+}
+.rank-rail.data-v-c98ee2ae {
+	width: 84rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex-shrink: 0;
+	padding-top: 4rpx;
+}
+.rank-orb.data-v-c98ee2ae {
+	width: 70rpx;
+	height: 70rpx;
+	border-radius: 24rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, 0.8);
+	border: 2rpx solid rgba(28, 36, 40, 0.06);
+	box-shadow: 0 10rpx 18rpx rgba(31, 36, 40, 0.05);
+}
+.rank-orb.top.data-v-c98ee2ae {
+	background: linear-gradient(135deg, var(--accent), var(--accent-2));
+	border-color: transparent;
+	box-shadow: 0 14rpx 24rpx rgba(47, 158, 116, 0.2);
+}
+.rank-number.data-v-c98ee2ae {
+	font-size: 24rpx;
+	font-weight: 700;
+	color: var(--ink);
+}
+.rank-orb.top .rank-number.data-v-c98ee2ae {
+	color: #ffffff;
+}
+.rank-line.data-v-c98ee2ae {
+	flex: 1;
+	width: 4rpx;
+	margin-top: 12rpx;
+	border-radius: 999rpx;
+	background: linear-gradient(180deg, rgba(47, 158, 116, 0.28), rgba(47, 158, 116, 0));
+}
+.card-main.data-v-c98ee2ae {
+	flex: 1;
+	min-width: 0;
+}
+.card-topline.data-v-c98ee2ae {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 18rpx;
+}
+.tag-cluster.data-v-c98ee2ae {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10rpx;
+	min-width: 0;
+	flex: 1;
+}
+.location-pill.data-v-c98ee2ae,
+.heat-pill.data-v-c98ee2ae {
+	display: inline-flex;
+	align-items: center;
+	padding: 8rpx 14rpx;
+	border-radius: 999rpx;
+	background: rgba(255, 255, 255, 0.62);
+	font-size: 20rpx;
+	color: var(--muted);
+}
+.heat-pill.data-v-c98ee2ae {
+	background: rgba(47, 158, 116, 0.12);
+	color: var(--accent);
+}
+.time-cluster.data-v-c98ee2ae {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8rpx;
+	flex-shrink: 0;
+	max-width: 220rpx;
+}
+.time.data-v-c98ee2ae,
+.header-author.data-v-c98ee2ae,
+.meta-row.data-v-c98ee2ae {
+	font-size: 20rpx;
+	color: var(--muted);
+}
+.header-author.data-v-c98ee2ae {
+	max-width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.card-body.data-v-c98ee2ae {
+	display: flex;
+	gap: 18rpx;
+	margin-top: 18rpx;
+}
+.copy-block.data-v-c98ee2ae {
+	flex: 1;
+	min-width: 0;
+}
+.content-text.data-v-c98ee2ae {
+	display: -webkit-box;
+	font-size: 28rpx;
+	line-height: 1.62;
+	color: var(--ink);
+	word-break: break-word;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.meta-row.data-v-c98ee2ae {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8rpx;
+	margin-top: 14rpx;
+}
+.media-tile.data-v-c98ee2ae {
+	position: relative;
+	width: 124rpx;
+	height: 124rpx;
+	flex-shrink: 0;
+	border-radius: 24rpx;
+	overflow: hidden;
+	background: rgba(238, 241, 239, 0.92);
+	box-shadow: 0 12rpx 20rpx rgba(31, 36, 40, 0.08);
+}
+.media-image.data-v-c98ee2ae {
+	width: 100%;
+	height: 100%;
+}
+.media-overlay.data-v-c98ee2ae {
+	position: absolute;
+	left: 10rpx;
+	right: 10rpx;
+	bottom: 10rpx;
+	display: flex;
+	justify-content: flex-end;
+}
+.media-count.data-v-c98ee2ae {
+	padding: 6rpx 10rpx;
+	border-radius: 999rpx;
+	background: rgba(15, 20, 22, 0.54);
+	font-size: 18rpx;
+	color: rgba(255, 255, 255, 0.94);
+}
+.card-footer.data-v-c98ee2ae {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10rpx;
+	margin-top: 18rpx;
+}
+.stat-pill.data-v-c98ee2ae {
+	display: inline-flex;
+	align-items: center;
+	gap: 8rpx;
+	padding: 10rpx 12rpx;
+	border-radius: 16rpx;
+	background: rgba(255, 255, 255, 0.56);
+	border: 2rpx solid var(--border);
+}
+.stat-value.data-v-c98ee2ae {
+	font-size: 22rpx;
+	font-weight: 700;
+	color: var(--ink);
+}
+.stat-label.data-v-c98ee2ae {
+	font-size: 18rpx;
+	color: var(--muted);
+}
+.theme-dark .rank-orb.data-v-c98ee2ae {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(230, 237, 241, 0.06);
+}
+.theme-dark .location-pill.data-v-c98ee2ae,
+.theme-dark .stat-pill.data-v-c98ee2ae,
+.theme-dark .media-tile.data-v-c98ee2ae {
+	background: rgba(255, 255, 255, 0.05);
+}
+.theme-dark .heat-pill.data-v-c98ee2ae {
+	background: rgba(54, 192, 141, 0.16);
+}
+.theme-dark .media-count.data-v-c98ee2ae {
+	background: rgba(0, 0, 0, 0.42);
+}
