@@ -251,10 +251,10 @@
 										<text>{{ getHeatLabel(plane) }}</text>
 									</view>
 									<view class="plane-stat-chip">
-										<text>拾取 {{ plane.pickCount || 0 }}</text>
+										<text>捡 {{ plane.pickCount || 0 }}</text>
 									</view>
 									<view class="plane-stat-chip">
-										<text>{{ plane.commentCount || 0 }} 回复</text>
+										<text>评 {{ plane.commentCount || 0 }}</text>
 									</view>
 								</view>
 							</view>
@@ -431,15 +431,15 @@ export default {
 		getAssetUrl,
 		getNoteItemStyle(index, seedSource, mood, plane) {
 			const variant = plane ? this.getPlaneVariant(plane, index) : 'note'
-			let cardHeight = '304rpx'
+			let cardHeight = '336rpx'
 			if (variant === 'quote') {
-				cardHeight = '320rpx'
-			} else if (variant === 'diary') {
 				cardHeight = '352rpx'
+			} else if (variant === 'diary') {
+				cardHeight = '384rpx'
 			} else if (plane?.imageUrls?.length) {
-				cardHeight = '320rpx'
+				cardHeight = '352rpx'
 			} else if (index % 3 === 1) {
-				cardHeight = '320rpx'
+				cardHeight = '352rpx'
 			}
 			return {
 				...this.getNoteStyle(index, seedSource),
@@ -1326,6 +1326,7 @@ export default {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
+	min-height: 0;
 	gap: 10rpx;
 }
 
@@ -1525,7 +1526,9 @@ export default {
 
 .plane-text {
 	display: -webkit-box;
-	flex: 1;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 72rpx;
 	font-size: 24rpx;
 	line-height: 1.5;
 	color: rgba(50, 60, 55, 1);
@@ -1573,7 +1576,8 @@ export default {
 	align-items: center;
 	justify-content: space-between;
 	gap: 12rpx;
-	margin-top: 20rpx;
+	margin-top: 14rpx;
+	flex-shrink: 0;
 }
 
 .plane-footer-left {
@@ -1585,26 +1589,39 @@ export default {
 }
 
 .plane-stats-row {
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 8rpx;
 	margin-top: 4rpx;
+	flex-shrink: 0;
 }
 
 .plane-stat-chip {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
+	min-width: 0;
 	padding: 8rpx 12rpx;
 	border-radius: 999rpx;
 	background: rgba(255, 255, 255, 0.54);
 	border: 1rpx solid rgba(214, 205, 188, 0.34);
 	font-size: 18rpx;
 	color: rgba(86, 96, 91, 0.92);
+	overflow: hidden;
 }
 
 .plane-stat-chip.accent {
 	background: rgba(255, 255, 255, 0.76);
 	font-weight: 600;
+}
+
+.plane-stat-chip text {
+	display: block;
+	min-width: 0;
+	max-width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .plane-mood-tag,
