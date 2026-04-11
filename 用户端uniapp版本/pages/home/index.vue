@@ -344,7 +344,7 @@
 						seen.add(key)
 						return true
 					})
-					.slice(0, this.isDenseMap ? 6 : 7)
+					.slice(0, this.isDenseMap ? Math.max(nodes.length - 1, 7) : 7)
 					.map(([from, to], index) => {
 						const heat = Math.max(from.loc.planeCount || 0, to.loc.planeCount || 0)
 						const width = Math.min(2.8, 1.05 + heat * 0.18)
@@ -471,6 +471,8 @@
 					const distance = Math.hypot(from.x - to.x, from.y - to.y)
 					const jitter = this.seededUnit(`route-${from.loc.id}-${to.loc.id}`) * 1.2
 					edges.push({
+						fromIndex,
+						toIndex,
 						from,
 						to,
 						distance,
@@ -479,27 +481,66 @@
 				}
 			}
 			edges.sort((a, b) => a.score - b.score)
-			const degreeById = Object.create(null)
-			const maxRoutes = Math.min(6, Math.max(4, Math.ceil(nodes.length * 0.42)))
-			const maxDistance = nodes.length <= 10 ? 44 : 40
-			const pairs = []
+
+			// Kruskal-style spanning tree: guarantees all nodes are connected.
+			const parent = nodes.map((_, index) => index)
+			const find = index => {
+				let root = index
+				while (parent[root] !== root) {
+					root = parent[root]
+				}
+				while (parent[index] !== index) {
+					const next = parent[index]
+					parent[index] = root
+					index = next
+				}
+				return root
+			}
+			const union = (a, b) => {
+				const rootA = find(a)
+				const rootB = find(b)
+				if (rootA === rootB) return false
+				parent[rootB] = rootA
+				return true
+			}
+
+			const connectedPairs = []
 			for (let index = 0; index < edges.length; index += 1) {
 				const edge = edges[index]
-				if (edge.distance > maxDistance) continue
-				const fromId = edge.from.loc.id
-				const toId = edge.to.loc.id
-				const fromDegree = degreeById[fromId] || 0
-				const toDegree = degreeById[toId] || 0
-				if (fromDegree >= 2 || toDegree >= 2) continue
-				pairs.push([edge.from, edge.to])
-				degreeById[fromId] = fromDegree + 1
-				degreeById[toId] = toDegree + 1
-				if (pairs.length >= maxRoutes) break
+				if (!union(edge.fromIndex, edge.toIndex)) continue
+				connectedPairs.push([edge.from, edge.to])
+				if (connectedPairs.length >= nodes.length - 1) break
 			}
-			if (pairs.length < 3) {
-				return this.buildDefaultRoutePairs(nodes).slice(0, 4)
+
+			if (connectedPairs.length < nodes.length - 1) {
+				return this.buildDefaultRoutePairs(nodes)
 			}
-			return pairs
+
+			// Add a few short local links so dense maps still look alive without turning into a mesh.
+			const extraLimit = Math.min(3, Math.max(1, Math.floor(nodes.length / 5)))
+			const degreeById = Object.create(null)
+			for (let index = 0; index < connectedPairs.length; index += 1) {
+				const [from, to] = connectedPairs[index]
+				degreeById[from.loc.id] = (degreeById[from.loc.id] || 0) + 1
+				degreeById[to.loc.id] = (degreeById[to.loc.id] || 0) + 1
+			}
+			const existingKeys = new Set(
+				connectedPairs.map(([from, to]) => [from.loc.id, to.loc.id].sort((a, b) => a - b).join('-')),
+			)
+			let extraCount = 0
+			for (let index = 0; index < edges.length && extraCount < extraLimit; index += 1) {
+				const edge = edges[index]
+				const key = [edge.from.loc.id, edge.to.loc.id].sort((a, b) => a - b).join('-')
+				if (existingKeys.has(key)) continue
+				if (edge.distance > 36) continue
+				if ((degreeById[edge.from.loc.id] || 0) >= 3 || (degreeById[edge.to.loc.id] || 0) >= 3) continue
+				connectedPairs.push([edge.from, edge.to])
+				existingKeys.add(key)
+				degreeById[edge.from.loc.id] = (degreeById[edge.from.loc.id] || 0) + 1
+				degreeById[edge.to.loc.id] = (degreeById[edge.to.loc.id] || 0) + 1
+				extraCount += 1
+			}
+			return connectedPairs
 		},
 		buildDensePositions(total) {
 			const points = []

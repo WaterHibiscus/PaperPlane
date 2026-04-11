@@ -432,14 +432,12 @@ export default {
 		getNoteItemStyle(index, seedSource, mood, plane) {
 			const variant = plane ? this.getPlaneVariant(plane, index) : 'note'
 			let cardHeight = '304rpx'
-			if (variant === 'photo') {
-				cardHeight = '408rpx'
-			} else if (variant === 'quote') {
+			if (variant === 'quote') {
 				cardHeight = '320rpx'
 			} else if (variant === 'diary') {
 				cardHeight = '352rpx'
 			} else if (plane?.imageUrls?.length) {
-				cardHeight = '356rpx'
+				cardHeight = '320rpx'
 			} else if (index % 3 === 1) {
 				cardHeight = '320rpx'
 			}
@@ -515,16 +513,14 @@ export default {
 			}
 		},
 		getPlaneVariant(plane, index) {
-			const hasMedia = Boolean(plane?.imageUrls?.length)
 			const contentLength = String(plane?.content || '').length
 			const heatScore = this.getHeatScore(plane)
-			if (hasMedia && index % 3 !== 1) return 'photo'
 			if (contentLength <= 28 || index % 5 === 1) return 'quote'
 			if (heatScore >= 18 || index % 4 === 2) return 'diary'
 			return 'note'
 		},
-		shouldShowMediaPreview(plane, index) {
-			return Boolean(plane?.imageUrls?.length) && this.getPlaneVariant(plane, index) === 'photo'
+		shouldShowMediaPreview() {
+			return false
 		},
 		isQuoteVariant(plane, index) {
 			return this.getPlaneVariant(plane, index) === 'quote'
