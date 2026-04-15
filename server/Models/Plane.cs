@@ -3,6 +3,7 @@ namespace server.Models;
 public class Plane
 {
     public Guid Id { get; set; }
+    public string ShortCode { get; set; } = string.Empty;
     public Guid? CreatorUserId { get; set; }
     public string LocationTag { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;

@@ -22,12 +22,20 @@ export const request = createFlatRequest(
       return response.data;
     },
     async onRequest(config) {
+      const headers = AxiosHeaders.from(config.headers);
+      const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData;
+
+      // Let browser set multipart boundary automatically for FormData uploads.
+      if (isFormData) {
+        headers.delete('Content-Type');
+      }
+
       const authorization = getAuthorization();
       if (authorization) {
-        const headers = AxiosHeaders.from(config.headers);
         headers.set('Authorization', authorization);
-        config.headers = headers;
       }
+
+      config.headers = headers;
       return config;
     },
     isBackendSuccess(response) {

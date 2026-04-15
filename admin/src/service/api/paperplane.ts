@@ -13,6 +13,33 @@ export function updateHomeHeadlines(data: { phrases: string[] }) {
   return request<Api.PaperPlane.HomeHeadlineConfig>({ url: '/api/admin/home/headlines', method: 'put', data });
 }
 
+export function fetchExpireOptions() {
+  return request<Api.PaperPlane.ExpireOptionConfig[]>({ url: '/api/admin/expire-options' });
+}
+
+export function updateExpireOptions(data: { items: Api.PaperPlane.ExpireOptionConfig[] }) {
+  return request<Api.PaperPlane.ExpireOptionConfig[]>({ url: '/api/admin/expire-options', method: 'put', data });
+}
+
+export function fetchMoodConfigs() {
+  return request<Api.PaperPlane.MoodConfig[]>({ url: '/api/admin/moods' });
+}
+
+export function updateMoodConfigs(data: { items: Api.PaperPlane.MoodConfig[] }) {
+  return request<Api.PaperPlane.MoodConfig[]>({ url: '/api/admin/moods', method: 'put', data });
+}
+
+export function uploadMoodIcon(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return request<{ url: string }>({
+    url: '/api/uploads/mood-icons',
+    method: 'post',
+    data: formData
+  });
+}
+
 // Locations
 export function fetchLocations() {
   return request<Api.PaperPlane.Location[]>({ url: '/api/locations' });
@@ -61,6 +88,35 @@ export function deletePlane(id: string) {
   return request<void>({ url: `/api/planes/${id}`, method: 'delete' });
 }
 
+export function updatePlane(id: string, data: Api.PaperPlane.UpdatePlanePayload) {
+  return request<Api.PaperPlane.Plane>({
+    url: `/api/planes/${id}`,
+    method: 'put',
+    data
+  }).then(async result => {
+    if (!result.error || result.response?.status !== 404) {
+      return result;
+    }
+
+    return request<Api.PaperPlane.Plane>({
+      url: `/api/admin/planes/${id}`,
+      method: 'put',
+      data
+    });
+  });
+}
+
+export function uploadPlaneImage(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return request<{ url: string }>({
+    url: '/api/uploads/images',
+    method: 'post',
+    data: formData
+  });
+}
+
 // Reports
 export function fetchReportedPlanes() {
   return request<Api.PaperPlane.Plane[]>({ url: '/api/planes/reported' });
@@ -85,6 +141,13 @@ export function deleteComment(id: string) {
 
 export function fetchPlaneComments(planeId: string) {
   return request<Api.PaperPlane.Comment[]>({ url: `/api/planes/${planeId}/comments` });
+}
+
+export function fetchPlaneAttitudes(planeId: string, voterKey?: string) {
+  return request<Api.PaperPlane.PlaneAttitudeSummary>({
+    url: `/api/planes/${planeId}/attitudes`,
+    params: voterKey ? { voterKey } : undefined
+  });
 }
 
 // App users

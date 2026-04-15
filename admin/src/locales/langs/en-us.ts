@@ -231,7 +231,9 @@
     'iframe-page': 'Iframe',
     home: 'Dashboard',
     'comment-manage': 'Comment Manage',
+    'expire-manage': 'Expire Manage',
     'headline-manage': 'Text Scroll',
+    'mood-manage': 'Mood Manage',
     'plane-manage': 'Plane Manage',
     'location-manage': 'Location Manage',
     'report-manage': 'Report Manage',
@@ -373,4 +375,3 @@
 };
 
 export default local;
-

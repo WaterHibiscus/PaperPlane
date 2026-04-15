@@ -45,7 +45,20 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.comment-manage',
     meta: {
       title: 'comment-manage',
-      i18nKey: 'route.comment-manage'
+      i18nKey: 'route.comment-manage',
+      icon: 'mdi:comment-text-multiple-outline',
+      order: 3
+    }
+  },
+  {
+    name: 'expire-manage',
+    path: '/expire-manage',
+    component: 'layout.base$view.expire-manage',
+    meta: {
+      title: 'expire-manage',
+      i18nKey: 'route.expire-manage',
+      icon: 'mdi:timer-sand',
+      order: 6
     }
   },
   {
@@ -54,7 +67,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.headline-manage',
     meta: {
       title: 'headline-manage',
-      i18nKey: 'route.headline-manage'
+      i18nKey: 'route.headline-manage',
+      icon: 'mdi:text-box-multiple-outline',
+      order: 7
     }
   },
   {
@@ -87,7 +102,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.location-manage',
     meta: {
       title: 'location-manage',
-      i18nKey: 'route.location-manage'
+      i18nKey: 'route.location-manage',
+      icon: 'mdi:map-marker-radius-outline',
+      order: 5
     }
   },
   {
@@ -100,6 +117,17 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.login',
       constant: true,
       hideInMenu: true
+    }
+  },
+  {
+    name: 'mood-manage',
+    path: '/mood-manage',
+    component: 'layout.base$view.mood-manage',
+    meta: {
+      title: 'mood-manage',
+      i18nKey: 'route.mood-manage',
+      icon: 'mdi:emoticon-outline',
+      order: 4
     }
   },
   {
@@ -119,7 +147,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'report-manage',
       i18nKey: 'route.report-manage',
       icon: 'mdi:flag',
-      order: 5
+      order: 8
     }
   },
   {
@@ -130,7 +158,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'user-manage',
       i18nKey: 'route.user-manage',
       icon: 'mdi:account-group',
-      order: 4
+      order: 9
     }
   }
 ];

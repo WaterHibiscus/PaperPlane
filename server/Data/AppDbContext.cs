@@ -22,6 +22,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.ToTable("Planes", tb => tb.HasComment("纸飞机信息表"));
             e.HasKey(p => p.Id);
+            e.Property(p => p.ShortCode).HasMaxLength(10).IsRequired();
             e.Property(p => p.Content).HasMaxLength(200).IsRequired();
             e.Property(p => p.LocationTag).HasMaxLength(50).IsRequired();
             e.Property(p => p.Mood).HasMaxLength(20);
@@ -29,6 +30,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(p => p.ImageUrlsJson).HasColumnType("nvarchar(max)");
             e.Property(p => p.VoteTitle).HasMaxLength(60);
             e.Property(p => p.VoteOptionsJson).HasColumnType("nvarchar(max)");
+            e.HasIndex(p => p.ShortCode).IsUnique();
             e.HasIndex(p => p.CreatorUserId);
             e.HasIndex(p => p.LocationTag);
             e.HasIndex(p => p.ExpireTime);

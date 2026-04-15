@@ -17,6 +17,23 @@ declare namespace Api {
       phrases: string[];
     }
 
+    interface MoodConfig {
+      key: string;
+      label: string;
+      iconUrl: string;
+      color: string;
+      sortOrder: number;
+      isActive: boolean;
+      isCustom: boolean;
+    }
+
+    interface ExpireOptionConfig {
+      hours: number;
+      label: string;
+      sortOrder: number;
+      isActive: boolean;
+    }
+
     interface Location {
       id: number;
       name: string;
@@ -27,6 +44,7 @@ declare namespace Api {
 
     interface Plane {
       id: string;
+      shortCode: string;
       locationTag: string;
       content: string;
       mood: string;
@@ -41,6 +59,29 @@ declare namespace Api {
       reportCount: number;
       voteTitle: string | null;
       voteOptions: string[] | null;
+    }
+
+    interface UpdatePlanePayload {
+      locationTag: string;
+      content: string;
+      mood: string;
+      isAnonymous: boolean;
+      authorName: string;
+      imageUrls: string[];
+      expireHours: number;
+      voteTitle: string;
+      voteOptions: string[];
+    }
+
+    interface PlaneAttitudeOption {
+      optionKey: string;
+      count: number;
+    }
+
+    interface PlaneAttitudeSummary {
+      options: PlaneAttitudeOption[];
+      myChoice: string | null;
+      totalCount: number;
     }
 
     interface Comment {

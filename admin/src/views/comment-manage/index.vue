@@ -29,24 +29,24 @@ const pagination = reactive<PaginationProps>({
 });
 
 const columns = computed<DataTableColumns<Api.PaperPlane.AdminComment>>(() => [
-  { title: 'Comment ID', key: 'id', width: 180, ellipsis: { tooltip: true } },
-  { title: 'Plane ID', key: 'planeId', width: 180, ellipsis: { tooltip: true } },
-  { title: 'Location', key: 'locationTag', width: 120 },
+  { title: '评论 ID', key: 'id', width: 180, fixed: 'left', ellipsis: { tooltip: true } },
+  { title: '飞机 ID', key: 'planeId', width: 180, fixed: 'left', ellipsis: { tooltip: true } },
+  { title: '地点', key: 'locationTag', width: 120 },
   {
-    title: 'Plane Content',
+    title: '飞机内容',
     key: 'planeContent',
-    minWidth: 220,
+    minWidth: 260,
     ellipsis: { tooltip: true }
   },
   {
-    title: 'Comment',
+    title: '评论内容',
     key: 'reply',
-    minWidth: 220,
+    minWidth: 260,
     ellipsis: { tooltip: true }
   },
-  { title: 'Nickname', key: 'nickName', width: 140, ellipsis: { tooltip: true } },
+  { title: '昵称', key: 'nickName', width: 140, ellipsis: { tooltip: true } },
   {
-    title: 'Reply To',
+    title: '回复对象',
     key: 'replyToNickName',
     width: 140,
     render(row) {
@@ -54,7 +54,7 @@ const columns = computed<DataTableColumns<Api.PaperPlane.AdminComment>>(() => [
     }
   },
   {
-    title: 'Replies',
+    title: '回复数',
     key: 'replyCount',
     width: 90,
     render(row) {
@@ -66,7 +66,7 @@ const columns = computed<DataTableColumns<Api.PaperPlane.AdminComment>>(() => [
     }
   },
   {
-    title: 'Created At',
+    title: '创建时间',
     key: 'createTime',
     width: 180,
     render(row) {
@@ -74,17 +74,18 @@ const columns = computed<DataTableColumns<Api.PaperPlane.AdminComment>>(() => [
     }
   },
   {
-    title: 'Actions',
+    title: '操作',
     key: 'actions',
-    width: 120,
+    width: 128,
+    fixed: 'right',
     render(row) {
-      const confirmText = row.replyCount > 0 ? 'Delete this comment and its replies?' : 'Delete this comment?';
+      const confirmText = row.replyCount > 0 ? '确认删除这条评论及其回复吗？' : '确认删除这条评论吗？';
 
       return h(
         NPopconfirm,
         { onPositiveClick: () => handleDelete(row.id) },
         {
-          trigger: () => h(NButton, { size: 'small', type: 'error', quaternary: true }, () => 'Delete'),
+          trigger: () => h(NButton, { size: 'small', type: 'error', quaternary: true }, () => '删除'),
           default: () => confirmText
         }
       );
@@ -125,7 +126,7 @@ async function loadComments() {
     pagination.itemCount = data?.total ?? 0;
   } catch (error) {
     console.error(error);
-    window.$message?.error('Failed to load comments.');
+    window.$message?.error('加载评论列表失败');
   } finally {
     loading.value = false;
   }
@@ -150,7 +151,7 @@ async function handleDelete(id: string) {
       throw error;
     }
 
-    window.$message?.success('Comment deleted.');
+    window.$message?.success('评论删除成功');
 
     const currentPage = Number(pagination.page || 1);
     const currentSize = Number(pagination.pageSize || 20);
@@ -163,7 +164,7 @@ async function handleDelete(id: string) {
     await loadComments();
   } catch (error) {
     console.error(error);
-    window.$message?.error('Delete failed.');
+    window.$message?.error('删除失败');
   }
 }
 
@@ -176,20 +177,20 @@ void loadComments();
       <NSpace align="center" :size="12" wrap>
         <NInput
           v-model:value="filters.keyword"
-          placeholder="Search comment / nickname / plane content"
+          placeholder="搜索评论内容 / 昵称 / 飞机内容"
           clearable
           style="width: 280px"
           @keyup.enter="handleSearch"
         />
         <NInput
           v-model:value="filters.planeId"
-          placeholder="Filter by plane ID"
+          placeholder="按飞机 ID 筛选"
           clearable
           style="width: 240px"
           @keyup.enter="handleSearch"
         />
-        <NButton type="primary" @click="handleSearch">Search</NButton>
-        <NButton @click="handleReset">Reset</NButton>
+        <NButton type="primary" @click="handleSearch">查询</NButton>
+        <NButton @click="handleReset">重置</NButton>
       </NSpace>
     </NCard>
 
@@ -200,7 +201,7 @@ void loadComments();
         :data="comments"
         :loading="loading"
         :pagination="pagination"
-        :scroll-x="1500"
+        :scroll-x="1720"
         size="small"
         striped
       />

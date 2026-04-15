@@ -312,6 +312,11 @@ namespace server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ShortCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<string>("AuthorName")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -375,6 +380,9 @@ namespace server.Migrations
                     b.HasIndex("ExpireTime");
 
                     b.HasIndex("LocationTag");
+
+                    b.HasIndex("ShortCode")
+                        .IsUnique();
 
                     b.ToTable("Planes", null, t =>
                         {

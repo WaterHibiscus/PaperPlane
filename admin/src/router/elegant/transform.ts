@@ -167,11 +167,13 @@ const routeMap: RouteMap = {
   "404": "/404",
   "500": "/500",
   "comment-manage": "/comment-manage",
+  "expire-manage": "/expire-manage",
   "headline-manage": "/headline-manage",
   "home": "/home",
   "iframe-page": "/iframe-page/:url",
   "location-manage": "/location-manage",
   "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?",
+  "mood-manage": "/mood-manage",
   "plane-manage": "/plane-manage",
   "report-manage": "/report-manage",
   "user-manage": "/user-manage"

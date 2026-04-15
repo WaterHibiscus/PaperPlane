@@ -6,9 +6,7 @@ defineOptions({
 
 <template>
   <DarkModeContainer class="h-full flex-center">
-    <a href="https://github.com/soybeanjs/soybean-admin/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">
-      Copyright MIT © 2021 Soybean
-    </a>
+    <span>Copyright 周亮、张庆、向此辉 © 2026 PaperPlane</span>
   </DarkModeContainer>
 </template>
 

@@ -15,6 +15,7 @@ public class CommentsController(AppDbContext db, ContentFilterService filter) : 
     public async Task<ActionResult<List<CommentResponse>>> GetComments(Guid planeId)
     {
         var comments = await db.Comments
+            .IgnoreQueryFilters()
             .Where(c => c.PlaneId == planeId)
             .OrderBy(c => c.CreateTime)
             .Select(c => new CommentResponse(

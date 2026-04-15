@@ -28,8 +28,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddSingleton<ContentFilterService>();
-builder.Services.AddHostedService<PlaneCleanupService>();
 builder.Services.AddSingleton<HomeHeadlineSettingsService>();
+builder.Services.AddSingleton<MoodSettingsService>();
+builder.Services.AddSingleton<ExpireOptionSettingsService>();
+builder.Services.AddSingleton<PlaneQrCodeService>();
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddSingleton<CaptchaService>();
@@ -86,6 +88,7 @@ Directory.CreateDirectory(webRoot);
 Directory.CreateDirectory(Path.Combine(webRoot, "uploads", "planes"));
 Directory.CreateDirectory(Path.Combine(webRoot, "uploads", "avatars"));
 Directory.CreateDirectory(Path.Combine(webRoot, "uploads", "location-icons"));
+Directory.CreateDirectory(Path.Combine(webRoot, "uploads", "mood-icons"));
 
 // Migrate legacy uploaded images from previous verify/build directories into current web root.
 void SyncLegacyUploads(string targetDir, params string[] legacyDirs)
@@ -113,6 +116,7 @@ void SyncLegacyUploads(string targetDir, params string[] legacyDirs)
 var uploadsPlaneDir = Path.Combine(webRoot, "uploads", "planes");
 var uploadsAvatarDir = Path.Combine(webRoot, "uploads", "avatars");
 var uploadsLocationIconDir = Path.Combine(webRoot, "uploads", "location-icons");
+var uploadsMoodIconDir = Path.Combine(webRoot, "uploads", "mood-icons");
 
 SyncLegacyUploads(
     uploadsPlaneDir,
@@ -131,6 +135,12 @@ SyncLegacyUploads(
     Path.Combine(app.Environment.ContentRootPath, "obj", "codex_verify_build_images", "wwwroot", "uploads", "location-icons"),
     Path.Combine(app.Environment.ContentRootPath, "obj", "verify_build", "wwwroot", "uploads", "location-icons"),
     Path.Combine(AppContext.BaseDirectory, "wwwroot", "uploads", "location-icons")
+);
+SyncLegacyUploads(
+    uploadsMoodIconDir,
+    Path.Combine(app.Environment.ContentRootPath, "obj", "codex_verify_build_images", "wwwroot", "uploads", "mood-icons"),
+    Path.Combine(app.Environment.ContentRootPath, "obj", "verify_build", "wwwroot", "uploads", "mood-icons"),
+    Path.Combine(AppContext.BaseDirectory, "wwwroot", "uploads", "mood-icons")
 );
 
 // Auto-migrate on startup

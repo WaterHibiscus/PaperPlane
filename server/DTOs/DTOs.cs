@@ -11,8 +11,20 @@ public record ThrowPlaneRequest(
     string? VoteTitle = null,
     List<string>? VoteOptions = null);
 
+public record UpdatePlaneRequest(
+    string LocationTag,
+    string Content,
+    string Mood,
+    bool IsAnonymous = true,
+    string? AuthorName = null,
+    List<string>? ImageUrls = null,
+    int ExpireHours = 24,
+    string? VoteTitle = null,
+    List<string>? VoteOptions = null);
+
 public record PlaneResponse(
     Guid Id,
+    string ShortCode,
     string LocationTag,
     string Content,
     string Mood,
@@ -28,6 +40,29 @@ public record PlaneResponse(
     string? VoteTitle = null,
     List<string>? VoteOptions = null);
 
+public record RandomCandidateItemResponse(
+    int OrderIndex,
+    Guid Id,
+    string ShortCode,
+    string LocationTag,
+    string Content,
+    string Mood,
+    DateTime CreateTime,
+    DateTime ExpireTime,
+    DateTime? RecalledAt,
+    string Status,
+    bool IsExpired,
+    bool IsRecalled,
+    int PickCount,
+    int LikeCount,
+    int CommentCount,
+    int ReportCount);
+
+public record RandomCandidateListResponse(
+    DateTime CurrentUtcTime,
+    int Total,
+    List<RandomCandidateItemResponse> Items);
+
 public record AddCommentRequest(string Reply, bool IsAnonymous = true, string? NickName = null, Guid? ParentCommentId = null);
 public record CommentResponse(Guid Id, string Reply, string NickName, DateTime CreateTime, Guid? ParentCommentId = null, string? ReplyToNickName = null);
 public record VotePlaneAttitudeRequest(string OptionKey, string VoterKey);
@@ -40,6 +75,34 @@ public record MyPlanesRequest(List<Guid> Ids);
 public record StatsResponse(int TotalPlanes, int ActivePlanes, int TodayThrows, int TotalLocations, int TotalComments);
 public record HomeHeadlineResponse(List<string> Phrases);
 public record UpdateHomeHeadlinesRequest(List<string> Phrases);
+public record MoodConfigItemResponse(
+    string Key,
+    string Label,
+    string IconUrl,
+    string Color,
+    int SortOrder,
+    bool IsActive,
+    bool IsCustom);
+public record UpdateMoodConfigItemRequest(
+    string Key,
+    string Label,
+    string IconUrl,
+    string? Color = null,
+    int SortOrder = 0,
+    bool IsActive = true,
+    bool IsCustom = false);
+public record UpdateMoodConfigsRequest(List<UpdateMoodConfigItemRequest> Items);
+public record ExpireOptionResponse(
+    int Hours,
+    string Label,
+    int SortOrder,
+    bool IsActive);
+public record UpdateExpireOptionItemRequest(
+    int Hours,
+    string Label,
+    int SortOrder = 0,
+    bool IsActive = true);
+public record UpdateExpireOptionsRequest(List<UpdateExpireOptionItemRequest> Items);
 
 public record LoginRequest(string UserName, string Password);
 public record LoginTokenResponse(string Token, string RefreshToken);
