@@ -26,21 +26,24 @@ public class UploadsController(IWebHostEnvironment env) : ControllerBase
     };
 
     [HttpPost("images")]
-    public Task<ActionResult<object>> UploadImage([FromForm] IFormFile? file)
+    [Consumes("multipart/form-data")]
+    public Task<ActionResult<object>> UploadImage(IFormFile? file)
     {
         return UploadToDir(file, "planes", "\u8bf7\u9009\u62e9\u56fe\u7247", "\u4ec5\u652f\u6301 jpg\u3001png\u3001webp\u3001gif \u56fe\u7247");
     }
 
     [HttpPost("location-icons")]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
-    public Task<ActionResult<object>> UploadLocationIcon([FromForm] IFormFile? file)
+    [Consumes("multipart/form-data")]
+    public Task<ActionResult<object>> UploadLocationIcon(IFormFile? file)
     {
         return UploadToDir(file, "location-icons", "\u8bf7\u9009\u62e9\u5730\u70b9\u56fe\u6807", "\u4ec5\u652f\u6301 jpg\u3001png\u3001webp\u3001gif \u56fe\u6807");
     }
 
     [HttpPost("mood-icons")]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
-    public Task<ActionResult<object>> UploadMoodIcon([FromForm] IFormFile? file)
+    [Consumes("multipart/form-data")]
+    public Task<ActionResult<object>> UploadMoodIcon(IFormFile? file)
     {
         return UploadToDir(file, "mood-icons", "\u8bf7\u9009\u62e9\u60c5\u7eea\u56fe\u6807", "\u4ec5\u652f\u6301 jpg\u3001png\u3001webp\u3001gif \u56fe\u6807");
     }

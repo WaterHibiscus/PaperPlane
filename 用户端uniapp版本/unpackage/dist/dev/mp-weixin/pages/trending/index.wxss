@@ -1,6 +1,7 @@
 
 .trending-page.data-v-eeab9fab {
 	position: relative;
+	padding-top: calc(var(--status-bar-height) + 22rpx);
 	overflow-x: hidden;
 }
 .trending-atmosphere.data-v-eeab9fab {
@@ -112,7 +113,7 @@
 .hero-ticket.data-v-eeab9fab {
 	position: absolute;
 	right: 24rpx;
-	top: 28rpx;
+	top: 96rpx;
 	width: 180rpx;
 	padding: 18rpx 18rpx 16rpx;
 	border-radius: 26rpx;
@@ -184,9 +185,10 @@
 	color: rgba(36, 48, 45, 0.94);
 	box-shadow: 0 10rpx 18rpx rgba(31, 36, 40, 0.05);
 }
-.refresh-icon.data-v-eeab9fab {
-	font-size: 26rpx;
-	line-height: 1;
+.refresh-icon-image.data-v-eeab9fab {
+	width: 24rpx;
+	height: 24rpx;
+	display: block;
 }
 .hero-action-note.data-v-eeab9fab {
 	font-size: 20rpx;
@@ -254,6 +256,12 @@
 	background: rgba(255, 255, 255, 0.66);
 	font-size: 20rpx;
 	font-weight: 600;
+}
+.spotlight-mood-icon.data-v-eeab9fab {
+	width: 20rpx;
+	height: 20rpx;
+	display: block;
+	flex-shrink: 0;
 }
 .spotlight-time.data-v-eeab9fab {
 	font-size: 20rpx;
@@ -351,8 +359,9 @@
 	font-weight: 700;
 }
 .spotlight-stamp-icon.data-v-eeab9fab {
-	font-size: 40rpx;
-	line-height: 1;
+	width: 40rpx;
+	height: 40rpx;
+	display: block;
 }
 .spotlight-heat.data-v-eeab9fab {
 	font-size: 20rpx;
@@ -366,6 +375,10 @@
 }
 .podium-card.data-v-eeab9fab {
 	padding: 24rpx;
+	width: 100%;
+	min-width: 0;
+	margin: 0;
+	box-sizing: border-box;
 }
 .podium-rank.data-v-eeab9fab {
 	display: block;
@@ -435,6 +448,12 @@
 .theme-dark .trend-path.data-v-eeab9fab {
 	border-top-color: rgba(153, 168, 178, 0.12);
 }
+.theme-dark .orb-left.data-v-eeab9fab {
+	background: rgba(88, 119, 108, 0.2);
+}
+.theme-dark .orb-right.data-v-eeab9fab {
+	background: rgba(126, 101, 86, 0.18);
+}
 .theme-dark .trend-hero.data-v-eeab9fab {
 	border-color: rgba(230, 237, 241, 0.08);
 	background:
@@ -481,6 +500,12 @@
 .theme-dark .spotlight-stamp.data-v-eeab9fab {
 	background: rgba(255, 255, 255, 0.06);
 	border-color: rgba(230, 237, 241, 0.08);
+}
+.theme-dark .hero-ticket.data-v-eeab9fab {
+	box-shadow: 0 14rpx 22rpx rgba(0, 0, 0, 0.24);
+}
+.theme-dark .refresh-pill.data-v-eeab9fab {
+	color: rgba(232, 238, 242, 0.94);
 }
 .theme-dark .spotlight-card.data-v-eeab9fab {
 	background:

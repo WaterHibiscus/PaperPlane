@@ -1,0 +1,1 @@
+"use strict";const e=require("../common/moods.js"),o=require("../common/vendor.js"),t={props:{mood:{type:String,default:"calm"}},computed:{meta(){return e.getMoodMeta(this.mood)}}};const r=o._export_sfc(t,[["render",function(e,t,r,c,m,n){return{a:n.meta.icon,b:o.t(n.meta.label),c:n.meta.color,d:n.meta.color}}],["__scopeId","data-v-12578e0c"]]);wx.createComponent(r);

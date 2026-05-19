@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "app-tabbar": "../../components/AppTabbar",
+    "detail-open-transition": "../../components/DetailOpenTransition",
+    "page-transition": "../../components/PageTransition",
+    "shatter-headline": "../../components/ShatterHeadline"
+  }
+}

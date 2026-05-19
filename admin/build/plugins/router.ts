@@ -3,6 +3,17 @@ import ElegantVueRouter from '@elegant-router/vue/vite';
 import type { RouteKey } from '@elegant-router/types';
 
 export function setupElegantRouter() {
+  const routeMetaOverrides: Partial<Record<RouteKey, Partial<RouteMeta>>> = {
+    'ai-manage': {
+      icon: 'mdi:robot-outline',
+      order: 10
+    },
+    'report-manage': {
+      icon: 'mdi:flag-outline',
+      order: 8
+    }
+  };
+
   return ElegantVueRouter({
     layouts: {
       base: 'src/layouts/base-layout/index.vue',
@@ -35,7 +46,10 @@ export function setupElegantRouter() {
         meta.constant = true;
       }
 
-      return meta;
+      return {
+        ...meta,
+        ...(routeMetaOverrides[key] || {})
+      };
     }
   });
 }

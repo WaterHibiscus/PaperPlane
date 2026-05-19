@@ -3,17 +3,19 @@ const common_vendor = require("../../common/vendor.js");
 const common_appState = require("../../common/app-state.js");
 const common_storage = require("../../common/storage.js");
 const common_api = require("../../common/api.js");
+const common_uiIcons = require("../../common/ui-icons.js");
 const _sfc_main = {
   data() {
     return {
       appState: common_appState.appState,
+      backIcon: common_uiIcons.uiIcons.back,
       avatarDraft: "",
       nicknameDraft: "",
       genderDraft: "secret",
       bioDraft: "",
       initialAvatar: "",
       saving: false,
-      profileId: common_storage.getVoterKey().slice(-4).toUpperCase(),
+      profileId: String(common_storage.getVoterKey() || "").slice(-4).toUpperCase(),
       genderOptions: [
         { label: "男", value: "male" },
         { label: "女", value: "female" },
@@ -24,6 +26,15 @@ const _sfc_main = {
   computed: {
     themeClass() {
       return this.appState.theme === "dark" ? "theme-dark" : "theme-light";
+    },
+    avatarPreviewUrl() {
+      const value = String(this.avatarDraft || "");
+      if (!value)
+        return "";
+      if (/^[a-zA-Z]+:/.test(value)) {
+        return value;
+      }
+      return common_api.getAssetUrl(value);
     },
     nicknameInitial() {
       return (this.nicknameDraft || this.appState.profileName || "匿").slice(0, 1);
@@ -44,10 +55,11 @@ const _sfc_main = {
       return "保密";
     },
     previewBio() {
-      return String(this.bioDraft || "").trim() || "把想说的话折进纸飞机里。";
+      return String(this.bioDraft || "").trim() || "把想说的话写在这里。";
     }
   },
   onShow() {
+    common_appState.syncThemeWindow(this.appState.theme);
     this.loadProfile();
   },
   methods: {
@@ -140,6 +152,11 @@ const _sfc_main = {
         setTimeout(() => {
           this.goBack();
         }, 260);
+      } catch (error) {
+        common_vendor.index.showToast({
+          title: error.message || "保存失败",
+          icon: "none"
+        });
       } finally {
         this.saving = false;
       }
@@ -148,30 +165,31 @@ const _sfc_main = {
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.o((...args) => $options.goBack && $options.goBack(...args)),
-    b: common_vendor.t($data.saving ? "保存中" : "保存"),
-    c: common_vendor.n({
+    a: $data.backIcon,
+    b: common_vendor.o((...args) => $options.goBack && $options.goBack(...args)),
+    c: common_vendor.t($data.saving ? "保存中..." : "保存"),
+    d: common_vendor.n({
       "is-disabled": !$options.canSave || $data.saving
     }),
-    d: common_vendor.o((...args) => $options.handleSave && $options.handleSave(...args)),
-    e: $data.avatarDraft
-  }, $data.avatarDraft ? {
+    e: common_vendor.o((...args) => $options.handleSave && $options.handleSave(...args)),
     f: $data.avatarDraft
-  } : {
-    g: common_vendor.t($options.nicknameInitial)
-  }, {
-    h: common_vendor.o((...args) => $options.chooseAvatar && $options.chooseAvatar(...args)),
-    i: $data.avatarDraft
   }, $data.avatarDraft ? {
-    j: common_vendor.o((...args) => $options.clearAvatar && $options.clearAvatar(...args))
+    g: $options.avatarPreviewUrl
+  } : {
+    h: common_vendor.t($options.nicknameInitial)
+  }, {
+    i: common_vendor.o((...args) => $options.chooseAvatar && $options.chooseAvatar(...args)),
+    j: $data.avatarDraft
+  }, $data.avatarDraft ? {
+    k: common_vendor.o((...args) => $options.clearAvatar && $options.clearAvatar(...args))
   } : {}, {
-    k: common_vendor.t($options.previewName),
-    l: common_vendor.t($data.profileId),
-    m: common_vendor.t($options.previewGenderLabel),
-    n: common_vendor.t($options.previewBio),
-    o: $data.nicknameDraft,
-    p: common_vendor.o(($event) => $data.nicknameDraft = $event.detail.value),
-    q: common_vendor.f($data.genderOptions, (option, k0, i0) => {
+    l: common_vendor.t($options.previewName),
+    m: common_vendor.t($data.profileId),
+    n: common_vendor.t($options.previewGenderLabel),
+    o: common_vendor.t($options.previewBio),
+    p: $data.nicknameDraft,
+    q: common_vendor.o(($event) => $data.nicknameDraft = $event.detail.value),
+    r: common_vendor.f($data.genderOptions, (option, k0, i0) => {
       return {
         a: common_vendor.t(option.label),
         b: option.value,
@@ -181,15 +199,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         d: common_vendor.o(($event) => $data.genderDraft = option.value, option.value)
       };
     }),
-    r: common_vendor.t($data.bioDraft.length),
-    s: $data.bioDraft,
-    t: common_vendor.o(($event) => $data.bioDraft = $event.detail.value),
-    v: common_vendor.t($data.saving ? "保存中..." : "保存资料"),
-    w: common_vendor.n({
+    s: common_vendor.t($data.bioDraft.length),
+    t: $data.bioDraft,
+    v: common_vendor.o(($event) => $data.bioDraft = $event.detail.value),
+    w: common_vendor.t($data.saving ? "保存中..." : "保存资料"),
+    x: common_vendor.n({
       "is-disabled": !$options.canSave || $data.saving
     }),
-    x: common_vendor.o((...args) => $options.handleSave && $options.handleSave(...args)),
-    y: common_vendor.n($options.themeClass)
+    y: common_vendor.o((...args) => $options.handleSave && $options.handleSave(...args)),
+    z: common_vendor.n($options.themeClass)
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

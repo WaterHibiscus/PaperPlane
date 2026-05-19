@@ -125,10 +125,9 @@
 	align-items: center;
 	justify-content: center;
 }
-.plane-glyph.data-v-348edaa0 {
-	font-size: 44rpx;
-	line-height: 1;
-	color: #2f9e74;
+.plane-glyph-image.data-v-348edaa0 {
+	width: 44rpx;
+	height: 44rpx;
 	transform: rotate(-18deg);
 }
 .sheet-stack.data-v-348edaa0 {

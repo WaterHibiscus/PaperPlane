@@ -36,6 +36,7 @@ const _sfc_main = {
   },
   onShow() {
     var _a;
+    common_appState.syncThemeWindow(this.appState.theme);
     if ((_a = common_auth.getCurrentSession()) == null ? void 0 : _a.accessToken) {
       common_vendor.index.reLaunch({
         url: "/pages/home/index"

@@ -184,6 +184,9 @@ export default {
 			icons: uiIcons,
 			planes: [],
 			loading: false,
+			pageScrollTop: 0,
+			savedPageScrollTop: 0,
+			skipReloadOnNextShow: false,
 		}
 	},
 	computed: {
@@ -243,9 +246,28 @@ export default {
 		},
 	},
 	onShow() {
+		if (this.skipReloadOnNextShow) {
+			this.skipReloadOnNextShow = false
+			this.$nextTick(() => {
+				this.restoreSavedPageScroll()
+			})
+			return
+		}
 		this.loadTrending()
 	},
+	onPageScroll(event) {
+		this.pageScrollTop = event.scrollTop || 0
+		this.savedPageScrollTop = this.pageScrollTop
+	},
 	methods: {
+		restoreSavedPageScroll() {
+			const top = Math.max(0, Math.round(Number(this.savedPageScrollTop || 0)))
+			this.pageScrollTop = top
+			uni.pageScrollTo({
+				scrollTop: top,
+				duration: 0,
+			})
+		},
 		async loadTrending() {
 			this.loading = true
 			try {
@@ -288,6 +310,8 @@ export default {
 			return `${month}/${day} ${hour}:${minute}`
 		},
 		openDetail(plane) {
+			this.savedPageScrollTop = this.pageScrollTop
+			this.skipReloadOnNextShow = true
 			this.openPlaneDetail(plane.id)
 		},
 	},
@@ -297,6 +321,7 @@ export default {
 <style scoped>
 .trending-page {
 	position: relative;
+	padding-top: calc(var(--status-bar-height) + 22rpx);
 	overflow-x: hidden;
 }
 
@@ -424,7 +449,7 @@ export default {
 .hero-ticket {
 	position: absolute;
 	right: 24rpx;
-	top: 28rpx;
+	top: 96rpx;
 	width: 180rpx;
 	padding: 18rpx 18rpx 16rpx;
 	border-radius: 26rpx;
@@ -521,6 +546,10 @@ export default {
 	position: relative;
 	z-index: 1;
 	margin-top: 8rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20rpx 0;
 }
 
 .spotlight-card {

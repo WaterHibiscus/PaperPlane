@@ -1,0 +1,206 @@
+<view class="{{['data-v-04673b4a', 'app-page', 'with-tabbar', 'home-page', S]}}">
+	  <view class="hero glass-card data-v-04673b4a">
+	    <view class="hero-top data-v-04673b4a">
+	      <view class="brand-cluster data-v-04673b4a">
+	        <view class="brand data-v-04673b4a">
+	          <view class="brand-mark data-v-04673b4a">
+	            <image class="brand-mark-image data-v-04673b4a" src="{{a}}" mode="aspectFit" />
+	          </view>
+	          <text class="brand-name data-v-04673b4a">纸飞机降落点</text>
+	        </view>
+	        <view class="icon-btn theme-toggle-btn data-v-04673b4a" bindtap="{{b}}">
+	          <view class="theme-toggle-icon data-v-04673b4a">
+	            <view class="toggle-halo data-v-04673b4a"></view>
+	            <view class="toggle-core data-v-04673b4a"></view>
+	            <view class="toggle-cutout data-v-04673b4a"></view>
+	            <view class="toggle-spark spark-a data-v-04673b4a"></view>
+	            <view class="toggle-spark spark-b data-v-04673b4a"></view>
+	          </view>
+	          <text class="theme-toggle-copy data-v-04673b4a">日夜</text>
+	        </view>
+	      </view>
+	    </view>
+
+    <view class="hero-title data-v-04673b4a">
+      <shatter-headline
+        wx:if="{{c}}"
+        class="data-v-04673b4a"
+        u-i="04673b4a-0"
+        bind:__l="__l"
+        u-p="{{c}}"
+      />
+    </view>
+
+    <text class="hero-desc data-v-04673b4a">在真实地点留下匿名回声，让某个未来的你刚好拾起它。</text>
+
+    <view class="hero-actions data-v-04673b4a">
+      <view class="primary-pill data-v-04673b4a" bindtap="{{d}}">
+        <text class="data-v-04673b4a">投掷一架</text>
+      </view>
+      <view class="ghost-pill data-v-04673b4a" bindtap="{{f}}">
+        <text class="data-v-04673b4a">{{e}}</text>
+      </view>
+    </view>
+
+    <view class="hero-metrics data-v-04673b4a">
+      <view class="metric-card data-v-04673b4a">
+        <text class="metric-num data-v-04673b4a">{{g}}</text>
+        <text class="metric-label data-v-04673b4a">飞行中</text>
+      </view>
+      <view class="metric-card data-v-04673b4a">
+        <text class="metric-num data-v-04673b4a">{{h}}</text>
+        <text class="metric-label data-v-04673b4a">降落点</text>
+      </view>
+      <view class="metric-card data-v-04673b4a">
+        <text class="metric-num data-v-04673b4a">{{i}}</text>
+        <text class="metric-label data-v-04673b4a">热度上升</text>
+      </view>
+    </view>
+
+    <view class="search-box data-v-04673b4a">
+      <image class="search-icon-image data-v-04673b4a" src="{{j}}" mode="aspectFit" />
+      <input
+        class="search-input data-v-04673b4a"
+        placeholder="搜索地点"
+        placeholder-class="placeholder-text"
+        value="{{k}}"
+        bindinput="{{l}}"
+      />
+    </view>
+  </view>
+
+  <view class="section-title data-v-04673b4a"></view>
+
+  <view class="glass-card map-shell data-v-04673b4a">
+    <view class="map-header data-v-04673b4a">
+      <view class="data-v-04673b4a">
+        <text class="map-title data-v-04673b4a">校园信号</text>
+        <text class="map-subtitle data-v-04673b4a">选择一个地点启动扫描</text>
+      </view>
+      <view class="map-tags data-v-04673b4a">
+        <text class="map-tag data-v-04673b4a">实时</text>
+        <text class="map-tag data-v-04673b4a">匿名</text>
+        <text class="map-tag data-v-04673b4a">校园</text>
+      </view>
+    </view>
+
+    <view class="{{['data-v-04673b4a', 'map-canvas', H]}}">
+      <view class="signal-orbit orbit-a data-v-04673b4a"></view>
+      <view class="signal-orbit orbit-b data-v-04673b4a"></view>
+      <view class="signal-network signal-route-layer data-v-04673b4a">
+        <view
+          wx:for="{{T}}"
+          wx:for-item="segment"
+          wx:key="a"
+          class="route-base-segment data-v-04673b4a"
+          style="{{segment.b}}"
+        ></view>
+        <view
+          wx:for="{{U}}"
+          wx:for-item="segment"
+          wx:key="a"
+          class="route-glow-segment data-v-04673b4a"
+          style="{{segment.b}}"
+        ></view>
+        <view
+          wx:for="{{V}}"
+          wx:for-item="packet"
+          wx:key="a"
+          class="{{['data-v-04673b4a', 'route-packet-dot', packet.b]}}"
+          style="{{packet.c}}"
+        ></view>
+      </view>
+
+      <view
+        class="signal-hud data-v-04673b4a"
+        style="{{B}}"
+        catchtouchstart="{{C}}"
+        catchtouchmove="{{D}}"
+        catchtouchend="{{E}}"
+        catchtouchcancel="{{F}}"
+      >
+        <view class="hud-top data-v-04673b4a">
+          <text class="hud-kicker data-v-04673b4a">匿名信号网</text>
+          <text class="hud-value data-v-04673b4a">{{z}}</text>
+        </view>
+        <text class="hud-caption data-v-04673b4a">{{A}}</text>
+      </view>
+
+      <view
+        wx:for="{{G}}"
+        wx:for-item="node"
+        wx:key="e"
+        class="map-station data-v-04673b4a"
+        style="{{'--x:' + node.f + ';' + ('--y:' + node.g) + ';' + ('--halo:' + node.h) + ';' + ('--delay:' + node.i) + ';' + ('--label-shift:' + node.j)}}"
+        bindtap="{{node.k}}"
+      >
+        <view class="station-halo data-v-04673b4a"></view>
+        <view class="station-core data-v-04673b4a">
+          <image class="station-core-image data-v-04673b4a" src="{{node.a}}" mode="aspectFill" lazy-load />
+        </view>
+        <view class="station-label data-v-04673b4a">
+          <text class="station-name data-v-04673b4a">{{node.b}}</text>
+          <text wx:if="{{node.c}}" class="station-count data-v-04673b4a">{{node.d}} 架</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{I}}" class="trend-section data-v-04673b4a">
+    <view class="section-title data-v-04673b4a">
+      <text class="section-heading data-v-04673b4a">热度上升</text>
+      <text class="section-link data-v-04673b4a" bindtap="{{J}}">查看更多</text>
+    </view>
+
+    <view wx:for="{{K}}" wx:for-item="plane" wx:key="j" class="glass-card trend-card data-v-04673b4a" bindtap="{{plane.k}}">
+      <view class="trend-card-head data-v-04673b4a">
+        <text class="trend-rank data-v-04673b4a">TOP {{plane.a}}</text>
+        <text class="trend-hot-chip data-v-04673b4a">+{{plane.b}}</text>
+      </view>
+      <text class="trend-content data-v-04673b4a">{{plane.c}}</text>
+
+      <view class="trend-meta-row data-v-04673b4a">
+        <view class="trend-meta-left data-v-04673b4a">
+          <image class="trend-meta-icon data-v-04673b4a" src="{{L}}" mode="aspectFit" />
+          <text class="trend-meta data-v-04673b4a">{{plane.d}} · {{plane.e}} · {{plane.f}} 赞</text>
+        </view>
+      </view>
+
+      <view wx:if="{{plane.g}}" class="{{['data-v-04673b4a', 'trend-media-row', plane.l ? 'is-single' : '']}}" catchtap="{{plane.i}}">
+        <view wx:for="{{plane.h}}" wx:for-item="imageUrl" wx:key="d" class="trend-media-item data-v-04673b4a" catchtap="{{imageUrl.e}}">
+          <image class="trend-media-image data-v-04673b4a" src="{{imageUrl.a}}" mode="aspectFill" lazy-load />
+          <view wx:if="{{imageUrl.b}}" class="trend-media-mask data-v-04673b4a">
+            <text class="trend-media-mask-text data-v-04673b4a">+{{imageUrl.c}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{M}}" class="{{['data-v-04673b4a', 'theme-ripple-overlay', N, O]}}">
+    <view class="theme-ripple-wave wave-main data-v-04673b4a"></view>
+    <view class="theme-ripple-wave wave-ring data-v-04673b4a"></view>
+  </view>
+
+  <detail-open-transition
+    wx:if="{{P}}"
+    class="data-v-04673b4a"
+    u-i="04673b4a-19"
+    bind:__l="__l"
+    u-p="{{P}}"
+  />
+  <page-transition
+    wx:if="{{Q}}"
+    class="data-v-04673b4a"
+    u-i="04673b4a-20"
+    bind:__l="__l"
+    u-p="{{Q}}"
+  />
+  <app-tabbar
+    wx:if="{{R}}"
+    class="data-v-04673b4a"
+    u-i="04673b4a-21"
+    bind:__l="__l"
+    u-p="{{R}}"
+  />
+</view>

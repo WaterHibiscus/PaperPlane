@@ -21,7 +21,7 @@ const _sfc_main = {
   },
   data() {
     return {
-      planeIcon: "✈"
+      planeIcon: "/static/images/投掷选中.png"
     };
   },
   computed: {
@@ -34,7 +34,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: $props.visible
   }, $props.visible ? {
-    b: common_vendor.t($data.planeIcon),
+    b: $data.planeIcon,
     c: common_vendor.t($props.title),
     d: common_vendor.t($props.subtitle),
     e: common_vendor.n($options.themeClass)

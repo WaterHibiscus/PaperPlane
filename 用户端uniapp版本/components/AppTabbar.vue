@@ -1,5 +1,6 @@
 <template>
 	<view :class="['tabbar-shell', themeClass]" :style="tabbarStyle">
+		<view class="tabbar-surface" aria-hidden="true"></view>
 		<view v-if="overlayVisible" class="transition-mask">
 			<view class="mask-core">
 				<image class="mask-plane-image" :src="maskPlane" mode="aspectFit" />
@@ -181,12 +182,33 @@ export default {
 	align-items: center;
 	justify-content: space-between;
 	z-index: 30;
+	overflow: visible;
+}
+
+.tabbar-surface {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 16rpx;
+	bottom: 0;
+	border-radius: 34rpx;
+	background: var(--surface-solid);
+	border: 2rpx solid var(--border);
+	box-shadow: var(--shadow-soft);
+	pointer-events: none;
+	z-index: 0;
+}
+
+.theme-dark .tabbar-surface {
+	background: var(--surface-solid);
+	border-color: rgba(255, 255, 255, 0.08);
+	box-shadow: 0 18rpx 30rpx rgba(0, 0, 0, 0.28);
 }
 
 .transition-mask {
 	position: fixed;
 	inset: 0;
-	z-index: 0;
+	z-index: 5;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -233,6 +255,7 @@ export default {
 	height: 100%;
 	pointer-events: none;
 	filter: drop-shadow(0 18rpx 28rpx rgba(0, 0, 0, 0.12));
+	z-index: 1;
 }
 
 .curved-bg path {
@@ -266,7 +289,7 @@ export default {
 	transition: left 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
 	box-shadow: 0 22rpx 36rpx rgba(31, 36, 40, 0.24);
 	pointer-events: none;
-	z-index: 2;
+	z-index: 4;
 }
 
 .theme-dark .curved-bubble {
@@ -298,7 +321,7 @@ export default {
 	flex: 1;
 	height: 100%;
 	position: relative;
-	z-index: 1;
+	z-index: 3;
 	display: flex;
 	align-items: center;
 	justify-content: center;

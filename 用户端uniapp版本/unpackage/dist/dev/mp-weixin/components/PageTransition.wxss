@@ -84,13 +84,12 @@
 	opacity: 0.5;
 	animation-duration: 1.35s;
 }
-.plane-icon.data-v-992ea324 {
+.plane-icon-image.data-v-992ea324 {
 	position: absolute;
 	left: 50%;
 	top: 12rpx;
-	font-size: 54rpx;
-	line-height: 1;
-	color: var(--accent);
+	width: 54rpx;
+	height: 54rpx;
 	transform: translateX(-50%);
 	animation: plane-fly-992ea324 1.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }

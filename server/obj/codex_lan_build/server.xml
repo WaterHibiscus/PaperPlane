@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>server</name>
+    </assembly>
+    <members>
+        <member name="T:server.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:server.Migrations.AddAdminAuth">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAdminAuth.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAdminAuth.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAdminAuth.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:server.Migrations.AddTableComments">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddTableComments.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddTableComments.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddTableComments.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:server.Migrations.AddAppUserAndPlaneHistory">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAppUserAndPlaneHistory.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAppUserAndPlaneHistory.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAppUserAndPlaneHistory.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:server.Migrations.AddLocationIconUrl">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddLocationIconUrl.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddLocationIconUrl.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddLocationIconUrl.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:server.Migrations.AddPlaneShortCode">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddPlaneShortCode.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddPlaneShortCode.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:server.Migrations.AddPlaneReportRecords">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddPlaneReportRecords.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddPlaneReportRecords.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:server.Migrations.AddAiVoteSuggestion">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAiVoteSuggestion.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAiVoteSuggestion.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:server.Migrations.AddAiVoteSuggestion.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

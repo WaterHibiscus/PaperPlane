@@ -40,6 +40,17 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'ai-manage',
+    path: '/ai-manage',
+    component: 'layout.base$view.ai-manage',
+    meta: {
+      title: 'ai-manage',
+      i18nKey: 'route.ai-manage',
+      icon: 'mdi:robot-outline',
+      order: 10
+    }
+  },
+  {
     name: 'comment-manage',
     path: '/comment-manage',
     component: 'layout.base$view.comment-manage',
@@ -136,7 +147,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.plane-manage',
     meta: {
       title: 'plane-manage',
-      i18nKey: 'route.plane-manage'
+      i18nKey: 'route.plane-manage',
+      icon: 'mdi:send',
+      order: 2
     }
   },
   {
@@ -146,7 +159,7 @@ export const generatedRoutes: GeneratedRoute[] = [
     meta: {
       title: 'report-manage',
       i18nKey: 'route.report-manage',
-      icon: 'mdi:flag',
+      icon: 'mdi:flag-outline',
       order: 8
     }
   },

@@ -18,6 +18,16 @@
 	color: rgba(76, 175, 80, 1);
 	line-height: 1;
 }
+.profile-edit-page .profile-edit-page__nav-back {
+	display: inline-flex;
+	align-items: center;
+	gap: 8rpx;
+}
+.profile-edit-page .profile-edit-page__nav-back-icon {
+	width: 24rpx;
+	height: 24rpx;
+	display: block;
+}
 .profile-edit-page .profile-edit-page__nav-save.is-disabled {
 	color: rgba(170, 170, 170, 1);
 }
@@ -209,4 +219,74 @@
 .profile-edit-page .profile-edit-page__primary-save.is-disabled {
 	background: rgba(210, 216, 220, 1);
 	color: rgba(110, 118, 124, 1);
+}
+.profile-edit-page.theme-dark {
+	background: rgba(15, 20, 22, 1);
+}
+.profile-edit-page.theme-dark .profile-edit-page__nav {
+	background: rgba(15, 20, 22, 0.96);
+	border-bottom-color: rgba(230, 237, 241, 0.08);
+}
+.profile-edit-page.theme-dark .profile-edit-page__nav-back,
+.profile-edit-page.theme-dark .profile-edit-page__nav-save {
+	color: rgba(126, 223, 183, 0.96);
+}
+.profile-edit-page.theme-dark .profile-edit-page__nav-save.is-disabled {
+	color: rgba(148, 160, 168, 0.7);
+}
+.profile-edit-page.theme-dark .profile-edit-page__nav-title {
+	color: var(--ink);
+}
+.profile-edit-page.theme-dark .profile-edit-page__page-note,
+.profile-edit-page.theme-dark .profile-edit-page__footer-note,
+.profile-edit-page.theme-dark .profile-edit-page__hint,
+.profile-edit-page.theme-dark .profile-edit-page__count,
+.profile-edit-page.theme-dark .profile-edit-page__identity-meta,
+.profile-edit-page.theme-dark .profile-edit-page__identity-bio {
+	color: rgba(190, 198, 202, 0.78);
+}
+.profile-edit-page.theme-dark .profile-edit-page__profile-card,
+.profile-edit-page.theme-dark .profile-edit-page__form-card {
+	background: rgba(24, 32, 36, 0.96);
+	border-color: rgba(230, 237, 241, 0.08);
+}
+.profile-edit-page.theme-dark .profile-edit-page__avatar {
+	background: rgba(22, 31, 35, 0.96);
+	border-color: rgba(230, 237, 241, 0.08);
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.22);
+}
+.profile-edit-page.theme-dark .profile-edit-page__avatar-fallback {
+	color: rgba(164, 186, 177, 0.92);
+}
+.profile-edit-page.theme-dark .profile-edit-page__avatar-btn {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(230, 237, 241, 0.08);
+	color: rgba(190, 198, 202, 0.9);
+}
+.profile-edit-page.theme-dark .profile-edit-page__avatar-btn--primary {
+	border-color: rgba(126, 223, 183, 0.36);
+	color: rgba(126, 223, 183, 0.96);
+}
+.profile-edit-page.theme-dark .profile-edit-page__identity-name,
+.profile-edit-page.theme-dark .profile-edit-page__label {
+	color: var(--ink);
+}
+.profile-edit-page.theme-dark .profile-edit-page__input,
+.profile-edit-page.theme-dark .profile-edit-page__textarea,
+.profile-edit-page.theme-dark .profile-edit-page__gender-chip {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(230, 237, 241, 0.08);
+	color: rgba(214, 223, 229, 0.92);
+}
+.profile-edit-page.theme-dark .profile-edit-page__gender-chip.is-active {
+	background: rgba(54, 192, 141, 0.16);
+	border-color: rgba(126, 223, 183, 0.32);
+	color: rgba(126, 223, 183, 0.98);
+}
+.profile-edit-page.theme-dark .profile-edit-page__primary-save {
+	background: linear-gradient(135deg, rgba(54, 192, 141, 0.96), rgba(75, 206, 163, 0.96));
+}
+.profile-edit-page.theme-dark .profile-edit-page__primary-save.is-disabled {
+	background: rgba(70, 80, 86, 0.9);
+	color: rgba(166, 176, 182, 0.8);
 }

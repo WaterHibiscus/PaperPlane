@@ -92,14 +92,14 @@ function getAuthHeaders() {
 	}
 }
 
-function rawRequest({ url, method = 'GET', data, headers = {} }) {
+function rawRequest({ url, method = 'GET', data, headers = {}, timeout }) {
 	return new Promise((resolve, reject) => {
 		uni.request({
 			url: `${config.baseURL}${url}`,
 			method,
 			data,
 			header: headers,
-			timeout: config.timeout,
+			timeout: typeof timeout === 'number' && timeout > 0 ? timeout : config.timeout,
 			success: res => {
 				if (res.statusCode >= 200 && res.statusCode < 300) {
 					resolve(res.data)
@@ -153,10 +153,10 @@ async function tryRefreshToken() {
 	return refreshPromise
 }
 
-async function request({ url, method = 'GET', data, retryOnAuth = true, attachAuth = true }) {
+async function request({ url, method = 'GET', data, timeout, retryOnAuth = true, attachAuth = true }) {
 	const headers = attachAuth ? getAuthHeaders() : {}
 	try {
-		return await rawRequest({ url, method, data, headers })
+		return await rawRequest({ url, method, data, headers, timeout })
 	} catch (error) {
 		if (retryOnAuth && attachAuth && isUnauthorized(error)) {
 			const refreshed = await tryRefreshToken()
@@ -165,6 +165,7 @@ async function request({ url, method = 'GET', data, retryOnAuth = true, attachAu
 					url,
 					method,
 					data,
+					timeout,
 					retryOnAuth: false,
 					attachAuth,
 				})
@@ -271,8 +272,25 @@ export function getLocations() {
 	return request({ url: '/locations' })
 }
 
+export function getMoodConfigs() {
+	return request({ url: '/moods' })
+}
+
+export function getExpireOptions() {
+	return request({ url: '/expire-options' })
+}
+
 export function throwPlane(data) {
 	return request({ url: '/planes', method: 'POST', data })
+}
+
+export function generateVoteSuggestion(data) {
+	return request({
+		url: '/ai/vote-suggestion',
+		method: 'POST',
+		data,
+		timeout: 30000,
+	})
 }
 
 export async function uploadPlaneImage(filePath, options = {}) {
@@ -289,16 +307,37 @@ export function getPlanes(location) {
 	return request({ url: '/planes', data: { location } })
 }
 
-export function getPlaneDetail(id) {
-	return request({ url: `/planes/${id}` })
+function normalizePlaneLookupToken(value) {
+	return String(value || '').trim()
+}
+
+function isGuidToken(value) {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+}
+
+export function getPlaneDetail(idOrCode) {
+	const token = normalizePlaneLookupToken(idOrCode)
+	if (!token) {
+		return Promise.reject(new Error('Invalid plane id'))
+	}
+	if (isGuidToken(token)) {
+		return request({ url: `/planes/${token}` })
+	}
+	return request({ url: `/planes/by-code/${encodeURIComponent(token)}` })
+}
+
+export function getPlaneQrCodePngUrl(id) {
+	const planeId = String(id || '').trim()
+	if (!planeId) return ''
+	return `${config.baseURL}/planes/${encodeURIComponent(planeId)}/qrcode.png`
 }
 
 export function likePlane(id) {
 	return request({ url: `/planes/${id}/like`, method: 'POST' })
 }
 
-export function reportPlane(id) {
-	return request({ url: `/planes/${id}/report`, method: 'POST' })
+export function reportPlane(id, payload = {}) {
+	return request({ url: `/planes/${id}/report`, method: 'POST', data: payload })
 }
 
 export function recallPlane(id) {

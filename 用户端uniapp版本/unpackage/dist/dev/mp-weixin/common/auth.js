@@ -82,11 +82,12 @@ function getCurrentSession() {
 }
 function getSessionAccount() {
   const session = common_storage.getAuthSession();
-  if (!(session == null ? void 0 : session.accessToken) || !(session == null ? void 0 : session.user))
+  if (!(session == null ? void 0 : session.accessToken))
     return null;
+  const user = (session == null ? void 0 : session.user) || {};
   return {
-    ...session.user,
-    accountId: session.user.userId,
+    ...user,
+    accountId: user.userId || "",
     loginAt: session.loginAt
   };
 }
@@ -132,18 +133,57 @@ async function loginAccount(payload) {
   });
   return persistSession(response);
 }
+async function refreshAccountToken() {
+  const refreshToken = common_storage.getRefreshToken();
+  if (!refreshToken) {
+    throw new Error("登录已过期，请重新登录");
+  }
+  const response = await request({
+    url: "/user-auth/refresh-token",
+    method: "POST",
+    data: {
+      refreshToken
+    }
+  });
+  return persistSession(response);
+}
 async function fetchCurrentUser() {
-  const token = common_storage.getAccessToken();
+  var _a;
+  let token = common_storage.getAccessToken();
   if (!token)
     return null;
-  const user = await request({
-    url: "/user-auth/me",
-    token
-  });
-  const normalized = normalizeUser(user);
-  common_storage.setAuthSessionUser(normalized);
-  applyUserProfile(normalized);
-  return normalized;
+  try {
+    const user = await request({
+      url: "/user-auth/me",
+      token
+    });
+    const normalized = normalizeUser(user);
+    common_storage.setAuthSessionUser(normalized);
+    applyUserProfile(normalized);
+    return normalized;
+  } catch (error) {
+    const statusCode = Number(((_a = error == null ? void 0 : error.response) == null ? void 0 : _a.statusCode) || 0);
+    if (statusCode !== 401) {
+      throw error;
+    }
+    try {
+      await refreshAccountToken();
+      token = common_storage.getAccessToken();
+      if (!token)
+        return null;
+      const user = await request({
+        url: "/user-auth/me",
+        token
+      });
+      const normalized = normalizeUser(user);
+      common_storage.setAuthSessionUser(normalized);
+      applyUserProfile(normalized);
+      return normalized;
+    } catch (refreshError) {
+      common_storage.clearAuthSession();
+      return null;
+    }
+  }
 }
 async function logoutAccount() {
   const token = common_storage.getAccessToken();

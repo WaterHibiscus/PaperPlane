@@ -51,20 +51,75 @@
 					</view>
 				</view>
 
-				<scroll-view class="mood-strip" scroll-x="true">
-					<view class="mood-strip-row">
-						<view
-							v-for="filter in moodFilters"
-							:key="filter.value"
-							:class="['mood-chip', { 'is-active': activeMood === filter.value }]"
-							:style="getMoodChipStyle(filter.value)"
-							@tap="setMoodFilter(filter.value)"
-						>
-							<image class="mood-chip-icon" :src="getMoodFilterMeta(filter.value).icon" mode="aspectFit" />
-							<text>{{ filter.label }}</text>
+				<view class="fold-filter-group">
+					<view :class="['fold-filter-card', { 'is-open': moodFoldOpen }]">
+						<view class="fold-filter-head" @tap="toggleMoodFold">
+							<text class="fold-filter-label">情绪</text>
+							<view class="fold-filter-head-right">
+								<text class="fold-filter-value">{{ currentMoodFilterLabel }}</text>
+								<image
+									:class="['fold-filter-arrow-image', { 'is-open': moodFoldOpen }]"
+										src="/static/images/%E8%BF%94%E5%9B%9E.png"
+									mode="aspectFit"
+								/>
+							</view>
+						</view>
+							<view :class="['fold-filter-dropdown', { 'is-open': moodFoldOpen }]">
+								<view class="fold-filter-options">
+									<view
+										v-for="filter in moodFilters"
+										:key="`mood-${filter.value}`"
+										:class="['fold-filter-option', { 'is-active': activeMood === filter.value }]"
+										@tap="selectMoodFilter(filter.value)"
+									>
+										<view class="fold-filter-option-left">
+											<image class="fold-filter-option-icon" :src="getMoodFilterMeta(filter.value).icon" mode="aspectFit" />
+											<text>{{ filter.label }}</text>
+										</view>
+										<view v-if="activeMood === filter.value" class="fold-filter-check"></view>
+									</view>
+								</view>
+							</view>
+					</view>
+
+					<view :class="['fold-filter-card', { 'is-open': locationFoldOpen }]">
+						<view class="fold-filter-head" @tap="toggleLocationFold">
+							<text class="fold-filter-label">地点</text>
+							<view class="fold-filter-head-right">
+								<text class="fold-filter-value">{{ currentLocationFilterLabel }}</text>
+									<image
+										:class="['fold-filter-arrow-image', { 'is-open': locationFoldOpen }]"
+										src="/static/images/%E8%BF%94%E5%9B%9E.png"
+										mode="aspectFit"
+									/>
+							</view>
+						</view>
+						<view :class="['fold-filter-dropdown', { 'is-open': locationFoldOpen }]">
+							<view class="fold-filter-options">
+							<view
+								:class="['fold-filter-option', { 'is-active': !selectedLocation }]"
+								@tap="selectLocationFilter('')"
+							>
+								<view class="fold-filter-option-left">
+									<text>全部</text>
+								</view>
+								<view v-if="!selectedLocation" class="fold-filter-check"></view>
+							</view>
+							<view
+								v-for="location in locationFilters"
+								:key="location.id || location.name"
+								:class="['fold-filter-option', { 'is-active': selectedLocation === location.name }]"
+								@tap="selectLocationFilter(location.name)"
+							>
+								<view class="fold-filter-option-left">
+									<text>{{ location.name }}</text>
+								</view>
+								<view v-if="selectedLocation === location.name" class="fold-filter-check"></view>
+							</view>
+							</view>
 						</view>
 					</view>
-				</scroll-view>
+				</view>
 			</view>
 
 			<view v-if="loading" class="note-grid">
@@ -203,10 +258,10 @@
 							<view class="paper-grain"></view>
 							<view class="paper-lines"></view>
 							<view class="plane-card-inner">
-								<view class="plane-card-top">
-									<view class="plane-mood-icon" :style="{ color: getPlaneMood(plane).color }">
-										<image class="plane-mood-icon-image" :src="getPlaneMood(plane).icon" mode="aspectFit" />
-									</view>
+									<view class="plane-card-top">
+										<view class="plane-mood-icon" :style="{ color: getPlaneMood(plane).color }">
+											<image class="plane-mood-icon-image" :src="getPlaneMood(plane).icon" mode="aspectFit" />
+										</view>
 									<view class="plane-meta-side">
 										<view class="plane-time-chip">
 											<text>{{ formatPlaneTime(plane.createTime) }}</text>
@@ -280,10 +335,10 @@
 import AppTabbar from '../../components/AppTabbar.vue'
 import DetailOpenTransition from '../../components/DetailOpenTransition.vue'
 import PageTransition from '../../components/PageTransition.vue'
-import { appState, fetchLocations } from '../../common/app-state.js'
+import { appState, fetchLocations, fetchMoodConfigs, setCurrentLocation } from '../../common/app-state.js'
 import { getAssetUrl, getPlanes } from '../../common/api.js'
 import { getPlaneAuthorLabel } from '../../common/utils.js'
-import { getMoodMeta, moodFilters } from '../../common/moods.js'
+import { getMoodFilters, getMoodMeta, resolveMoodKey } from '../../common/moods.js'
 import detailOpenTransitionMixin from '../../common/detail-open-transition.js'
 import pageTransitionMixin from '../../common/page-transition.js'
 import { uiIcons } from '../../common/ui-icons.js'
@@ -309,12 +364,18 @@ export default {
 			loading: false,
 			query: '',
 			activeMood: 'all',
-			pageScrollTop: 0,
-			toolbarPinned: false,
-			toolbarHeight: 0,
+			selectedLocation: '',
+			routeLocation: '',
+				moodFoldOpen: false,
+				locationFoldOpen: false,
+				pageScrollTop: 0,
+				savedPageScrollTop: 0,
+				skipReloadOnNextShow: false,
+				toolbarPinned: false,
+				toolbarHeight: 0,
 			toolbarAnchorTop: 0,
 			toolbarFixedTop: 0,
-			moodFilters,
+			moodFilters: getMoodFilters(),
 			cardPalette: [
 				{
 					base: 'rgba(250, 247, 238, 0.98)',
@@ -351,13 +412,28 @@ export default {
 		themeClass() {
 			return this.appState.theme === 'dark' ? 'theme-dark' : 'theme-light'
 		},
+		locationFilters() {
+			return Array.isArray(this.appState.locations) ? this.appState.locations : []
+		},
+		currentMoodFilterLabel() {
+			return this.getMoodFilterMeta(this.activeMood)?.label || '全部'
+		},
+		currentLocationFilterLabel() {
+			return this.selectedLocation || '全部'
+		},
 		filteredPlanes() {
 			const keyword = this.query.trim().toLowerCase()
+			const selectedLocation = String(this.selectedLocation || '').trim()
 			return this.planes.filter(item => {
-				const matchesMood = this.activeMood === 'all' || item.mood === this.activeMood
+				const locationText = String(item.locationTag || '')
+				const matchesLocation = !selectedLocation || locationText === selectedLocation
+				if (!matchesLocation) return false
+				const moodKey = resolveMoodKey(item.mood)
+				const matchesMood = this.activeMood === 'all' || moodKey === this.activeMood
 				if (!matchesMood) return false
 				if (!keyword) return true
-				return item.content.toLowerCase().includes(keyword) || item.locationTag.toLowerCase().includes(keyword)
+				const contentText = String(item.content || '').toLowerCase()
+				return contentText.includes(keyword) || locationText.toLowerCase().includes(keyword)
 			})
 		},
 		featuredPlane() {
@@ -394,8 +470,30 @@ export default {
 			return location ? `${location} 现在最热闹` : '校园里的风正在缓慢流动'
 		},
 	},
+	onLoad(options = {}) {
+		this.routeLocation = this.decodeRouteLocation(options.location)
+		if (this.routeLocation) {
+			this.selectedLocation = this.routeLocation
+			setCurrentLocation(this.routeLocation)
+		}
+	},
 	async onShow() {
+		if (this.skipReloadOnNextShow) {
+			this.skipReloadOnNextShow = false
+			this.$nextTick(() => {
+				this.restoreSavedPageScroll()
+				this.scheduleMeasureToolbar()
+			})
+			return
+		}
 		await fetchLocations()
+		try {
+			await fetchMoodConfigs()
+		} catch (error) {
+			// Keep default mood config if remote sync fails.
+		}
+		this.refreshMoodFilters()
+		this.syncSelectedLocation()
 		await this.loadPlanes()
 		this.scheduleMeasureToolbar()
 	},
@@ -405,24 +503,88 @@ export default {
 	},
 	onPageScroll(event) {
 		this.pageScrollTop = event.scrollTop || 0
+		this.savedPageScrollTop = this.pageScrollTop
 		this.syncToolbarPinned()
 	},
 	methods: {
+		decodeRouteLocation(value) {
+			const raw = String(value || '').trim()
+			if (!raw) return ''
+			try {
+				return decodeURIComponent(raw)
+			} catch (error) {
+				return raw
+			}
+		},
+		normalizeLocation(value) {
+			return String(value || '').trim()
+		},
+		syncSelectedLocation() {
+			const routeLocation = this.normalizeLocation(this.routeLocation)
+			if (routeLocation) {
+				this.selectedLocation = routeLocation
+				this.routeLocation = ''
+				if (routeLocation !== this.appState.currentLocation) {
+					setCurrentLocation(routeLocation)
+				}
+				return
+			}
+
+			if (!this.selectedLocation) {
+				const current = this.normalizeLocation(this.appState.currentLocation)
+				if (current) {
+					this.selectedLocation = current
+				}
+			}
+		},
+		refreshMoodFilters() {
+			const filters = getMoodFilters()
+			this.moodFilters = filters
+			const hasActiveMood = filters.some(item => item.value === this.activeMood)
+			if (!hasActiveMood) {
+				this.activeMood = 'all'
+			}
+		},
 		getPlaneMood(plane) {
 			return getMoodMeta(plane.mood)
 		},
 		getMoodFilterMeta(value) {
 			return value === 'all' ? ALL_MOOD_META : getMoodMeta(value)
 		},
-		getMoodChipStyle(value) {
-			const meta = this.getMoodFilterMeta(value)
-			return {
-				'--chip-accent': meta.color,
-				'--chip-soft': `${meta.color}18`,
+		toggleMoodFold() {
+			this.moodFoldOpen = !this.moodFoldOpen
+			if (this.moodFoldOpen) {
+				this.locationFoldOpen = false
 			}
+			this.scheduleMeasureToolbar()
+		},
+		toggleLocationFold() {
+			this.locationFoldOpen = !this.locationFoldOpen
+			if (this.locationFoldOpen) {
+				this.moodFoldOpen = false
+			}
+			this.scheduleMeasureToolbar()
 		},
 		setMoodFilter(value) {
 			this.activeMood = value
+			this.scheduleMeasureToolbar()
+		},
+		selectMoodFilter(value) {
+			this.setMoodFilter(value)
+			this.moodFoldOpen = false
+			this.scheduleMeasureToolbar()
+		},
+		async setLocationFilter(value) {
+			const nextLocation = this.normalizeLocation(value)
+			if (nextLocation === this.selectedLocation) return
+			this.selectedLocation = nextLocation
+			this.routeLocation = ''
+			setCurrentLocation(nextLocation)
+			await this.loadPlanes()
+		},
+		async selectLocationFilter(value) {
+			await this.setLocationFilter(value)
+			this.locationFoldOpen = false
 			this.scheduleMeasureToolbar()
 		},
 		getPlaneAuthorLabelText(plane) {
@@ -597,15 +759,30 @@ export default {
 				this.syncToolbarPinned()
 			})
 		},
-		syncToolbarPinned() {
-			if (!this.toolbarHeight) return
-			this.toolbarPinned = this.pageScrollTop >= this.toolbarAnchorTop
-		},
-		async loadPlanes() {
-			this.loading = true
+			syncToolbarPinned() {
+				if (!this.toolbarHeight) return
+				this.toolbarPinned = this.pageScrollTop >= this.toolbarAnchorTop
+			},
+			restoreSavedPageScroll() {
+				const top = Math.max(0, Math.round(Number(this.savedPageScrollTop || 0)))
+				this.pageScrollTop = top
+				this.syncToolbarPinned()
+				uni.pageScrollTo({
+					scrollTop: top,
+					duration: 0,
+				})
+			},
+			async loadPlanes() {
+				this.loading = true
 			try {
-				const data = await getPlanes()
-				this.planes = data
+				const location = this.normalizeLocation(this.selectedLocation)
+				const data = await getPlanes(location || undefined)
+				const list = Array.isArray(data) ? data : []
+				if (location) {
+					this.planes = list.filter(item => String(item?.locationTag || '') === location)
+				} else {
+					this.planes = list
+				}
 			} catch (error) {
 				this.planes = []
 				uni.showToast({
@@ -625,10 +802,12 @@ export default {
 			const hour = `${date.getHours()}`.padStart(2, '0')
 			const minute = `${date.getMinutes()}`.padStart(2, '0')
 			return `${month}/${day} ${hour}:${minute}`
-		},
-		openDetail(plane) {
-			this.openPlaneDetail(plane.id)
-		},
+			},
+			openDetail(plane) {
+				this.savedPageScrollTop = this.pageScrollTop
+				this.skipReloadOnNextShow = true
+				this.openPlaneDetail(plane.id)
+			},
 	},
 }
 </script>
@@ -925,8 +1104,8 @@ export default {
 
 .search-box-icon {
 	margin-right: 12rpx;
-	width: 28rpx;
-	height: 28rpx;
+	width: 58rpx;
+	height: 58rpx;
 	display: block;
 }
 
@@ -941,62 +1120,183 @@ export default {
 	color: var(--ink);
 }
 
-.mood-strip {
-	margin: 0 -4rpx;
-	white-space: nowrap;
+.fold-filter-group {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	gap: 10rpx;
 	transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
 }
 
-.discover-toolbar.is-pinned .mood-strip {
+.discover-toolbar.is-pinned .fold-filter-group {
 	transform: translateY(-2rpx);
 }
 
-.mood-strip-row {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
-	align-items: center;
-	padding: 4rpx;
-	width: max-content;
+.fold-filter-card {
+	flex: 1;
+	min-width: 0;
+	position: relative;
+	border-radius: 18rpx;
+	border: 2rpx solid rgba(214, 205, 188, 0.4);
+	background: rgba(255, 255, 255, 0.76);
+	box-shadow: 0 8rpx 16rpx rgba(31, 36, 40, 0.04);
+	overflow: visible;
 }
 
-.mood-chip {
+.fold-filter-card.is-open {
+	border-color: rgba(129, 150, 176, 0.5);
+	box-shadow: 0 12rpx 22rpx rgba(31, 36, 40, 0.08);
+}
+
+.fold-filter-head {
+	min-height: 58rpx;
 	display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 16rpx;
+}
+
+.fold-filter-label {
+	font-size: 20rpx;
+	font-weight: 600;
+	color: rgba(78, 88, 83, 0.94);
+}
+
+.fold-filter-head-right {
+	display: flex;
 	align-items: center;
 	gap: 8rpx;
-	flex-shrink: 0;
-	padding: 14rpx 20rpx;
-	border-radius: 999rpx;
-	background: rgba(255, 255, 255, 0.72);
-	border: 2rpx solid rgba(214, 205, 188, 0.44);
+	min-width: 0;
+	max-width: 68%;
+}
+
+.fold-filter-value {
+	font-size: 20rpx;
+	color: rgba(86, 96, 91, 0.9);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 160rpx;
+}
+
+.fold-filter-arrow {
+	font-size: 18rpx;
+	color: rgba(129, 150, 176, 0.88);
+	transition: transform 0.2s ease;
+}
+
+.fold-filter-arrow.is-open {
+	transform: rotate(180deg);
+}
+
+.fold-filter-arrow-image {
+	width: 42rpx;
+	height: 42rpx;
+	display: block;
+	opacity: 0.78;
+	transform: rotate(-90deg);
+	transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.fold-filter-arrow-image.is-open {
+	transform: rotate(90deg);
+	opacity: 0.92;
+}
+
+.theme-dark .fold-filter-arrow-image {
+	opacity: 0.68;
+	filter: brightness(1.45);
+}
+
+.theme-dark .fold-filter-arrow-image.is-open {
+	opacity: 0.9;
+}
+
+.fold-filter-dropdown {
+	position: absolute;
+	top: calc(100% + 8rpx);
+	left: 0;
+	right: 0;
+	z-index: 70;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-8rpx) scale(0.98);
+	transform-origin: top center;
+	pointer-events: none;
+	transition:
+		opacity 0.22s ease,
+		transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		visibility 0s linear 0.24s;
+}
+
+.fold-filter-dropdown.is-open {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0) scale(1);
+	pointer-events: auto;
+	transition:
+		opacity 0.22s ease,
+		transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		visibility 0s linear 0s;
+}
+
+.fold-filter-options {
+	padding: 8rpx;
+	border: 2rpx solid rgba(214, 205, 188, 0.42);
+	border-radius: 14rpx;
+	background: rgba(255, 255, 255, 0.98);
+	box-shadow: 0 14rpx 28rpx rgba(31, 36, 40, 0.1);
+	max-height: 300rpx;
+	overflow-y: auto;
+}
+
+.fold-filter-option {
+	min-height: 52rpx;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 10rpx;
+	border-radius: 10rpx;
 	color: rgba(86, 96, 91, 0.94);
-	font-size: 22rpx;
-	box-shadow: 0 10rpx 18rpx rgba(31, 36, 40, 0.04);
-	transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+	font-size: 20rpx;
+	transition: background 0.18s ease, color 0.18s ease;
 }
 
-.mood-chip + .mood-chip {
-	margin-left: 12rpx;
+.fold-filter-option + .fold-filter-option {
+	margin-top: 4rpx;
 }
 
-.mood-chip.is-active {
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), var(--chip-soft, rgba(255, 241, 235, 0.96)));
-	border-color: var(--chip-accent, rgba(125, 139, 138, 0.44));
-	box-shadow: 0 14rpx 24rpx rgba(31, 36, 40, 0.08);
-	transform: translateY(-2rpx);
+.fold-filter-option-left {
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 8rpx;
 }
 
-.mood-chip-icon {
-	width: 22rpx;
-	height: 22rpx;
+.fold-filter-option-icon {
+	width: 18rpx;
+	height: 18rpx;
 	display: block;
 	flex-shrink: 0;
 }
 
-.mood-chip text {
+.fold-filter-option-left text {
 	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.fold-filter-option.is-active {
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(194, 220, 255, 0.32));
+	color: rgba(50, 60, 55, 1);
+}
+
+.fold-filter-check {
+	width: 10rpx;
+	height: 10rpx;
+	border-radius: 50%;
+	background: rgba(89, 129, 116, 0.95);
+	flex-shrink: 0;
 }
 
 .discover-board {
@@ -1439,6 +1739,7 @@ export default {
 	width: 28rpx;
 	height: 28rpx;
 	display: block;
+	filter: drop-shadow(0 6rpx 10rpx rgba(0, 0, 0, 0.12));
 }
 
 .plane-time-chip {
@@ -1816,7 +2117,7 @@ export default {
 
 .theme-dark .discover-ticket,
 .theme-dark .discover-ribbon,
-.theme-dark .mood-chip,
+.theme-dark .fold-filter-card,
 .theme-dark .featured-plane-badge,
 .theme-dark .featured-stat,
 .theme-dark .featured-plane-route,
@@ -1832,8 +2133,29 @@ export default {
 	border-color: rgba(230, 237, 241, 0.1);
 }
 
-.theme-dark .mood-chip.is-active {
-	background: linear-gradient(135deg, rgba(36, 45, 49, 0.96), var(--chip-soft, rgba(52, 73, 68, 0.92)));
+.theme-dark .fold-filter-label,
+.theme-dark .fold-filter-value,
+.theme-dark .fold-filter-arrow,
+.theme-dark .fold-filter-option {
+	color: rgba(214, 223, 229, 0.88);
+}
+
+.theme-dark .fold-filter-options {
+	border-color: rgba(230, 237, 241, 0.12);
+	background: rgba(21, 29, 33, 0.98);
+}
+
+.theme-dark .fold-filter-card.is-open {
+	border-color: rgba(138, 160, 176, 0.5);
+	box-shadow: 0 12rpx 24rpx rgba(0, 0, 0, 0.22);
+}
+
+.theme-dark .fold-filter-option.is-active {
+	background: linear-gradient(135deg, rgba(36, 45, 49, 0.96), rgba(68, 88, 99, 0.9));
+}
+
+.theme-dark .fold-filter-check {
+	background: rgba(164, 214, 193, 0.95);
 }
 
 .theme-dark .featured-plane {

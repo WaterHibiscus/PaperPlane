@@ -1,13 +1,25 @@
 using System.Text;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.OpenApi.Models;
 using server.Data;
+using server.OpenApi;
 using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var defaultUrls = builder.Configuration["Server:Urls"];
+var explicitUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? builder.Configuration["urls"];
+if (string.IsNullOrWhiteSpace(explicitUrls) && !string.IsNullOrWhiteSpace(defaultUrls))
+{
+    builder.WebHost.UseUrls(defaultUrls);
+}
+
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = null;
@@ -21,8 +33,69 @@ builder.Services.Configure<FormOptions>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<OpenApiXmlCommentsRepository>();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "PaperPlane API",
+        Version = "v1",
+        Description = "PaperPlane 后端接口文档，包含管理端与用户端 API。"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "输入 Bearer Token。示例: Bearer {your access token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
+    options.SupportNonNullableReferenceTypes();
+    options.SchemaFilter<XmlCommentsSchemaFilter>();
+    options.ParameterFilter<XmlCommentsParameterFilter>();
+    options.OperationFilter<OpenApiMetadataOperationFilter>();
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+    }
+});
 builder.Services.AddMemoryCache();
+builder.Services
+    .AddHttpClient(nameof(AiVoteSuggestionService), client =>
+    {
+        client.Timeout = Timeout.InfiniteTimeSpan;
+        client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue
+        {
+            NoCache = true,
+            NoStore = true
+        };
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+    {
+        UseCookies = false,
+        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+    });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
@@ -35,6 +108,7 @@ builder.Services.AddSingleton<PlaneQrCodeService>();
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddSingleton<CaptchaService>();
+builder.Services.AddScoped<AiVoteSuggestionService>();
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection("AdminSeed"));
 
@@ -153,8 +227,18 @@ using (var scope = app.Services.CreateScope())
     await AdminSeeder.SeedAsync(db, hasher, adminSeed);
 }
 
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwagger(options =>
+{
+    options.RouteTemplate = "docs/{documentName}/openapi.json";
+});
+app.UseSwaggerUI(options =>
+{
+    options.RoutePrefix = "swagger";
+    options.DocumentTitle = "PaperPlane Swagger 调试页";
+    options.SwaggerEndpoint("/docs/v1/openapi.json", "PaperPlane API v1");
+    options.DisplayRequestDuration();
+    options.EnablePersistAuthorization();
+});
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(webRoot),
@@ -169,6 +253,7 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/docs", () => Results.LocalRedirect("/docs/index.html"));
 app.MapControllers();
 
 app.Run();

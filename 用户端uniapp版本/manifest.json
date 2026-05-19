@@ -1,4 +1,4 @@
-﻿{
+{
     "name" : "用户端uniapp版本",
     "appid" : "__UNI__9777BDD",
     "description" : "",
@@ -54,7 +54,7 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "",
+        "appid" : "wx666736fa1ed169f9",
         "setting" : {
             "urlCheck" : false
         },

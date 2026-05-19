@@ -34,6 +34,55 @@ declare namespace Api {
       isActive: boolean;
     }
 
+    interface AiVoteConfig {
+      isEnabled: boolean;
+      baseUrl: string;
+      model: string;
+      temperature: number;
+      maxTokens: number;
+      defaultOptionCount: number;
+      timeoutSeconds: number;
+      enableFallback: boolean;
+      perUserMinuteLimit: number;
+      systemPrompt: string;
+      hasApiKey: boolean;
+      apiKeyMasked: string;
+      updateTime: string;
+      updatedBy: string | null;
+    }
+
+    interface UpdateAiVoteConfigPayload {
+      isEnabled: boolean;
+      baseUrl: string;
+      model: string;
+      temperature: number;
+      maxTokens: number;
+      defaultOptionCount: number;
+      timeoutSeconds: number;
+      enableFallback: boolean;
+      perUserMinuteLimit: number;
+      systemPrompt: string;
+      apiKey?: string | null;
+      clearApiKey?: boolean;
+    }
+
+    interface AiVoteLog {
+      id: number;
+      requestId: string;
+      appUserId: string | null;
+      contentPreview: string;
+      mood: string;
+      locationTag: string;
+      requestedOptionCount: number;
+      generatedTitle: string | null;
+      generatedOptions: string[];
+      source: 'ai' | 'fallback';
+      status: 'success' | 'failed';
+      errorMessage: string | null;
+      durationMs: number;
+      createTime: string;
+    }
+
     interface Location {
       id: number;
       name: string;
@@ -59,6 +108,13 @@ declare namespace Api {
       reportCount: number;
       voteTitle: string | null;
       voteOptions: string[] | null;
+    }
+
+    interface ReportedPlane extends Plane {
+      isDeleted: boolean;
+      latestReportReason: string | null;
+      latestReportDetail: string | null;
+      latestReportedAt: string | null;
     }
 
     interface UpdatePlanePayload {

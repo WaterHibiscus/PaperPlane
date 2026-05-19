@@ -117,7 +117,7 @@
 								/>
 							</view>
 							<view class="auth-code__panel" @tap="refreshCaptcha">
-								<image v-if="captchaImage" class="auth-code__image" :src="captchaImage" mode="aspectFill" />
+								<image v-if="captchaImage" class="auth-code__image" :src="captchaImage" mode="aspectFit" />
 								<text v-else class="auth-code__value">----</text>
 								<text class="auth-code__hint">点击刷新</text>
 							</view>

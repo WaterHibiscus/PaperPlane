@@ -6,12 +6,14 @@ const common_utils = require("../../common/utils.js");
 const common_moods = require("../../common/moods.js");
 const common_detailOpenTransition = require("../../common/detail-open-transition.js");
 const common_pageTransition = require("../../common/page-transition.js");
+const common_uiIcons = require("../../common/ui-icons.js");
+const common_assets = require("../../common/assets.js");
 const AppTabbar = () => "../../components/AppTabbar.js";
 const DetailOpenTransition = () => "../../components/DetailOpenTransition.js";
 const PageTransition = () => "../../components/PageTransition.js";
 const ALL_MOOD_META = {
   label: "全部",
-  icon: "✦",
+  icon: common_uiIcons.uiIcons.emotion,
   color: "#7d8b8a"
 };
 const _sfc_main = {
@@ -24,17 +26,21 @@ const _sfc_main = {
   data() {
     return {
       appState: common_appState.appState,
+      icons: common_uiIcons.uiIcons,
       planes: [],
       loading: false,
       query: "",
       activeMood: "all",
+      selectedLocation: "",
+      routeLocation: "",
+      moodFoldOpen: false,
+      locationFoldOpen: false,
       pageScrollTop: 0,
       toolbarPinned: false,
       toolbarHeight: 0,
       toolbarAnchorTop: 0,
       toolbarFixedTop: 0,
-      searchIcon: "⌕",
-      moodFilters: common_moods.moodFilters,
+      moodFilters: common_moods.getMoodFilters(),
       cardPalette: [
         {
           base: "rgba(250, 247, 238, 0.98)",
@@ -71,15 +77,32 @@ const _sfc_main = {
     themeClass() {
       return this.appState.theme === "dark" ? "theme-dark" : "theme-light";
     },
+    locationFilters() {
+      return Array.isArray(this.appState.locations) ? this.appState.locations : [];
+    },
+    currentMoodFilterLabel() {
+      var _a;
+      return ((_a = this.getMoodFilterMeta(this.activeMood)) == null ? void 0 : _a.label) || "全部";
+    },
+    currentLocationFilterLabel() {
+      return this.selectedLocation || "全部";
+    },
     filteredPlanes() {
       const keyword = this.query.trim().toLowerCase();
+      const selectedLocation = String(this.selectedLocation || "").trim();
       return this.planes.filter((item) => {
-        const matchesMood = this.activeMood === "all" || item.mood === this.activeMood;
+        const locationText = String(item.locationTag || "");
+        const matchesLocation = !selectedLocation || locationText === selectedLocation;
+        if (!matchesLocation)
+          return false;
+        const moodKey = common_moods.resolveMoodKey(item.mood);
+        const matchesMood = this.activeMood === "all" || moodKey === this.activeMood;
         if (!matchesMood)
           return false;
         if (!keyword)
           return true;
-        return item.content.toLowerCase().includes(keyword) || item.locationTag.toLowerCase().includes(keyword);
+        const contentText = String(item.content || "").toLowerCase();
+        return contentText.includes(keyword) || locationText.toLowerCase().includes(keyword);
       });
     },
     featuredPlane() {
@@ -120,8 +143,21 @@ const _sfc_main = {
       return location ? `${location} 现在最热闹` : "校园里的风正在缓慢流动";
     }
   },
+  onLoad(options = {}) {
+    this.routeLocation = this.decodeRouteLocation(options.location);
+    if (this.routeLocation) {
+      this.selectedLocation = this.routeLocation;
+      common_appState.setCurrentLocation(this.routeLocation);
+    }
+  },
   async onShow() {
     await common_appState.fetchLocations();
+    try {
+      await common_appState.fetchMoodConfigs();
+    } catch (error) {
+    }
+    this.refreshMoodFilters();
+    this.syncSelectedLocation();
     await this.loadPlanes();
     this.scheduleMeasureToolbar();
   },
@@ -134,21 +170,85 @@ const _sfc_main = {
     this.syncToolbarPinned();
   },
   methods: {
+    decodeRouteLocation(value) {
+      const raw = String(value || "").trim();
+      if (!raw)
+        return "";
+      try {
+        return decodeURIComponent(raw);
+      } catch (error) {
+        return raw;
+      }
+    },
+    normalizeLocation(value) {
+      return String(value || "").trim();
+    },
+    syncSelectedLocation() {
+      const routeLocation = this.normalizeLocation(this.routeLocation);
+      if (routeLocation) {
+        this.selectedLocation = routeLocation;
+        this.routeLocation = "";
+        if (routeLocation !== this.appState.currentLocation) {
+          common_appState.setCurrentLocation(routeLocation);
+        }
+        return;
+      }
+      if (!this.selectedLocation) {
+        const current = this.normalizeLocation(this.appState.currentLocation);
+        if (current) {
+          this.selectedLocation = current;
+        }
+      }
+    },
+    refreshMoodFilters() {
+      const filters = common_moods.getMoodFilters();
+      this.moodFilters = filters;
+      const hasActiveMood = filters.some((item) => item.value === this.activeMood);
+      if (!hasActiveMood) {
+        this.activeMood = "all";
+      }
+    },
     getPlaneMood(plane) {
       return common_moods.getMoodMeta(plane.mood);
     },
     getMoodFilterMeta(value) {
       return value === "all" ? ALL_MOOD_META : common_moods.getMoodMeta(value);
     },
-    getMoodChipStyle(value) {
-      const meta = this.getMoodFilterMeta(value);
-      return {
-        "--chip-accent": meta.color,
-        "--chip-soft": `${meta.color}18`
-      };
+    toggleMoodFold() {
+      this.moodFoldOpen = !this.moodFoldOpen;
+      if (this.moodFoldOpen) {
+        this.locationFoldOpen = false;
+      }
+      this.scheduleMeasureToolbar();
+    },
+    toggleLocationFold() {
+      this.locationFoldOpen = !this.locationFoldOpen;
+      if (this.locationFoldOpen) {
+        this.moodFoldOpen = false;
+      }
+      this.scheduleMeasureToolbar();
     },
     setMoodFilter(value) {
       this.activeMood = value;
+      this.scheduleMeasureToolbar();
+    },
+    selectMoodFilter(value) {
+      this.setMoodFilter(value);
+      this.moodFoldOpen = false;
+      this.scheduleMeasureToolbar();
+    },
+    async setLocationFilter(value) {
+      const nextLocation = this.normalizeLocation(value);
+      if (nextLocation === this.selectedLocation)
+        return;
+      this.selectedLocation = nextLocation;
+      this.routeLocation = "";
+      common_appState.setCurrentLocation(nextLocation);
+      await this.loadPlanes();
+    },
+    async selectLocationFilter(value) {
+      await this.setLocationFilter(value);
+      this.locationFoldOpen = false;
       this.scheduleMeasureToolbar();
     },
     getPlaneAuthorLabelText(plane) {
@@ -158,17 +258,15 @@ const _sfc_main = {
     getNoteItemStyle(index, seedSource, mood, plane) {
       var _a;
       const variant = plane ? this.getPlaneVariant(plane, index) : "note";
-      let cardHeight = "304rpx";
-      if (variant === "photo") {
-        cardHeight = "408rpx";
-      } else if (variant === "quote") {
-        cardHeight = "320rpx";
-      } else if (variant === "diary") {
+      let cardHeight = "336rpx";
+      if (variant === "quote") {
         cardHeight = "352rpx";
+      } else if (variant === "diary") {
+        cardHeight = "384rpx";
       } else if ((_a = plane == null ? void 0 : plane.imageUrls) == null ? void 0 : _a.length) {
-        cardHeight = "356rpx";
+        cardHeight = "352rpx";
       } else if (index % 3 === 1) {
-        cardHeight = "320rpx";
+        cardHeight = "352rpx";
       }
       return {
         ...this.getNoteStyle(index, seedSource),
@@ -242,21 +340,16 @@ const _sfc_main = {
       };
     },
     getPlaneVariant(plane, index) {
-      var _a;
-      const hasMedia = Boolean((_a = plane == null ? void 0 : plane.imageUrls) == null ? void 0 : _a.length);
       const contentLength = String((plane == null ? void 0 : plane.content) || "").length;
       const heatScore = this.getHeatScore(plane);
-      if (hasMedia && index % 3 !== 1)
-        return "photo";
       if (contentLength <= 28 || index % 5 === 1)
         return "quote";
       if (heatScore >= 18 || index % 4 === 2)
         return "diary";
       return "note";
     },
-    shouldShowMediaPreview(plane, index) {
-      var _a;
-      return Boolean((_a = plane == null ? void 0 : plane.imageUrls) == null ? void 0 : _a.length) && this.getPlaneVariant(plane, index) === "photo";
+    shouldShowMediaPreview() {
+      return false;
     },
     isQuoteVariant(plane, index) {
       return this.getPlaneVariant(plane, index) === "quote";
@@ -357,8 +450,14 @@ const _sfc_main = {
     async loadPlanes() {
       this.loading = true;
       try {
-        const data = await common_api.getPlanes();
-        this.planes = data;
+        const location = this.normalizeLocation(this.selectedLocation);
+        const data = await common_api.getPlanes(location || void 0);
+        const list = Array.isArray(data) ? data : [];
+        if (location) {
+          this.planes = list.filter((item) => String((item == null ? void 0 : item.locationTag) || "") === location);
+        } else {
+          this.planes = list;
+        }
       } catch (error) {
         this.planes = [];
         common_vendor.index.showToast({
@@ -405,28 +504,71 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }, $data.toolbarPinned ? {
     h: `${$data.toolbarHeight}px`
   } : {}, {
-    i: common_vendor.t($data.searchIcon),
+    i: $data.icons.search,
     j: $data.query,
     k: common_vendor.o(($event) => $data.query = $event.detail.value),
-    l: common_vendor.f($data.moodFilters, (filter, k0, i0) => {
-      return {
-        a: common_vendor.t($options.getMoodFilterMeta(filter.value).icon),
+    l: common_vendor.t($options.currentMoodFilterLabel),
+    m: common_vendor.n({
+      "is-open": $data.moodFoldOpen
+    }),
+    n: common_assets._imports_1,
+    o: common_vendor.o((...args) => $options.toggleMoodFold && $options.toggleMoodFold(...args)),
+    p: common_vendor.f($data.moodFilters, (filter, k0, i0) => {
+      return common_vendor.e({
+        a: $options.getMoodFilterMeta(filter.value).icon,
         b: common_vendor.t(filter.label),
-        c: filter.value,
-        d: common_vendor.n({
+        c: $data.activeMood === filter.value
+      }, $data.activeMood === filter.value ? {} : {}, {
+        d: `mood-${filter.value}`,
+        e: common_vendor.n({
           "is-active": $data.activeMood === filter.value
         }),
-        e: common_vendor.s($options.getMoodChipStyle(filter.value)),
-        f: common_vendor.o(($event) => $options.setMoodFilter(filter.value), filter.value)
-      };
+        f: common_vendor.o(($event) => $options.selectMoodFilter(filter.value), `mood-${filter.value}`)
+      });
     }),
-    m: common_vendor.n({
+    q: common_vendor.n({
+      "is-open": $data.moodFoldOpen
+    }),
+    r: common_vendor.n({
+      "is-open": $data.moodFoldOpen
+    }),
+    s: common_vendor.t($options.currentLocationFilterLabel),
+    t: common_vendor.n({
+      "is-open": $data.locationFoldOpen
+    }),
+    v: common_assets._imports_1,
+    w: common_vendor.o((...args) => $options.toggleLocationFold && $options.toggleLocationFold(...args)),
+    x: !$data.selectedLocation
+  }, !$data.selectedLocation ? {} : {}, {
+    y: common_vendor.n({
+      "is-active": !$data.selectedLocation
+    }),
+    z: common_vendor.o(($event) => $options.selectLocationFilter("")),
+    A: common_vendor.f($options.locationFilters, (location, k0, i0) => {
+      return common_vendor.e({
+        a: common_vendor.t(location.name),
+        b: $data.selectedLocation === location.name
+      }, $data.selectedLocation === location.name ? {} : {}, {
+        c: location.id || location.name,
+        d: common_vendor.n({
+          "is-active": $data.selectedLocation === location.name
+        }),
+        e: common_vendor.o(($event) => $options.selectLocationFilter(location.name), location.id || location.name)
+      });
+    }),
+    B: common_vendor.n({
+      "is-open": $data.locationFoldOpen
+    }),
+    C: common_vendor.n({
+      "is-open": $data.locationFoldOpen
+    }),
+    D: common_vendor.n({
       "is-pinned": $data.toolbarPinned
     }),
-    n: `${$data.toolbarFixedTop}px`,
-    o: $data.loading
+    E: `${$data.toolbarFixedTop}px`,
+    F: $data.loading
   }, $data.loading ? {
-    p: common_vendor.f(4, (index, k0, i0) => {
+    G: common_vendor.f(4, (index, k0, i0) => {
       return {
         a: "157e4766-1-" + i0 + "," + ("157e4766-0-" + i0),
         b: "157e4766-2-" + i0 + "," + ("157e4766-0-" + i0),
@@ -436,56 +578,56 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         f: common_vendor.s($options.getNoteItemStyle(index - 1, `skeleton-${index}`, "calm"))
       };
     }),
-    q: common_vendor.p({
+    H: common_vendor.p({
       d: "M29 7 C17 7 11 17 11 28 V67 C11 82 20 91 31 91 C41 91 48 82 48 69 V30 C48 17 40 10 31 10 C22 10 16 17 16 28 V64 C16 74 21 81 29 81 C37 81 42 75 42 67 V37"
     }),
-    r: common_vendor.p({
+    I: common_vendor.p({
       d: "M27 5 C15 5 9 16 9 27 V66 C9 82 19 92 31 92 C43 92 50 82 50 68 V28 C50 14 41 8 30 8 C19 8 13 16 13 27 V64 C13 76 20 84 30 84 C40 84 46 77 46 67 V34"
     }),
-    s: common_vendor.p({
+    J: common_vendor.p({
       d: "M22 10 C14 10 10 18 10 28 V64 C10 77 18 86 28 87"
     }),
-    t: common_vendor.p({
+    K: common_vendor.p({
       viewBox: "0 0 48 96",
       ["aria-hidden"]: "true"
     })
   } : $options.filteredPlanes.length ? common_vendor.e({
-    w: $options.featuredPlane
+    M: $options.featuredPlane
   }, $options.featuredPlane ? common_vendor.e({
-    x: common_vendor.t($options.getPlaneMood($options.featuredPlane).icon),
-    y: common_vendor.t($options.getPlaneMood($options.featuredPlane).label),
-    z: $options.getPlaneMood($options.featuredPlane).color,
-    A: `${$options.getPlaneMood($options.featuredPlane).color}33`,
-    B: common_vendor.t($options.formatPlaneTime($options.featuredPlane.createTime)),
-    C: common_vendor.t($options.getFeaturedTitle($options.featuredPlane)),
-    D: common_vendor.t($options.featuredPlane.content),
-    E: common_vendor.t($options.getPlaneAuthorLabelText($options.featuredPlane)),
-    F: common_vendor.t($options.featuredPlane.locationTag),
-    G: $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length
+    N: $options.getPlaneMood($options.featuredPlane).icon,
+    O: common_vendor.t($options.getPlaneMood($options.featuredPlane).label),
+    P: $options.getPlaneMood($options.featuredPlane).color,
+    Q: `${$options.getPlaneMood($options.featuredPlane).color}33`,
+    R: common_vendor.t($options.formatPlaneTime($options.featuredPlane.createTime)),
+    S: common_vendor.t($options.getFeaturedTitle($options.featuredPlane)),
+    T: common_vendor.t($options.featuredPlane.content),
+    U: common_vendor.t($options.getPlaneAuthorLabelText($options.featuredPlane)),
+    V: common_vendor.t($options.featuredPlane.locationTag),
+    W: $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length
   }, $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length ? {} : {}, {
-    H: $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length
+    X: $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length
   }, $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length ? {
-    I: common_vendor.t($options.featuredPlane.imageUrls.length)
+    Y: common_vendor.t($options.featuredPlane.imageUrls.length)
   } : {}, {
-    J: common_vendor.t($options.featuredPlane.pickCount || 0),
-    K: common_vendor.t($options.featuredPlane.likeCount || 0),
-    L: common_vendor.t($options.featuredPlane.commentCount || 0),
-    M: $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length
+    Z: common_vendor.t($options.featuredPlane.pickCount || 0),
+    aa: common_vendor.t($options.featuredPlane.likeCount || 0),
+    ab: common_vendor.t($options.featuredPlane.commentCount || 0),
+    ac: $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length
   }, $options.featuredPlane.imageUrls && $options.featuredPlane.imageUrls.length ? {
-    N: $options.getAssetUrl($options.featuredPlane.imageUrls[0])
+    ad: $options.getAssetUrl($options.featuredPlane.imageUrls[0])
   } : {
-    O: common_vendor.t($options.getPlaneMood($options.featuredPlane).icon),
-    P: common_vendor.t($options.getPlaneMood($options.featuredPlane).label),
-    Q: $options.getPlaneMood($options.featuredPlane).color,
-    R: `${$options.getPlaneMood($options.featuredPlane).color}48`
+    ae: $options.getPlaneMood($options.featuredPlane).icon,
+    af: common_vendor.t($options.getPlaneMood($options.featuredPlane).label),
+    ag: $options.getPlaneMood($options.featuredPlane).color,
+    ah: `${$options.getPlaneMood($options.featuredPlane).color}48`
   }, {
-    S: common_vendor.t($options.getPlaneStatusLabel($options.featuredPlane)),
-    T: common_vendor.s($options.getFeaturedCardStyle($options.featuredPlane)),
-    U: common_vendor.o(($event) => $options.openDetail($options.featuredPlane))
+    ai: common_vendor.t($options.getPlaneStatusLabel($options.featuredPlane)),
+    aj: common_vendor.s($options.getFeaturedCardStyle($options.featuredPlane)),
+    ak: common_vendor.o(($event) => $options.openDetail($options.featuredPlane))
   }) : {}, {
-    V: $options.secondaryPlanes.length
+    al: $options.secondaryPlanes.length
   }, $options.secondaryPlanes.length ? {
-    W: common_vendor.f($options.secondaryPlanes, (plane, index, i0) => {
+    am: common_vendor.f($options.secondaryPlanes, (plane, index, i0) => {
       return common_vendor.e({
         a: $options.isQuoteVariant(plane, index)
       }, $options.isQuoteVariant(plane, index) ? {} : {}, {
@@ -498,7 +640,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         f: "157e4766-6-" + i0 + "," + ("157e4766-4-" + i0),
         g: "157e4766-7-" + i0 + "," + ("157e4766-4-" + i0),
         h: "157e4766-4-" + i0,
-        i: common_vendor.t($options.getPlaneMood(plane).icon),
+        i: $options.getPlaneMood(plane).icon,
         j: $options.getPlaneMood(plane).color,
         k: common_vendor.t($options.formatPlaneTime(plane.createTime)),
         l: common_vendor.t($options.getPlaneAuthorLabelText(plane)),
@@ -539,34 +681,34 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         J: common_vendor.s($options.getNoteItemStyle(index, plane.id, plane.mood, plane))
       });
     }),
-    X: common_vendor.p({
+    an: common_vendor.p({
       d: "M29 7 C17 7 11 17 11 28 V67 C11 82 20 91 31 91 C41 91 48 82 48 69 V30 C48 17 40 10 31 10 C22 10 16 17 16 28 V64 C16 74 21 81 29 81 C37 81 42 75 42 67 V37"
     }),
-    Y: common_vendor.p({
+    ao: common_vendor.p({
       d: "M27 5 C15 5 9 16 9 27 V66 C9 82 19 92 31 92 C43 92 50 82 50 68 V28 C50 14 41 8 30 8 C19 8 13 16 13 27 V64 C13 76 20 84 30 84 C40 84 46 77 46 67 V34"
     }),
-    Z: common_vendor.p({
+    ap: common_vendor.p({
       d: "M22 10 C14 10 10 18 10 28 V64 C10 77 18 86 28 87"
     }),
-    aa: common_vendor.p({
+    aq: common_vendor.p({
       viewBox: "0 0 48 96",
       ["aria-hidden"]: "true"
     })
   } : {}) : {}, {
-    v: $options.filteredPlanes.length,
-    ab: common_vendor.p({
+    L: $options.filteredPlanes.length,
+    ar: common_vendor.p({
       visible: _ctx.detailOpenVisible,
       theme: $data.appState.theme
     }),
-    ac: common_vendor.p({
+    as: common_vendor.p({
       visible: _ctx.pageTransitionVisible,
       theme: $data.appState.theme
     }),
-    ad: common_vendor.p({
+    at: common_vendor.p({
       active: "discover",
       theme: $data.appState.theme
     }),
-    ae: common_vendor.n($options.themeClass)
+    av: common_vendor.n($options.themeClass)
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-157e4766"]]);

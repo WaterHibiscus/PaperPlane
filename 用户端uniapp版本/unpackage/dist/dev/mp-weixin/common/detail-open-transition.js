@@ -22,7 +22,7 @@ const detailOpenTransitionMixin = {
         this.detailOpenTimer = null;
       }
     },
-    openPlaneDetail(id, delay = 760) {
+    openPlaneDetail(id, delay = 160) {
       if (!id || this.detailOpenVisible)
         return;
       this.detailOpenVisible = true;

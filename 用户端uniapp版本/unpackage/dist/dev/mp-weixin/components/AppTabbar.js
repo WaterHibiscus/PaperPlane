@@ -14,48 +14,13 @@ const _sfc_main = {
   data() {
     return {
       tabs: [
-        {
-          key: "home",
-          label: "Home",
-          iconType: "image",
-          icon: "/static/images/首页.png",
-          activeIcon: "/static/images/首页选中.png",
-          path: "/pages/home/index"
-        },
-        {
-          key: "discover",
-          label: "Radar",
-          iconType: "image",
-          icon: "/static/images/雷达.png",
-          activeIcon: "/static/images/雷达选中.png",
-          path: "/pages/discover/index"
-        },
-        {
-          key: "throw",
-          label: "Throw",
-          iconType: "image",
-          icon: "/static/images/投掷.png",
-          activeIcon: "/static/images/投掷选中.png",
-          path: "/pages/throw/index"
-        },
-        {
-          key: "trending",
-          label: "Trending",
-          iconType: "image",
-          icon: "/static/images/热门.png",
-          activeIcon: "/static/images/热门选中.png",
-          path: "/pages/trending/index"
-        },
-        {
-          key: "mine",
-          label: "Mine",
-          iconType: "text",
-          icon: "◉",
-          activeIcon: "◉",
-          path: "/pages/mine/index"
-        }
+        { key: "home", label: "首页", iconType: "image", icon: "/static/images/首页.png", activeIcon: "/static/images/首页选中.png", path: "/pages/home/index" },
+        { key: "discover", label: "发现", iconType: "image", icon: "/static/images/雷达.png", activeIcon: "/static/images/雷达选中.png", path: "/pages/discover/index" },
+        { key: "throw", label: "投掷", iconType: "image", icon: "/static/images/投掷.png", activeIcon: "/static/images/投掷选中.png", path: "/pages/throw/index" },
+        { key: "trending", label: "热门", iconType: "image", icon: "/static/images/热门.png", activeIcon: "/static/images/热门选中.png", path: "/pages/trending/index" },
+        { key: "mine", label: "我的", iconType: "image", icon: "/static/images/设置.png", activeIcon: "/static/images/设置.png", path: "/pages/mine/index" }
       ],
-      maskPlane: "✈",
+      maskPlane: "/static/images/投掷选中.png",
       maskText: "纸飞机正在穿过这片风场",
       notchWidth: 26,
       notchDepth: 28,
@@ -171,7 +136,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: $data.overlayVisible
   }, $data.overlayVisible ? {
-    b: common_vendor.t($data.maskPlane),
+    b: $data.maskPlane,
     c: common_vendor.t($data.maskText)
   } : {}, {
     d: common_vendor.p({

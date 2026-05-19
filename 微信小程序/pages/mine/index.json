@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "我的飞机",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "app-tabbar": "../../components/AppTabbar",
+    "detail-open-transition": "../../components/DetailOpenTransition",
+    "page-transition": "../../components/PageTransition"
+  }
+}

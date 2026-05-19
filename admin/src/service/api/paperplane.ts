@@ -29,6 +29,27 @@ export function updateMoodConfigs(data: { items: Api.PaperPlane.MoodConfig[] }) 
   return request<Api.PaperPlane.MoodConfig[]>({ url: '/api/admin/moods', method: 'put', data });
 }
 
+export function fetchAiVoteConfig() {
+  return request<Api.PaperPlane.AiVoteConfig>({ url: '/api/admin/ai/vote/config' });
+}
+
+export function updateAiVoteConfig(data: Api.PaperPlane.UpdateAiVoteConfigPayload) {
+  return request<Api.PaperPlane.AiVoteConfig>({ url: '/api/admin/ai/vote/config', method: 'put', data });
+}
+
+export function fetchAiVoteLogs(params?: {
+  keyword?: string;
+  status?: 'success' | 'failed';
+  source?: 'ai' | 'fallback';
+  page?: number;
+  pageSize?: number;
+}) {
+  return request<Api.PaperPlane.PagedResponse<Api.PaperPlane.AiVoteLog>>({
+    url: '/api/admin/ai/vote/logs',
+    params
+  });
+}
+
 export function uploadMoodIcon(file: File) {
   const formData = new FormData();
   formData.append('file', file);
@@ -119,13 +140,26 @@ export function uploadPlaneImage(file: File) {
 
 // Reports
 export function fetchReportedPlanes() {
-  return request<Api.PaperPlane.Plane[]>({ url: '/api/planes/reported' });
+  return request<Api.PaperPlane.ReportedPlane[]>({ url: '/api/planes/reported' });
+}
+
+export function updatePlaneOnlineStatus(id: string, data: { isOnline: boolean }) {
+  return request<{ message: string; isOnline: boolean; isDeleted: boolean }>({
+    url: `/api/admin/planes/${id}/online-status`,
+    method: 'put',
+    data
+  });
 }
 
 // Comments
 export function fetchAdminComments(params?: {
   keyword?: string;
   planeId?: string;
+  location?: string;
+  commentType?: 'root' | 'reply';
+  hasReplies?: boolean;
+  createTimeStart?: string;
+  createTimeEnd?: string;
   page?: number;
   pageSize?: number;
 }) {

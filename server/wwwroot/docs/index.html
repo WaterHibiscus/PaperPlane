@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PaperPlane API 文档</title>
+  <style>
+    :root {
+      --bg: #eef3f8;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --line: #dbe4ee;
+      --primary: #1677ff;
+      --primary-soft: rgba(22, 119, 255, 0.08);
+      --shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(22, 119, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      display: grid;
+      grid-template-rows: 64px 1fr;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1677ff 0%, #4ea1ff 100%);
+      box-shadow: 0 10px 24px rgba(22, 119, 255, 0.24);
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.15;
+      font-weight: 700;
+    }
+
+    .brand-copy p {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #175cd3;
+      background: var(--primary-soft);
+      border: 1px solid rgba(22, 119, 255, 0.14);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 108px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      color: #fff;
+      background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+      box-shadow: 0 10px 24px rgba(22, 119, 255, 0.2);
+    }
+
+    .btn.secondary {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .shell {
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .frame {
+      height: 100%;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    rapi-doc {
+      height: 100%;
+      width: 100%;
+    }
+
+    @media (max-width: 960px) {
+      body {
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        padding: 14px 16px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .shell {
+        padding: 8px;
+      }
+
+      .frame {
+        border-radius: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">PP</div>
+      <div class="brand-copy">
+        <h1>PaperPlane API 文档</h1>
+        <p>侧边栏模块导航风格，接近管理系统式接口文档</p>
+      </div>
+    </div>
+    <div class="actions">
+      <span class="tag">RapiDoc</span>
+      <a class="btn secondary" href="/docs/v1/openapi.json" target="_blank" rel="noreferrer">OpenAPI JSON</a>
+      <a class="btn primary" href="/swagger" target="_blank" rel="noreferrer">Swagger 调试页</a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="frame">
+      <rapi-doc
+        spec-url="/docs/v1/openapi.json"
+        render-style="focused"
+        theme="light"
+        layout="row"
+        show-header="false"
+        allow-authentication="true"
+        allow-try="true"
+        allow-server-selection="true"
+        allow-spec-url-load="false"
+        allow-spec-file-load="false"
+        persist-auth="true"
+        fill-request-fields-with-example="true"
+        schema-style="table"
+        regular-font='"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif'
+        mono-font='"Cascadia Code", Consolas, monospace'
+        nav-bg-color="#f6f9fc"
+        nav-text-color="#344054"
+        nav-hover-bg-color="#ebf3ff"
+        nav-hover-text-color="#1677ff"
+        nav-accent-color="#1677ff"
+        primary-color="#1677ff"
+        sort-tags="true"
+        sort-endpoints-by="path"
+        show-method-in-nav-bar="as-colored-block"
+        use-path-in-nav-bar="true"
+        nav-item-spacing="compact"
+        heading-text="PaperPlane API"
+      ></rapi-doc>
+    </div>
+  </main>
+
+  <script type="module" src="/vendor/rapidoc/rapidoc-min.js"></script>
+</body>
+</html>

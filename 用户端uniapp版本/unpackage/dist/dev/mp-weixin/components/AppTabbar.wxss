@@ -39,10 +39,9 @@
 	background: rgba(20, 28, 32, 0.8);
 	box-shadow: 0 20rpx 46rpx rgba(0, 0, 0, 0.22);
 }
-.mask-plane.data-v-a66d2e12 {
-	font-size: 34rpx;
-	line-height: 1;
-	color: var(--accent);
+.mask-plane-image.data-v-a66d2e12 {
+	width: 34rpx;
+	height: 34rpx;
 	animation: plane-pulse-a66d2e12 0.9s ease-in-out infinite;
 }
 .mask-text.data-v-a66d2e12 {

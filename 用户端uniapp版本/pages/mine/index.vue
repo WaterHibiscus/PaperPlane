@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 	<view :class="['app-page', 'with-tabbar', 'mine-page', themeClass]">
 		<view class="profile-hero">
 			<view class="hero-top">
@@ -12,7 +12,10 @@
 							<text class="hero-name">{{ appState.profileName }}</text>
 							<view class="hero-meta">
 								<text class="hero-id">ID: {{ profileId }}</text>
-								<text class="hero-tag">{{ profileGenderLabel }}</text>
+								<view class="hero-gender">
+									<image class="hero-gender-icon" :src="profileGenderIcon" mode="aspectFit" />
+									<text class="hero-gender-text">{{ profileGenderLabel }}</text>
+								</view>
 							</view>
 						</view>
 						<text class="hero-bio">{{ appState.profileBio }}</text>
@@ -21,6 +24,9 @@
 				<view class="hero-tools">
 					<view v-if="sessionAccount" class="logout-btn" @tap="handleLogout">
 						<text>退出</text>
+					</view>
+					<view class="settings-btn" @tap="handlePlaneBarcodeScan">
+						<image class="settings-btn-icon" :src="icons.scan" mode="aspectFit" style="width: 34rpx;height: 34rpx;" />
 					</view>
 					<view class="settings-btn" @tap="goProfileSettings">
 						<image class="settings-btn-icon" :src="icons.settings" mode="aspectFit" />
@@ -50,28 +56,21 @@
 
 		<view class="tab-header">
 			<view class="tab-main">
-				<view :class="['tab-btn', { active: activeTab === 'hangar' }]" @tap="activeTab = 'hangar'">
+					<view :class="['tab-btn', { active: activeTab === 'hangar' }]" @tap="switchTab('hangar')">
 					<text>机库</text>
 				</view>
-				<view :class="['tab-btn', { active: activeTab === 'picked' }]" @tap="activeTab = 'picked'">
+					<view :class="['tab-btn', { active: activeTab === 'picked' }]" @tap="switchTab('picked')">
 					<text>拾取</text>
 				</view>
-				<view :class="['tab-btn', { active: activeTab === 'fueled' }]" @tap="activeTab = 'fueled'">
+					<view :class="['tab-btn', { active: activeTab === 'fueled' }]" @tap="switchTab('fueled')">
 					<text>续航</text>
 				</view>
 			</view>
 			<view class="tab-search">
 				<view :class="['search-shell', { open: searchOpen }]">
-					<input
-						v-if="searchOpen"
-						v-model="searchQuery"
-						class="search-input"
-						:focus="searchFocus"
-						maxlength="20"
-						placeholder="搜索内容或地点"
-						placeholder-class="placeholder-text"
-						@blur="handleSearchBlur"
-					/>
+					<input v-if="searchOpen" v-model="searchQuery" class="search-input" :focus="searchFocus"
+						maxlength="20" placeholder="搜索内容或地点" placeholder-class="placeholder-text"
+						@blur="handleSearchBlur" />
 				</view>
 				<view v-if="!searchOpen" class="search-btn" @tap="toggleSearch">
 					<image class="search-btn-icon" :src="icons.search" mode="aspectFit" />
@@ -80,29 +79,23 @@
 					<image class="filter-btn-icon" :src="icons.filter" mode="aspectFit" />
 				</view>
 				<view v-if="activeTab === 'hangar' && hangarFilterOpen" class="filter-dropdown">
-					<view
-						:class="['filter-option', { active: hangarStatusFilter === 'all' }]"
-						@tap="selectHangarFilter('all')"
-					>
+					<view :class="['filter-option', { active: hangarStatusFilter === 'all' }]"
+						@tap="selectHangarFilter('all')">
 						<text>全部</text>
 					</view>
-					<view
-						:class="['filter-option', { active: hangarStatusFilter === 'active' }]"
-						@tap="selectHangarFilter('active')"
-					>
+					<view :class="['filter-option', { active: hangarStatusFilter === 'active' }]"
+						@tap="selectHangarFilter('active')">
 						<text>飞行中</text>
 					</view>
-					<view
-						:class="['filter-option', { active: hangarStatusFilter === 'recalled' }]"
-						@tap="selectHangarFilter('recalled')"
-					>
+					<view :class="['filter-option', { active: hangarStatusFilter === 'recalled' }]"
+						@tap="selectHangarFilter('recalled')">
 						<text>已召回</text>
 					</view>
 				</view>
 			</view>
 		</view>
 
-		<view v-if="activeTab === 'hangar'">
+			<view v-if="activeTab === 'hangar'" :class="['tab-panel', tabPanelMotionClass]">
 			<view v-if="hasDraft" class="draft-tip glass-card" @tap="goThrow">
 				<text class="draft-tip-title">有草稿待继续</text>
 				<text class="draft-tip-desc">{{ draftPreview }}</text>
@@ -123,13 +116,17 @@
 				<text class="empty-desc">试试其他关键词。</text>
 			</view>
 
-			<view v-else class="hangar-list">
-				<view
-					v-for="plane in filteredHangarPlanes"
-					:key="plane.id"
-					:class="['flight-card', isExpiredPlane(plane) ? 'landed' : 'active-flight']"
-					@tap="openDetail(plane.id)"
+				<scroll-view
+					v-else
+					class="hangar-list"
+					scroll-y
+					:show-scrollbar="false"
+					:scroll-top="scrollRestoreTop.hangar"
+					@scroll="handleListScroll('hangar', $event)"
 				>
+				<view v-for="plane in filteredHangarPlanes" :key="plane.id"
+					:class="['flight-card', isExpiredPlane(plane) ? 'landed' : 'active-flight']"
+					@tap="openDetail(plane.id)">
 					<view class="flight-top">
 						<view v-if="isRecalledPlane(plane)" class="flight-badge recalled">
 							<text>已召回</text>
@@ -165,11 +162,11 @@
 							</view>
 						</view>
 					</view>
-				</view>
+					</view>
+				</scroll-view>
 			</view>
-		</view>
 
-		<view v-else-if="activeTab === 'picked'">
+				<view v-else-if="activeTab === 'picked'" :class="['tab-panel', tabPanelMotionClass]">
 			<view v-if="loading" class="glass-card empty-card">
 				<text class="empty-title">拾取记录加载中...</text>
 				<text class="empty-desc">正在同步你的记录。</text>
@@ -185,8 +182,16 @@
 				<text class="empty-desc">试试其他关键词。</text>
 			</view>
 
-			<view v-else class="hangar-list fueled-list">
-				<view v-for="plane in filteredPickedList" :key="`picked-${plane.id}`" class="flight-card fueled-card" @tap="openDetail(plane.id)">
+				<scroll-view
+					v-else
+					class="hangar-list fueled-list"
+					scroll-y
+					:show-scrollbar="false"
+					:scroll-top="scrollRestoreTop.picked"
+					@scroll="handleListScroll('picked', $event)"
+				>
+				<view v-for="plane in filteredPickedList" :key="`picked-${plane.id}`" class="flight-card fueled-card"
+					@tap="openDetail(plane.id)">
 					<view class="flight-top">
 						<view class="flight-badge active fueled">
 							<text>已拾取</text>
@@ -200,11 +205,11 @@
 							<text>{{ plane.commentCount || 0 }} 条评论</text>
 						</view>
 					</view>
-				</view>
+					</view>
+				</scroll-view>
 			</view>
-		</view>
 
-		<view v-else>
+				<view v-else :class="['tab-panel', tabPanelMotionClass]">
 			<view v-if="loading" class="glass-card empty-card">
 				<text class="empty-title">续航记录加载中...</text>
 				<text class="empty-desc">正在同步你的记录。</text>
@@ -220,8 +225,16 @@
 				<text class="empty-desc">试试其他关键词。</text>
 			</view>
 
-			<view v-else class="hangar-list fueled-list">
-				<view v-for="plane in filteredFueledList" :key="`fueled-${plane.id}`" class="flight-card fueled-card" @tap="openDetail(plane.id)">
+				<scroll-view
+					v-else
+					class="hangar-list fueled-list"
+					scroll-y
+					:show-scrollbar="false"
+					:scroll-top="scrollRestoreTop.fueled"
+					@scroll="handleListScroll('fueled', $event)"
+				>
+				<view v-for="plane in filteredFueledList" :key="`fueled-${plane.id}`" class="flight-card fueled-card"
+					@tap="openDetail(plane.id)">
 					<view class="flight-top">
 						<view class="flight-badge active fueled">
 							<text>已续航</text>
@@ -235,375 +248,508 @@
 							<text>{{ plane.likeCount || 0 }} 次续航</text>
 						</view>
 					</view>
-				</view>
+					</view>
+				</scroll-view>
 			</view>
-		</view>
 
-		<detail-open-transition :visible="detailOpenVisible" :theme="appState.theme" />
+			<detail-open-transition :visible="detailOpenVisible" :theme="appState.theme" />
 		<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
 		<app-tabbar active="mine" :theme="appState.theme" />
 	</view>
 </template>
 
 <script>
-import AppTabbar from '../../components/AppTabbar.vue'
-import DetailOpenTransition from '../../components/DetailOpenTransition.vue'
-import PageTransition from '../../components/PageTransition.vue'
-import { appState } from '../../common/app-state.js'
-import {
-	destroyPlane,
-	getAssetUrl,
-	getMyFueledPlanes,
-	getMyPickedPlanes,
-	getMyThrownPlanes,
-	recallPlane,
-} from '../../common/api.js'
-import {
-	fetchCurrentUser,
-	getSessionAccount,
-	logoutAccount,
-} from '../../common/auth.js'
-import {
-	getThrowDraft,
-	getVoterKey,
-} from '../../common/storage.js'
-import { isExpired } from '../../common/utils.js'
-import detailOpenTransitionMixin from '../../common/detail-open-transition.js'
-import pageTransitionMixin from '../../common/page-transition.js'
-import { uiIcons } from '../../common/ui-icons.js'
+	import AppTabbar from '../../components/AppTabbar.vue'
+	import DetailOpenTransition from '../../components/DetailOpenTransition.vue'
+	import PageTransition from '../../components/PageTransition.vue'
+	import {
+		appState
+	} from '../../common/app-state.js'
+	import {
+		destroyPlane,
+		getAssetUrl,
+		getMyFueledPlanes,
+		getMyPickedPlanes,
+		getMyThrownPlanes,
+		recallPlane,
+	} from '../../common/api.js'
+	import {
+		fetchCurrentUser,
+		getSessionAccount,
+		logoutAccount,
+	} from '../../common/auth.js'
+		import {
+			getThrowDraft,
+			getVoterKey,
+		} from '../../common/storage.js'
+		import { parseScannedPlaneId } from '../../common/plane-code.js'
+		import {
+			isExpired
+		} from '../../common/utils.js'
+	import detailOpenTransitionMixin from '../../common/detail-open-transition.js'
+	import pageTransitionMixin from '../../common/page-transition.js'
+	import {
+		uiIcons
+	} from '../../common/ui-icons.js'
 
-export default {
-	mixins: [pageTransitionMixin, detailOpenTransitionMixin],
-	components: {
-		AppTabbar,
-		DetailOpenTransition,
-		PageTransition,
-	},
-	data() {
-		return {
-			appState,
-			icons: uiIcons,
-			myPlanes: [],
-			fueledPlanes: [],
-			pickedPlanes: [],
-			loading: false,
-			activeTab: 'hangar',
-			hangarFilterOpen: false,
-			hangarStatusFilter: 'all',
-			searchOpen: false,
-			searchFocus: false,
-			searchQuery: '',
-			throwDraft: null,
-			anonymousProfileId: getVoterKey().slice(-4).toUpperCase(),
-			sessionAccount: null,
-		}
-	},
-	computed: {
-		themeClass() {
-			return this.appState.theme === 'dark' ? 'theme-dark' : 'theme-light'
+	export default {
+		mixins: [pageTransitionMixin, detailOpenTransitionMixin],
+		components: {
+			AppTabbar,
+			DetailOpenTransition,
+			PageTransition,
 		},
-		profileAvatarUrl() {
-			return getAssetUrl(this.appState.profileAvatar)
-		},
-		nicknameInitial() {
-			return (this.appState.profileName || '?').slice(0, 1)
-		},
-		profileId() {
-			const sourceId = this.sessionAccount?.accountId || this.sessionAccount?.userId
-			if (!sourceId) return this.anonymousProfileId
-			return String(sourceId).slice(-6).toUpperCase()
-		},
-		profileGenderLabel() {
-			if (this.appState.profileGender === 'male') return '男'
-			if (this.appState.profileGender === 'female') return '女'
-			return '保密'
-		},
-		totalLikes() {
-			return this.myPlanes.reduce((sum, item) => sum + (item.likeCount || 0), 0)
-		},
-		totalPickups() {
-			return this.myPlanes.reduce((sum, item) => sum + (item.pickCount || 0), 0)
-		},
-		hasDraft() {
-			const draft = this.throwDraft
-			return Boolean(draft && (draft.content?.trim() || draft.selectedImages?.length))
-		},
-		draftPreview() {
-			const content = String(this.throwDraft?.content || '').trim()
-			return content ? content.slice(0, 32) : '草稿在等你继续。'
-		},
-		hangarPlanes() {
-			const active = this.myPlanes.filter(item => !this.isRecalledPlane(item) && !this.isExpiredPlane(item))
-			const recalled = this.myPlanes.filter(item => this.isRecalledPlane(item))
-			const landed = this.myPlanes.filter(item => !this.isRecalledPlane(item) && this.isExpiredPlane(item))
-			return [...active, ...recalled, ...landed]
-		},
-		filteredHangarSource() {
-			if (this.hangarStatusFilter === 'active') {
-				return this.hangarPlanes.filter(plane => !this.isRecalledPlane(plane) && !this.isExpiredPlane(plane))
+		data() {
+			return {
+				appState,
+				icons: uiIcons,
+				myPlanes: [],
+				fueledPlanes: [],
+					pickedPlanes: [],
+					loading: false,
+					activeTab: 'hangar',
+					tabMotionDirection: 'forward',
+					hangarFilterOpen: false,
+				hangarStatusFilter: 'all',
+					searchOpen: false,
+					searchFocus: false,
+					searchQuery: '',
+					skipReloadOnNextShow: false,
+					scrollMemoryTop: {
+						hangar: 0,
+						picked: 0,
+						fueled: 0,
+					},
+					scrollRestoreTop: {
+						hangar: 0,
+						picked: 0,
+						fueled: 0,
+					},
+					throwDraft: null,
+				anonymousProfileId: getVoterKey().slice(-4).toUpperCase(),
+				sessionAccount: null,
 			}
-			if (this.hangarStatusFilter === 'recalled') {
-				return this.hangarPlanes.filter(plane => this.isRecalledPlane(plane))
-			}
-			return this.hangarPlanes
 		},
-		normalizedSearch() {
-			return String(this.searchQuery || '').trim().toLowerCase()
-		},
-		filteredHangarPlanes() {
-			if (!this.normalizedSearch) return this.filteredHangarSource
-			return this.filteredHangarSource.filter(plane => {
-				const content = String(plane.content || '').toLowerCase()
-				const location = String(plane.locationTag || '').toLowerCase()
-				return content.includes(this.normalizedSearch) || location.includes(this.normalizedSearch)
-			})
-		},
-		fueledList() {
-			return this.fueledPlanes
-		},
-		filteredFueledList() {
-			if (!this.normalizedSearch) return this.fueledList
-			return this.fueledList.filter(plane => {
-				const content = String(plane.content || '').toLowerCase()
-				const location = String(plane.locationTag || '').toLowerCase()
-				return content.includes(this.normalizedSearch) || location.includes(this.normalizedSearch)
-			})
-		},
-		pickedList() {
-			return this.pickedPlanes
-		},
-		filteredPickedList() {
-			if (!this.normalizedSearch) return this.pickedList
-			return this.pickedList.filter(plane => {
-				const content = String(plane.content || '').toLowerCase()
-				const location = String(plane.locationTag || '').toLowerCase()
-				return content.includes(this.normalizedSearch) || location.includes(this.normalizedSearch)
-			})
-		},
-	},
-	onShow() {
-		this.loadPageData()
-	},
-	methods: {
-		isRecalledPlane(plane) {
-			return Boolean(plane?.isRecalled || plane?.status === 'recalled')
-		},
-		isExpiredPlane(plane) {
-			if (!plane) return true
-			if (plane.status === 'expired') return true
-			if (this.isRecalledPlane(plane)) return false
-			return isExpired(plane.expireTime)
-		},
-		canRecallPlane(plane) {
-			if (!plane) return false
-			return !this.isRecalledPlane(plane) && !this.isExpiredPlane(plane)
-		},
-		extractMineItems(payload) {
-			if (Array.isArray(payload)) return payload
-			if (Array.isArray(payload?.items)) return payload.items
-			return []
-		},
-		async loadPageData() {
-			this.throwDraft = getThrowDraft()
-			this.sessionAccount = getSessionAccount()
-			if (!this.sessionAccount) {
-				try {
-					await fetchCurrentUser()
-					this.sessionAccount = getSessionAccount()
-				} catch (error) {
-					// ignore recovery failure and fallback to login
+		computed: {
+			themeClass() {
+				return this.appState.theme === 'dark' ? 'theme-dark' : 'theme-light'
+			},
+			profileAvatarUrl() {
+				return getAssetUrl(this.appState.profileAvatar)
+			},
+			nicknameInitial() {
+				return (this.appState.profileName || '?').slice(0, 1)
+			},
+			profileId() {
+				const sourceId = this.sessionAccount?.accountId || this.sessionAccount?.userId
+				if (!sourceId) return this.anonymousProfileId
+				return String(sourceId).slice(-6).toUpperCase()
+			},
+			profileGenderLabel() {
+				if (this.appState.profileGender === 'male') return '男'
+				if (this.appState.profileGender === 'female') return '女'
+				return '保密'
+			},
+			profileGenderIcon() {
+				if (this.appState.profileGender === 'male') return '/static/images/男.png'
+				if (this.appState.profileGender === 'female') return '/static/images/女.png'
+				return '/static/images/性别保密.png'
+			},
+			totalLikes() {
+				return this.myPlanes.reduce((sum, item) => sum + (item.likeCount || 0), 0)
+			},
+			totalPickups() {
+				return this.myPlanes.reduce((sum, item) => sum + (item.pickCount || 0), 0)
+			},
+			hasDraft() {
+				const draft = this.throwDraft
+				return Boolean(draft && (draft.content?.trim() || draft.selectedImages?.length))
+			},
+			draftPreview() {
+				const content = String(this.throwDraft?.content || '').trim()
+				return content ? content.slice(0, 32) : '草稿在等你继续。'
+			},
+			hangarPlanes() {
+				const active = this.myPlanes.filter(item => !this.isRecalledPlane(item) && !this.isExpiredPlane(item))
+				const recalled = this.myPlanes.filter(item => this.isRecalledPlane(item))
+				const landed = this.myPlanes.filter(item => !this.isRecalledPlane(item) && this.isExpiredPlane(item))
+				return [...active, ...recalled, ...landed]
+			},
+			filteredHangarSource() {
+				if (this.hangarStatusFilter === 'active') {
+					return this.hangarPlanes.filter(plane => !this.isRecalledPlane(plane) && !this.isExpiredPlane(plane))
 				}
-				if (!this.sessionAccount) {
-					this.myPlanes = []
-					this.fueledPlanes = []
-					this.pickedPlanes = []
-					uni.reLaunch({
-						url: '/pages/login/index',
-					})
-					return
+				if (this.hangarStatusFilter === 'recalled') {
+					return this.hangarPlanes.filter(plane => this.isRecalledPlane(plane))
 				}
-			}
-			this.loading = true
-			try {
-				try {
-					await fetchCurrentUser()
-					this.sessionAccount = getSessionAccount()
-				} catch (error) {
-					// Keep local user info when network is unstable.
-				}
-				await Promise.all([
-					this.loadMyPlanes(),
-					this.loadFueledPlanes(),
-					this.loadPickedPlanes(),
-				])
-			} finally {
-				this.loading = false
-			}
-		},
-		async loadMyPlanes() {
-			try {
-				const data = await getMyThrownPlanes({
-					status: 'all',
-					page: 1,
-					pageSize: 100,
+				return this.hangarPlanes
+			},
+			normalizedSearch() {
+				return String(this.searchQuery || '').trim().toLowerCase()
+			},
+			filteredHangarPlanes() {
+				if (!this.normalizedSearch) return this.filteredHangarSource
+				return this.filteredHangarSource.filter(plane => {
+					const content = String(plane.content || '').toLowerCase()
+					const location = String(plane.locationTag || '').toLowerCase()
+					return content.includes(this.normalizedSearch) || location.includes(this.normalizedSearch)
 				})
-				this.myPlanes = this.extractMineItems(data)
-			} catch (error) {
-				this.myPlanes = []
+			},
+			fueledList() {
+				return this.fueledPlanes
+			},
+			filteredFueledList() {
+				if (!this.normalizedSearch) return this.fueledList
+				return this.fueledList.filter(plane => {
+					const content = String(plane.content || '').toLowerCase()
+					const location = String(plane.locationTag || '').toLowerCase()
+					return content.includes(this.normalizedSearch) || location.includes(this.normalizedSearch)
+				})
+			},
+			pickedList() {
+				return this.pickedPlanes
+			},
+				filteredPickedList() {
+					if (!this.normalizedSearch) return this.pickedList
+					return this.pickedList.filter(plane => {
+						const content = String(plane.content || '').toLowerCase()
+						const location = String(plane.locationTag || '').toLowerCase()
+						return content.includes(this.normalizedSearch) || location.includes(this.normalizedSearch)
+					})
+				},
+				tabPanelMotionClass() {
+					return this.tabMotionDirection === 'backward'
+						? 'tab-panel-backward'
+						: 'tab-panel-forward'
+				},
+			},
+		onShow() {
+			if (this.skipReloadOnNextShow) {
+				this.skipReloadOnNextShow = false
+				this.$nextTick(() => {
+					this.restoreScrollPosition(this.activeTab)
+				})
+				return
+			}
+			this.loadPageData().then(() => {
+				this.$nextTick(() => {
+					this.restoreScrollPosition(this.activeTab)
+				})
+			})
+		},
+		methods: {
+			isRecalledPlane(plane) {
+				return Boolean(plane?.isRecalled || plane?.status === 'recalled')
+			},
+			isExpiredPlane(plane) {
+				if (!plane) return true
+				if (plane.status === 'expired') return true
+				if (this.isRecalledPlane(plane)) return false
+				return isExpired(plane.expireTime)
+			},
+			canRecallPlane(plane) {
+				if (!plane) return false
+				return !this.isRecalledPlane(plane) && !this.isExpiredPlane(plane)
+			},
+			extractMineItems(payload) {
+				if (Array.isArray(payload)) return payload
+				if (Array.isArray(payload?.items)) return payload.items
+				return []
+			},
+			async loadPageData() {
+				this.throwDraft = getThrowDraft()
+				this.sessionAccount = getSessionAccount()
+				if (!this.sessionAccount) {
+					try {
+						await fetchCurrentUser()
+						this.sessionAccount = getSessionAccount()
+					} catch (error) {
+						// ignore recovery failure and fallback to login
+					}
+					if (!this.sessionAccount) {
+						this.myPlanes = []
+						this.fueledPlanes = []
+						this.pickedPlanes = []
+						uni.reLaunch({
+							url: '/pages/login/index',
+						})
+						return
+					}
+				}
+				this.loading = true
+				try {
+					try {
+						await fetchCurrentUser()
+						this.sessionAccount = getSessionAccount()
+					} catch (error) {
+						// Keep local user info when network is unstable.
+					}
+					await Promise.all([
+						this.loadMyPlanes(),
+						this.loadFueledPlanes(),
+						this.loadPickedPlanes(),
+					])
+				} finally {
+					this.loading = false
+				}
+			},
+			async loadMyPlanes() {
+				try {
+					const data = await getMyThrownPlanes({
+						status: 'all',
+						page: 1,
+						pageSize: 100,
+					})
+					this.myPlanes = this.extractMineItems(data)
+				} catch (error) {
+					this.myPlanes = []
+					uni.showToast({
+						title: error.message || '加载失败',
+						icon: 'none',
+					})
+				}
+			},
+			async loadFueledPlanes() {
+				try {
+					const data = await getMyFueledPlanes({
+						page: 1,
+						pageSize: 100,
+					})
+					this.fueledPlanes = this.extractMineItems(data)
+				} catch (error) {
+					this.fueledPlanes = []
+				}
+			},
+			async loadPickedPlanes() {
+				try {
+					const data = await getMyPickedPlanes({
+						page: 1,
+						pageSize: 100,
+					})
+					this.pickedPlanes = this.extractMineItems(data)
+				} catch (error) {
+					this.pickedPlanes = []
+				}
+			},
+			formatPlaneDate(time) {
+				if (!time) return ''
+				const date = new Date(time)
+				const year = date.getFullYear()
+				const month = `${date.getMonth() + 1}`.padStart(2, '0')
+				const day = `${date.getDate()}`.padStart(2, '0')
+				return `${year}-${month}-${day}`
+			},
+			getRemainingHoursLabel(plane) {
+				if (!plane?.expireTime) return '0小时'
+				const diff = new Date(plane.expireTime).getTime() - Date.now()
+				if (diff <= 0) return '0小时'
+				const hours = Math.max(Math.ceil(diff / 3600000), 1)
+				return `${hours}小时`
+			},
+				switchTab(nextTab) {
+					if (!nextTab || nextTab === this.activeTab) return
+					this.commitCurrentScrollPosition()
+					const order = ['hangar', 'picked', 'fueled']
+					const currentIndex = order.indexOf(this.activeTab)
+					const nextIndex = order.indexOf(nextTab)
+					this.tabMotionDirection = nextIndex < currentIndex ? 'backward' : 'forward'
+					this.activeTab = nextTab
+					if (nextTab !== 'hangar') {
+						this.hangarFilterOpen = false
+					}
+					this.$nextTick(() => {
+						this.restoreScrollPosition(nextTab)
+					})
+				},
+				handleListScroll(tab, event) {
+					const top = Math.max(0, Math.round(Number(event?.detail?.scrollTop || 0)))
+					this.scrollMemoryTop = {
+						...this.scrollMemoryTop,
+						[tab]: top,
+					}
+				},
+				commitCurrentScrollPosition() {
+					const currentTab = this.activeTab
+					const top = Math.max(0, Math.round(Number(this.scrollMemoryTop?.[currentTab] || 0)))
+					this.scrollRestoreTop = {
+						...this.scrollRestoreTop,
+						[currentTab]: top,
+					}
+				},
+				restoreScrollPosition(tab) {
+					const targetTab = tab || this.activeTab
+					const top = Math.max(0, Math.round(Number(this.scrollMemoryTop?.[targetTab] || 0)))
+					this.scrollRestoreTop = {
+						...this.scrollRestoreTop,
+						[targetTab]: 0,
+					}
+					this.$nextTick(() => {
+						this.scrollRestoreTop = {
+							...this.scrollRestoreTop,
+							[targetTab]: top,
+						}
+					})
+				},
+				toggleSearch() {
+				if (!this.searchOpen) {
+					this.searchOpen = true
+				}
+				this.$nextTick(() => {
+					this.searchFocus = true
+				})
+			},
+			handleSearchBlur() {
+				this.searchFocus = false
+				if (!this.searchQuery.trim()) {
+					this.searchOpen = false
+				}
+			},
+			toggleHangarFilter() {
+				if (this.activeTab !== 'hangar') return
+				this.hangarFilterOpen = !this.hangarFilterOpen
+			},
+			selectHangarFilter(value) {
+				this.hangarStatusFilter = value
+				this.hangarFilterOpen = false
+			},
+			handleRecall(plane) {
+				uni.showModal({
+					title: '召回纸飞机',
+					content: '召回后纸飞机将停止飞行，但会保留在你的记录中。',
+					success: async ({
+						confirm
+					}) => {
+						if (!confirm) return
+						try {
+							await recallPlane(plane.id)
+							uni.showToast({
+								title: '已召回',
+								icon: 'success',
+							})
+							await this.loadMyPlanes()
+						} catch (error) {
+							uni.showToast({
+								title: error.message || '召回失败',
+								icon: 'none',
+							})
+						}
+					},
+				})
+			},
+			handleDestroy(plane) {
+				uni.showModal({
+					title: '销毁纸飞机',
+					content: '该操作不可撤销。',
+					confirmColor: '#ff6478',
+					success: async ({
+						confirm
+					}) => {
+						if (!confirm) return
+						try {
+							await destroyPlane(plane.id)
+							uni.showToast({
+								title: '已销毁',
+								icon: 'success',
+							})
+							await Promise.all([
+								this.loadMyPlanes(),
+								this.loadFueledPlanes(),
+								this.loadPickedPlanes(),
+							])
+						} catch (error) {
+							uni.showToast({
+								title: error.message || '销毁失败',
+								icon: 'none',
+							})
+						}
+					},
+				})
+			},
+			goProfileSettings() {
+				uni.navigateTo({
+					url: '/pages/profile-edit/index',
+				})
+			},
+			handlePlaneBarcodeScan() {
+				// #ifdef H5
+				uni.navigateTo({
+					url: '/pages/scan/index',
+				})
+				return
+				// #endif
+				uni.scanCode({
+					scanType: ['barCode'],
+					success: res => {
+						const planeId = parseScannedPlaneId(res?.result)
+						if (!planeId) {
+							uni.showToast({
+								title: '未识别到纸条条码',
+								icon: 'none',
+							})
+							return
+						}
+						this.openDetail(planeId)
+					},
+					fail: error => {
+						if (error?.errMsg && /cancel/i.test(error.errMsg)) return
+						uni.showToast({
+							title: '扫描失败',
+							icon: 'none',
+						})
+					},
+				})
+			},
+			handleScan() {
 				uni.showToast({
-					title: error.message || '加载失败',
+					title: '扫描功能开发中',
 					icon: 'none',
 				})
-			}
-		},
-		async loadFueledPlanes() {
-			try {
-				const data = await getMyFueledPlanes({
-					page: 1,
-					pageSize: 100,
+			},
+			handleLogout() {
+				uni.showModal({
+					title: '退出登录',
+					content: '退出后将返回登录页。',
+					confirmColor: '#ff7a6e',
+					success: async ({
+						confirm
+					}) => {
+						if (!confirm) return
+						await logoutAccount()
+						this.sessionAccount = null
+						uni.reLaunch({
+							url: '/pages/login/index',
+						})
+					},
 				})
-				this.fueledPlanes = this.extractMineItems(data)
-			} catch (error) {
-				this.fueledPlanes = []
-			}
-		},
-		async loadPickedPlanes() {
-			try {
-				const data = await getMyPickedPlanes({
-					page: 1,
-					pageSize: 100,
+			},
+			goThrow() {
+				uni.navigateTo({
+					url: '/pages/throw/index',
 				})
-				this.pickedPlanes = this.extractMineItems(data)
-			} catch (error) {
-				this.pickedPlanes = []
-			}
-		},
-		formatPlaneDate(time) {
-			if (!time) return ''
-			const date = new Date(time)
-			const year = date.getFullYear()
-			const month = `${date.getMonth() + 1}`.padStart(2, '0')
-			const day = `${date.getDate()}`.padStart(2, '0')
-			return `${year}-${month}-${day}`
-		},
-		getRemainingHoursLabel(plane) {
-			if (!plane?.expireTime) return '0小时'
-			const diff = new Date(plane.expireTime).getTime() - Date.now()
-			if (diff <= 0) return '0小时'
-			const hours = Math.max(Math.ceil(diff / 3600000), 1)
-			return `${hours}小时`
-		},
-		toggleSearch() {
-			if (!this.searchOpen) {
-				this.searchOpen = true
-			}
-			this.$nextTick(() => {
-				this.searchFocus = true
-			})
-		},
-		handleSearchBlur() {
-			this.searchFocus = false
-			if (!this.searchQuery.trim()) {
-				this.searchOpen = false
-			}
-		},
-		toggleHangarFilter() {
-			if (this.activeTab !== 'hangar') return
-			this.hangarFilterOpen = !this.hangarFilterOpen
-		},
-		selectHangarFilter(value) {
-			this.hangarStatusFilter = value
-			this.hangarFilterOpen = false
-		},
-		handleRecall(plane) {
-			uni.showModal({
-				title: '召回纸飞机',
-				content: '召回后纸飞机将停止飞行，但会保留在你的记录中。',
-				success: async ({ confirm }) => {
-					if (!confirm) return
-					try {
-						await recallPlane(plane.id)
-						uni.showToast({
-							title: '已召回',
-							icon: 'success',
-						})
-						await this.loadMyPlanes()
-					} catch (error) {
-						uni.showToast({
-							title: error.message || '召回失败',
-							icon: 'none',
-						})
-					}
+			},
+				openDetail(id) {
+					this.commitCurrentScrollPosition()
+					this.skipReloadOnNextShow = true
+					this.openPlaneDetail(id)
 				},
-			})
 		},
-		handleDestroy(plane) {
-			uni.showModal({
-				title: '销毁纸飞机',
-				content: '该操作不可撤销。',
-				confirmColor: '#ff6478',
-				success: async ({ confirm }) => {
-					if (!confirm) return
-					try {
-						await destroyPlane(plane.id)
-						uni.showToast({
-							title: '已销毁',
-							icon: 'success',
-						})
-						await Promise.all([
-							this.loadMyPlanes(),
-							this.loadFueledPlanes(),
-							this.loadPickedPlanes(),
-						])
-					} catch (error) {
-						uni.showToast({
-							title: error.message || '销毁失败',
-							icon: 'none',
-						})
-					}
-				},
-			})
-		},
-		goProfileSettings() {
-			uni.navigateTo({
-				url: '/pages/profile-edit/index',
-			})
-		},
-		handleLogout() {
-			uni.showModal({
-				title: '退出登录',
-				content: '退出后将返回登录页。',
-				confirmColor: '#ff7a6e',
-				success: async ({ confirm }) => {
-					if (!confirm) return
-					await logoutAccount()
-					this.sessionAccount = null
-					uni.reLaunch({
-						url: '/pages/login/index',
-					})
-				},
-			})
-		},
-		goThrow() {
-			uni.navigateTo({
-				url: '/pages/throw/index',
-			})
-		},
-		openDetail(id) {
-			this.openPlaneDetail(id)
-		},
-	},
-}
+	}
 </script>
 <style scoped>
 	.mine-page {
+		height: 100vh;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
 		padding-top: 0;
 		padding-left: 0;
 		padding-right: 0;
+		padding-bottom: 0;
 		background: rgba(247, 250, 248, 1);
 	}
 
 	.mine-page .profile-hero {
+		flex-shrink: 0;
 		position: relative;
 		height: 344rpx;
 		padding: calc(env(safe-area-inset-top) + 80rpx) 32rpx 0;
@@ -692,13 +838,26 @@ export default {
 		border: 2rpx solid rgba(235, 245, 240, 1);
 	}
 
-	.mine-page .hero-tag {
+	.mine-page .hero-gender {
 		display: inline-flex;
+		align-items: center;
+		gap: 6rpx;
 		padding: 4rpx 10rpx;
 		border-radius: 999rpx;
+		background: rgba(235, 245, 240, 1);
+	}
+
+	.mine-page .hero-gender-icon {
+		width: 22rpx;
+		height: 22rpx;
+		display: block;
+		flex-shrink: 0;
+	}
+
+	.mine-page .hero-gender-text {
 		font-size: 18rpx;
 		color: rgba(46, 164, 116, 1);
-		background: rgba(235, 245, 240, 1);
+		line-height: 1;
 	}
 
 	.mine-page .hero-bio {
@@ -734,21 +893,27 @@ export default {
 		font-weight: 600;
 	}
 
-.mine-page .settings-btn {
-	width: 58rpx;
-	height: 58rpx;
+	.mine-page .settings-btn {
+		width: 58rpx;
+		height: 58rpx;
 		border-radius: 50%;
 		background: rgba(255, 255, 255, 0.6);
 		display: flex;
-	align-items: center;
-	justify-content: center;
-}
+		align-items: center;
+		justify-content: center;
+	}
 
-.mine-page .settings-btn-icon {
-	width: 24rpx;
-	height: 24rpx;
-	display: block;
-}
+	.mine-page .settings-btn-icon {
+		width: 48rpx;
+		height: 48rpx;
+		display: block;
+	}
+	
+	.mine-page .shaomiao-btn-icon {
+		width: 32rpx;
+		height: 32rpx;
+		display: block;
+	}
 
 	.mine-page .stats-card {
 		position: absolute;
@@ -789,7 +954,16 @@ export default {
 	}
 
 	.mine-page .hero-spacer {
+		flex-shrink: 0;
 		height: 42rpx;
+	}
+
+	.mine-page .tab-panel {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
 	}
 
 	.settings-panel,
@@ -913,6 +1087,7 @@ export default {
 	}
 
 	.mine-page .tab-header {
+		flex-shrink: 0;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -931,18 +1106,52 @@ export default {
 		min-width: 0;
 	}
 
+	.mine-page .tab-panel-forward {
+		animation: mine-tab-panel-forward 260ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.mine-page .tab-panel-backward {
+		animation: mine-tab-panel-backward 260ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
 	.mine-page .tab-btn {
+		position: relative;
 		padding-bottom: 18rpx;
 		border-bottom: 4rpx solid transparent;
 		font-size: 28rpx;
 		font-weight: 500;
 		color: rgba(150, 160, 155, 1);
+		transform: translateY(0);
+		transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+			transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+			opacity 180ms ease;
+	}
+
+	.mine-page .tab-btn::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 4rpx;
+		height: 4rpx;
+		border-radius: 999rpx;
+		background: linear-gradient(90deg, rgba(46, 164, 116, 1), rgba(76, 189, 143, 0.72));
+		transform: scaleX(0.28);
+		transform-origin: center;
+		opacity: 0;
+		transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+			opacity 220ms ease;
 	}
 
 	.mine-page .tab-btn.active {
-		border-bottom-color: rgba(46, 164, 116, 1);
 		font-weight: 700;
 		color: rgba(30, 40, 35, 1);
+		transform: translateY(-4rpx);
+	}
+
+	.mine-page .tab-btn.active::after {
+		transform: scaleX(1);
+		opacity: 1;
 	}
 
 	.mine-page .tab-search {
@@ -976,39 +1185,39 @@ export default {
 		color: rgba(30, 40, 35, 1);
 	}
 
-.mine-page .search-btn {
-	width: 62rpx;
+	.mine-page .search-btn {
+		width: 62rpx;
 		height: 62rpx;
 		border-radius: 50%;
 		background: rgba(255, 255, 255, 0.72);
 		border: 2rpx solid rgba(235, 240, 238, 1);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 
-.mine-page .search-btn-icon {
-	width: 24rpx;
-	height: 24rpx;
-	display: block;
-}
+	.mine-page .search-btn-icon {
+		width: 48rpx;
+		height: 48rpx;
+		display: block;
+	}
 
-.mine-page .filter-btn {
-	width: 62rpx;
+	.mine-page .filter-btn {
+		width: 62rpx;
 		height: 62rpx;
 		border-radius: 50%;
 		background: rgba(255, 255, 255, 0.72);
 		border: 2rpx solid rgba(235, 240, 238, 1);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 
-.mine-page .filter-btn-icon {
-	width: 24rpx;
-	height: 24rpx;
-	display: block;
-}
+	.mine-page .filter-btn-icon {
+		width: 48rpx;
+		height: 48rpx;
+		display: block;
+	}
 
 	.mine-page .filter-dropdown {
 		position: absolute;
@@ -1037,7 +1246,9 @@ export default {
 	}
 
 	.mine-page .hangar-list {
-		padding: 18rpx 28rpx 0;
+		flex: 1;
+		min-height: 0;
+		padding: 18rpx 28rpx calc(env(safe-area-inset-bottom) + 200rpx);
 	}
 
 	.mine-page .flight-card {
@@ -1146,6 +1357,28 @@ export default {
 		flex-shrink: 0;
 	}
 
+	@keyframes mine-tab-panel-forward {
+		0% {
+			opacity: 0;
+			transform: translate3d(22rpx, 0, 0);
+		}
+		100% {
+			opacity: 1;
+			transform: translate3d(0, 0, 0);
+		}
+	}
+
+	@keyframes mine-tab-panel-backward {
+		0% {
+			opacity: 0;
+			transform: translate3d(-22rpx, 0, 0);
+		}
+		100% {
+			opacity: 1;
+			transform: translate3d(0, 0, 0);
+		}
+	}
+
 	.mine-page .flight-action {
 		padding: 8rpx 16rpx;
 		border-radius: 999rpx;
@@ -1207,9 +1440,13 @@ export default {
 		color: rgba(126, 223, 183, 1);
 	}
 
-	.mine-page.theme-dark .hero-tag,
+	.mine-page.theme-dark .hero-gender,
 	.mine-page.theme-dark .gender-chip.active {
 		background: rgba(54, 192, 141, 0.14);
+	}
+
+	.mine-page.theme-dark .hero-gender-text,
+	.mine-page.theme-dark .gender-chip.active {
 		color: rgba(126, 223, 183, 1);
 	}
 
@@ -1318,6 +1555,16 @@ export default {
 	.mine-page.theme-dark .flight-footer {
 		border-color: rgba(230, 237, 241, 0.06);
 	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.mine-page .tab-panel-forward,
+		.mine-page .tab-panel-backward {
+			animation: none;
+		}
+
+		.mine-page .tab-btn,
+		.mine-page .tab-btn::after {
+			transition: none;
+		}
+	}
 </style>
-
-

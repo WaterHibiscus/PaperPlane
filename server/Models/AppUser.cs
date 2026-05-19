@@ -19,4 +19,5 @@ public class AppUser
     public List<Plane> CreatedPlanes { get; set; } = [];
     public List<PlaneLikeRecord> LikeRecords { get; set; } = [];
     public List<PlanePickRecord> PickRecords { get; set; } = [];
+    public List<PlaneReportRecord> ReportRecords { get; set; } = [];
 }

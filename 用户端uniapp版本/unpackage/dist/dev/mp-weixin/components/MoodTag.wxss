@@ -8,9 +8,11 @@
 	border: 2rpx solid currentColor;
 	background: rgba(255, 255, 255, 0.7);
 }
-.mood-icon.data-v-a2ea2a7e {
-	font-size: 22rpx;
+.mood-icon-image.data-v-a2ea2a7e {
+	width: 22rpx;
+	height: 22rpx;
 	margin-right: 8rpx;
+	flex-shrink: 0;
 }
 .mood-text.data-v-a2ea2a7e {
 	font-size: 22rpx;

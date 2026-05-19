@@ -20,6 +20,7 @@ declare module "@elegant-router/types" {
     "403": "/403";
     "404": "/404";
     "500": "/500";
+    "ai-manage": "/ai-manage";
     "comment-manage": "/comment-manage";
     "expire-manage": "/expire-manage";
     "headline-manage": "/headline-manage";
@@ -65,6 +66,7 @@ declare module "@elegant-router/types" {
     | "403"
     | "404"
     | "500"
+    | "ai-manage"
     | "comment-manage"
     | "expire-manage"
     | "headline-manage"
@@ -97,6 +99,7 @@ declare module "@elegant-router/types" {
     | "500"
     | "iframe-page"
     | "login"
+    | "ai-manage"
     | "comment-manage"
     | "expire-manage"
     | "headline-manage"

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ASUS\\Desktop\\PaperPlane\\server\\server.csproj": {}
+    "D:\\web课程\\PaperPlane\\server\\server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ASUS\\Desktop\\PaperPlane\\server\\server.csproj": {
+    "D:\\web课程\\PaperPlane\\server\\server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ASUS\\Desktop\\PaperPlane\\server\\server.csproj",
+        "projectUniqueName": "D:\\web课程\\PaperPlane\\server\\server.csproj",
         "projectName": "server",
-        "projectPath": "C:\\Users\\ASUS\\Desktop\\PaperPlane\\server\\server.csproj",
+        "projectPath": "D:\\web课程\\PaperPlane\\server\\server.csproj",
         "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ASUS\\Desktop\\PaperPlane\\server\\obj\\",
+        "outputPath": "D:\\web课程\\PaperPlane\\server\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -64,6 +64,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[9.0.*, )"
+            },
+            "QRCoder": {
+              "target": "Package",
+              "version": "[1.6.0, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",

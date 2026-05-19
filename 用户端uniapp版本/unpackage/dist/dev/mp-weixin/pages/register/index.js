@@ -37,6 +37,9 @@ const _sfc_main = {
   onLoad() {
     this.refreshCaptcha();
   },
+  onShow() {
+    common_appState.syncThemeWindow(this.appState.theme);
+  },
   methods: {
     async refreshCaptcha() {
       try {

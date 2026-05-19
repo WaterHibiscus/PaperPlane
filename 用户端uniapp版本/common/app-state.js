@@ -1,5 +1,6 @@
 ﻿import { reactive } from 'vue'
-import { getLocations } from './api.js'
+import { getLocations, getMoodConfigs } from './api.js'
+import { getMoodOptions, setMoodConfigs } from './moods.js'
 import {
 	getCurrentLocation,
 	getLocationCache,
@@ -21,6 +22,7 @@ export const appState = reactive({
 	theme: getTheme(),
 	currentLocation: getCurrentLocation(),
 	locations: getLocationCache(),
+	moodConfigs: getMoodOptions(),
 	profileName: getProfileName(),
 	profileAvatar: getProfileAvatar(),
 	profileGender: getProfileGender(),
@@ -56,25 +58,46 @@ function syncDocumentBackground(style) {
 	}
 }
 
+function hasActivePage() {
+	if (typeof getCurrentPages !== 'function') return false
+	try {
+		const pages = getCurrentPages()
+		return Array.isArray(pages) && pages.length > 0
+	} catch (error) {
+		return false
+	}
+}
+
+function safelyInvokeUniApi(invoke) {
+	try {
+		const result = invoke()
+		if (result && typeof result.catch === 'function') {
+			result.catch(() => {
+				// ignore async api failures
+			})
+		}
+	} catch (error) {
+		// ignore sync api failures
+	}
+}
+
 export function syncThemeWindow(theme = appState.theme) {
 	const style = getWindowStyle(theme)
 	syncDocumentBackground(style)
 
 	if (typeof uni !== 'undefined') {
 		if (typeof uni.setBackgroundColor === 'function') {
-			try {
+			safelyInvokeUniApi(() =>
 				uni.setBackgroundColor({
 					backgroundColor: style.backgroundColor,
 					backgroundColorTop: style.backgroundColorTop,
 					backgroundColorBottom: style.backgroundColorBottom,
 				})
-			} catch (error) {
-				// ignore background color sync failures
-			}
+			)
 		}
 
-		if (typeof uni.setNavigationBarColor === 'function') {
-			try {
+		if (typeof uni.setNavigationBarColor === 'function' && hasActivePage()) {
+			safelyInvokeUniApi(() =>
 				uni.setNavigationBarColor({
 					frontColor: style.frontColor,
 					backgroundColor: style.backgroundColor,
@@ -83,9 +106,7 @@ export function syncThemeWindow(theme = appState.theme) {
 						timingFunc: 'linear',
 					},
 				})
-			} catch (error) {
-				// ignore navigation bar color sync failures
-			}
+			)
 		}
 	}
 
@@ -120,6 +141,13 @@ export async function fetchLocations() {
 	appState.locations = locations || []
 	setLocationCache(appState.locations)
 	return appState.locations
+}
+
+export async function fetchMoodConfigs() {
+	const moods = await getMoodConfigs()
+	setMoodConfigs(moods)
+	appState.moodConfigs = getMoodOptions()
+	return appState.moodConfigs
 }
 
 export function setProfileName(name) {

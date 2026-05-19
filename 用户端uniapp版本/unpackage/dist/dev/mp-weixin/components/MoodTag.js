@@ -16,7 +16,7 @@ const _sfc_main = {
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
-    a: common_vendor.t($options.meta.icon),
+    a: $options.meta.icon,
     b: common_vendor.t($options.meta.label),
     c: $options.meta.color,
     d: $options.meta.color

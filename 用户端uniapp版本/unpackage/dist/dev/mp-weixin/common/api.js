@@ -1,40 +1,74 @@
 "use strict";
 const common_vendor = require("./vendor.js");
 const common_config = require("./config.js");
-const common_mockDb = require("./mock-db.js");
 const common_storage = require("./storage.js");
-let transportFallbackUntil = 0;
 let refreshPromise = null;
+const COMPRESS_THRESHOLD = 2 * 1024 * 1024;
+const COMPRESS_QUALITY = 65;
 function buildError(message, response) {
-  const error = new Error(message || "请求失败");
+  const error = new Error(message || "Request failed");
   error.response = response || null;
   return error;
 }
-function toErrorMessage(payload, fallback = "请求失败") {
+function getLocalFileSize(filePath) {
+  return new Promise((resolve) => {
+    if (!filePath || typeof common_vendor.index === "undefined" || typeof common_vendor.index.getFileInfo !== "function") {
+      resolve(null);
+      return;
+    }
+    common_vendor.index.getFileInfo({
+      filePath,
+      success: (res) => {
+        resolve(Number((res == null ? void 0 : res.size) || 0));
+      },
+      fail: () => {
+        resolve(null);
+      }
+    });
+  });
+}
+function compressImageOnce(filePath, quality = COMPRESS_QUALITY) {
+  return new Promise((resolve) => {
+    if (!filePath || typeof common_vendor.index === "undefined" || typeof common_vendor.index.compressImage !== "function") {
+      resolve(filePath);
+      return;
+    }
+    common_vendor.index.compressImage({
+      src: filePath,
+      quality,
+      success: (res) => {
+        resolve((res == null ? void 0 : res.tempFilePath) || filePath);
+      },
+      fail: () => {
+        resolve(filePath);
+      }
+    });
+  });
+}
+async function prepareImageForUpload(filePath) {
+  const size = await getLocalFileSize(filePath);
+  if (typeof size !== "number" || size <= 0 || size < COMPRESS_THRESHOLD) {
+    return filePath;
+  }
+  const compressedPath = await compressImageOnce(filePath, COMPRESS_QUALITY);
+  if (!compressedPath || compressedPath === filePath) {
+    return filePath;
+  }
+  const compressedSize = await getLocalFileSize(compressedPath);
+  if (typeof compressedSize !== "number" || compressedSize <= 0) {
+    return filePath;
+  }
+  return compressedSize < size ? compressedPath : filePath;
+}
+function toErrorMessage(payload, fallback = "Request failed") {
   if (payload && typeof payload === "object" && payload.message) {
     return payload.message;
   }
   return fallback;
 }
-function markTransportFallback() {
-  const cooldown = Number(common_config.config.mockFallbackCooldown || 0);
-  if (cooldown > 0) {
-    transportFallbackUntil = Date.now() + cooldown;
-  }
-}
-function clearTransportFallback() {
-  transportFallbackUntil = 0;
-}
-function shouldUseMockFirst() {
-  return transportFallbackUntil > Date.now();
-}
 function isUnauthorized(error) {
   var _a;
   return Number(((_a = error == null ? void 0 : error.response) == null ? void 0 : _a.statusCode) || 0) === 401;
-}
-function hasHttpStatus(error) {
-  var _a;
-  return Boolean((_a = error == null ? void 0 : error.response) == null ? void 0 : _a.statusCode);
 }
 function getAuthHeaders() {
   const token = common_storage.getAccessToken();
@@ -60,7 +94,7 @@ function rawRequest({ url, method = "GET", data, headers = {} }) {
         reject(buildError(toErrorMessage(res.data), res));
       },
       fail: (err) => {
-        reject(buildError(err.errMsg || "网络异常", err));
+        reject(buildError(err.errMsg || "Network error", err));
       }
     });
   });
@@ -118,9 +152,9 @@ async function request({ url, method = "GET", data, retryOnAuth = true, attachAu
         });
       }
       if (!common_storage.getAccessToken()) {
-        throw buildError("请先登录", error.response || error);
+        throw buildError("Please login first", error.response || error);
       }
-      throw buildError("登录已过期，请重新登录", error.response || error);
+      throw buildError("Session expired, please login again", error.response || error);
     }
     throw error;
   }
@@ -132,7 +166,7 @@ function rawUploadFile({ url, filePath, name = "file", headers = {} }) {
       filePath,
       name,
       header: headers,
-      timeout: common_config.config.timeout,
+      timeout: common_config.config.uploadTimeout,
       success: (res) => {
         let payload = {};
         try {
@@ -143,10 +177,15 @@ function rawUploadFile({ url, filePath, name = "file", headers = {} }) {
           resolve(payload);
           return;
         }
-        reject(buildError(toErrorMessage(payload, "上传失败"), { ...res, data: payload }));
+        reject(buildError(toErrorMessage(payload, "Upload failed"), { ...res, data: payload }));
       },
       fail: (err) => {
-        reject(buildError(err.errMsg || "上传失败", err));
+        const errMsg = (err == null ? void 0 : err.errMsg) || "Upload failed";
+        if (/timeout/i.test(errMsg)) {
+          reject(buildError("上传超时，请检查网络后重试，或压缩图片后再上传", err));
+          return;
+        }
+        reject(buildError(errMsg, err));
       }
     });
   });
@@ -168,9 +207,9 @@ async function uploadFile({ url, filePath, name = "file", retryOnAuth = true, at
         });
       }
       if (!common_storage.getAccessToken()) {
-        throw buildError("请先登录", error.response || error);
+        throw buildError("Please login first", error.response || error);
       }
-      throw buildError("登录已过期，请重新登录", error.response || error);
+      throw buildError("Session expired, please login again", error.response || error);
     }
     throw error;
   }
@@ -184,22 +223,6 @@ function toQueryString(params = {}) {
 function getAssetBaseUrl() {
   return common_config.config.baseURL.replace(/\/api$/, "");
 }
-async function withFallback(networkTask, mockTask) {
-  if (shouldUseMockFirst()) {
-    return mockTask();
-  }
-  try {
-    const result = await networkTask();
-    clearTransportFallback();
-    return result;
-  } catch (error) {
-    if (hasHttpStatus(error)) {
-      throw error;
-    }
-    markTransportFallback();
-    return mockTask(error);
-  }
-}
 function getAssetUrl(path) {
   if (!path)
     return "";
@@ -209,108 +232,90 @@ function getAssetUrl(path) {
   if (/^[a-zA-Z]:\\/.test(path)) {
     return path;
   }
+  if (path.startsWith("/static/")) {
+    return path;
+  }
   if (path.startsWith("/")) {
     return `${getAssetBaseUrl()}${path}`;
   }
   return `${getAssetBaseUrl()}/${path}`;
 }
 function getLocations() {
-  return withFallback(
-    () => request({ url: "/locations" }),
-    () => common_mockDb.getLocations()
-  );
+  return request({ url: "/locations" });
+}
+function getMoodConfigs() {
+  return request({ url: "/moods" });
+}
+function getExpireOptions() {
+  return request({ url: "/expire-options" });
 }
 function throwPlane(data) {
-  return withFallback(
-    () => request({ url: "/planes", method: "POST", data }),
-    () => common_mockDb.throwPlane(data)
-  );
+  return request({ url: "/planes", method: "POST", data });
 }
-function uploadPlaneImage(filePath) {
-  return withFallback(
-    async () => {
-      const data = await uploadFile({
-        url: "/uploads/images",
-        filePath,
-        name: "file"
-      });
-      return data.url;
-    },
-    () => Promise.resolve(filePath)
-  );
+async function uploadPlaneImage(filePath, options = {}) {
+  const uploadPath = await prepareImageForUpload(filePath);
+  const data = await uploadFile({
+    url: "/uploads/images",
+    filePath: uploadPath,
+    name: "file"
+  });
+  return data.url;
 }
 function getPlanes(location) {
-  return withFallback(
-    () => request({ url: "/planes", data: { location } }),
-    () => common_mockDb.getPlanes(location)
-  );
+  return request({ url: "/planes", data: { location } });
 }
-function getPlaneDetail(id) {
-  return withFallback(
-    () => request({ url: `/planes/${id}` }),
-    () => common_mockDb.getPlaneDetail(id)
-  );
+function normalizePlaneLookupToken(value) {
+  return String(value || "").trim();
+}
+function isGuidToken(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+function getPlaneDetail(idOrCode) {
+  const token = normalizePlaneLookupToken(idOrCode);
+  if (!token) {
+    return Promise.reject(new Error("Invalid plane id"));
+  }
+  if (isGuidToken(token)) {
+    return request({ url: `/planes/${token}` });
+  }
+  return request({ url: `/planes/by-code/${encodeURIComponent(token)}` });
+}
+function getPlaneQrCodePngUrl(id) {
+  const planeId = String(id || "").trim();
+  if (!planeId)
+    return "";
+  return `${common_config.config.baseURL}/planes/${encodeURIComponent(planeId)}/qrcode.png`;
 }
 function likePlane(id) {
-  return withFallback(
-    () => request({ url: `/planes/${id}/like`, method: "POST" }),
-    () => common_mockDb.likePlane(id)
-  );
+  return request({ url: `/planes/${id}/like`, method: "POST" });
 }
 function reportPlane(id) {
-  return withFallback(
-    () => request({ url: `/planes/${id}/report`, method: "POST" }),
-    () => common_mockDb.reportPlane(id)
-  );
+  return request({ url: `/planes/${id}/report`, method: "POST" });
 }
 function recallPlane(id) {
-  return withFallback(
-    () => request({ url: `/planes/${id}/recall`, method: "POST" }),
-    () => common_mockDb.recallPlane(id)
-  );
+  return request({ url: `/planes/${id}/recall`, method: "POST" });
 }
 function destroyPlane(id) {
-  return withFallback(
-    () => request({ url: `/planes/${id}/destroy`, method: "POST" }),
-    () => common_mockDb.destroyPlane(id)
-  );
+  return request({ url: `/planes/${id}/destroy`, method: "POST" });
 }
 function getPlaneAttitudes(id, voterKey) {
-  return withFallback(
-    () => request({ url: `/planes/${id}/attitudes`, data: { voterKey } }),
-    () => common_mockDb.getPlaneAttitudes(id, voterKey)
-  );
+  return request({ url: `/planes/${id}/attitudes`, data: { voterKey } });
 }
 function votePlaneAttitude(id, optionKey, voterKey) {
-  return withFallback(
-    () => request({ url: `/planes/${id}/attitudes`, method: "POST", data: { optionKey, voterKey } }),
-    () => common_mockDb.votePlaneAttitude(id, optionKey, voterKey)
-  );
+  return request({ url: `/planes/${id}/attitudes`, method: "POST", data: { optionKey, voterKey } });
 }
 function getRandomPlane() {
-  return withFallback(
-    () => request({ url: "/planes/random" }),
-    () => common_mockDb.getRandomPlane()
-  );
+  return request({ url: "/planes/random" });
 }
 function getTrendingPlanes() {
-  return withFallback(
-    () => request({ url: "/planes/trending" }),
-    () => common_mockDb.getTrendingPlanes()
-  );
+  return request({ url: "/planes/trending" });
 }
 function getComments(planeId) {
-  return withFallback(
-    () => request({ url: `/planes/${planeId}/comments` }),
-    () => common_mockDb.getComments(planeId)
-  );
+  return request({ url: `/planes/${planeId}/comments` });
 }
 function addComment(planeId, payload) {
   const data = typeof payload === "string" ? { reply: payload } : payload;
-  return withFallback(
-    () => request({ url: `/planes/${planeId}/comments`, method: "POST", data }),
-    () => common_mockDb.addComment(planeId, data)
-  );
+  return request({ url: `/planes/${planeId}/comments`, method: "POST", data });
 }
 function getMyThrownPlanes(params = {}) {
   return request({
@@ -339,10 +344,11 @@ function updateMyProfile(data) {
     data
   });
 }
-async function uploadMyAvatar(filePath) {
+async function uploadMyAvatar(filePath, options = {}) {
+  const uploadPath = await prepareImageForUpload(filePath);
   const data = await uploadFile({
     url: "/users/me/avatar",
-    filePath,
+    filePath: uploadPath,
     name: "file"
   });
   return data.url;
@@ -351,13 +357,16 @@ exports.addComment = addComment;
 exports.destroyPlane = destroyPlane;
 exports.getAssetUrl = getAssetUrl;
 exports.getComments = getComments;
+exports.getExpireOptions = getExpireOptions;
 exports.getLocations = getLocations;
+exports.getMoodConfigs = getMoodConfigs;
 exports.getMyFueledPlanes = getMyFueledPlanes;
 exports.getMyPickedPlanes = getMyPickedPlanes;
 exports.getMyProfile = getMyProfile;
 exports.getMyThrownPlanes = getMyThrownPlanes;
 exports.getPlaneAttitudes = getPlaneAttitudes;
 exports.getPlaneDetail = getPlaneDetail;
+exports.getPlaneQrCodePngUrl = getPlaneQrCodePngUrl;
 exports.getPlanes = getPlanes;
 exports.getRandomPlane = getRandomPlane;
 exports.getTrendingPlanes = getTrendingPlanes;

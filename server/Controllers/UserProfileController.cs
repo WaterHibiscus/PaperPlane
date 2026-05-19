@@ -59,7 +59,8 @@ public class UserProfileController(AppDbContext db, IWebHostEnvironment env) : C
     }
 
     [HttpPost("avatar")]
-    public async Task<ActionResult<UploadAvatarResponse>> UploadAvatar([FromForm] IFormFile? file)
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<UploadAvatarResponse>> UploadAvatar(IFormFile? file)
     {
         var user = await GetCurrentUserAsync();
         if (user is null) return Unauthorized();

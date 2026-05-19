@@ -1,17 +1,22 @@
 ﻿<script>
 	import { fetchCurrentUser } from './common/auth.js'
-	import { appState, syncThemeWindow } from './common/app-state.js'
+	import { appState, fetchMoodConfigs, syncThemeWindow } from './common/app-state.js'
 
 	export default {
-		onLaunch: async function() {
-			console.log('PaperPlane App Launch')
-			syncThemeWindow(appState.theme)
-			try {
-				await fetchCurrentUser()
-			} catch (error) {
-				// Ignore startup sync failures to avoid blocking the app.
-			}
-		},
+			onLaunch: async function() {
+				console.log('PaperPlane App Launch')
+				syncThemeWindow(appState.theme)
+				try {
+					await fetchCurrentUser()
+				} catch (error) {
+					// Ignore startup sync failures to avoid blocking the app.
+				}
+				try {
+					await fetchMoodConfigs()
+				} catch (error) {
+					// Ignore mood config sync failures; fallback mood config stays available.
+				}
+			},
 		onShow: function() {
 			syncThemeWindow(appState.theme)
 		}

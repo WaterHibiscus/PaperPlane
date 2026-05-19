@@ -1,4 +1,5 @@
 "use strict";
+const common_appState = require("./app-state.js");
 const pageTransitionMixin = {
   data() {
     return {
@@ -7,6 +8,8 @@ const pageTransitionMixin = {
     };
   },
   onShow() {
+    const theme = this && this.appState ? this.appState.theme : void 0;
+    common_appState.syncThemeWindow(theme);
     this.playPageTransition();
   },
   onHide() {
@@ -16,7 +19,7 @@ const pageTransitionMixin = {
     this.clearPageTransitionTimer();
   },
   methods: {
-    playPageTransition(duration = 420) {
+    playPageTransition(duration = 220) {
       this.clearPageTransitionTimer();
       this.pageTransitionVisible = true;
       this.pageTransitionTimer = setTimeout(() => {

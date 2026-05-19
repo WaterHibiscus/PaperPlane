@@ -230,6 +230,7 @@
     500: 'Server Error',
     'iframe-page': 'Iframe',
     home: 'Dashboard',
+    'ai-manage': 'AI Vote Manage',
     'comment-manage': 'Comment Manage',
     'expire-manage': 'Expire Manage',
     'headline-manage': 'Text Scroll',

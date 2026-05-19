@@ -15,83 +15,241 @@ const KEYS = {
   authUsers: "paperplane_auth_users",
   authSession: "paperplane_auth_session",
   voterKey: "paperplane_voter_key",
-  throwDraft: "paperplane_throw_draft"
+  throwDraft: "paperplane_throw_draft",
+  mockLocations: "paperplane_mock_locations_v1",
+  mockPlanes: "paperplane_mock_planes_v1",
+  mockComments: "paperplane_mock_comments_v1",
+  mockAttitudes: "paperplane_mock_attitudes_v1",
+  apiBaseUrl: "api_base_url"
 };
+const memoryStore = {
+  theme: "light",
+  currentLocation: "",
+  myPlaneIds: [],
+  fueledPlaneIds: [],
+  recalledPlaneIds: [],
+  locationCache: [],
+  profileName: "paperplane_user",
+  profileAvatar: "",
+  profileGender: "secret",
+  profileBio: "Say something to the campus breeze.",
+  authUsers: [],
+  authSession: null,
+  voterKey: "",
+  throwDraft: null
+};
+function cloneArray(input) {
+  return Array.isArray(input) ? [...input] : [];
+}
+function canUseSyncStorage() {
+  return typeof common_vendor.index !== "undefined" && typeof common_vendor.index.getStorageSync === "function" && typeof common_vendor.index.setStorageSync === "function";
+}
+function parseMaybeJson(value) {
+  if (typeof value !== "string")
+    return value;
+  const text = value.trim();
+  if (!text)
+    return value;
+  if (!(text.startsWith("{") && text.endsWith("}") || text.startsWith("[") && text.endsWith("]"))) {
+    return value;
+  }
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return value;
+  }
+}
+function canUseLocalStorage() {
+  if (typeof window === "undefined")
+    return false;
+  try {
+    return Boolean(window.localStorage);
+  } catch (error) {
+    return false;
+  }
+}
+function readLocalStorage(key) {
+  if (!canUseLocalStorage())
+    return void 0;
+  try {
+    const value = window.localStorage.getItem(key);
+    if (value === null)
+      return void 0;
+    return parseMaybeJson(value);
+  } catch (error) {
+    return void 0;
+  }
+}
+function writeLocalStorage(key, value) {
+  if (!canUseLocalStorage())
+    return;
+  try {
+    const output = typeof value === "string" ? value : JSON.stringify(value);
+    window.localStorage.setItem(key, output);
+  } catch (error) {
+  }
+}
+function removeLocalStorage(key) {
+  if (!canUseLocalStorage())
+    return;
+  try {
+    window.localStorage.removeItem(key);
+  } catch (error) {
+  }
+}
+function readStorage(key) {
+  if (canUseSyncStorage()) {
+    try {
+      const value = common_vendor.index.getStorageSync(key);
+      if (value !== "")
+        return parseMaybeJson(value);
+    } catch (error) {
+    }
+  }
+  return readLocalStorage(key);
+}
+function writeStorage(key, value) {
+  if (canUseSyncStorage()) {
+    try {
+      common_vendor.index.setStorageSync(key, value);
+    } catch (error) {
+    }
+  }
+  writeLocalStorage(key, value);
+}
+function removeStorage(key) {
+  if (typeof common_vendor.index !== "undefined" && typeof common_vendor.index.removeStorageSync === "function") {
+    try {
+      common_vendor.index.removeStorageSync(key);
+    } catch (error) {
+    }
+  }
+  removeLocalStorage(key);
+}
+function hydrateMemoryStore() {
+  const theme = readStorage(KEYS.theme);
+  if (typeof theme === "string" && theme)
+    memoryStore.theme = theme;
+  const currentLocation = readStorage(KEYS.currentLocation);
+  if (typeof currentLocation === "string")
+    memoryStore.currentLocation = currentLocation;
+  const myPlaneIds = readStorage(KEYS.myPlaneIds);
+  if (Array.isArray(myPlaneIds))
+    memoryStore.myPlaneIds = cloneArray(myPlaneIds);
+  const fueledPlaneIds = readStorage(KEYS.fueledPlaneIds);
+  if (Array.isArray(fueledPlaneIds))
+    memoryStore.fueledPlaneIds = cloneArray(fueledPlaneIds);
+  const recalledPlaneIds = readStorage(KEYS.recalledPlaneIds);
+  if (Array.isArray(recalledPlaneIds))
+    memoryStore.recalledPlaneIds = cloneArray(recalledPlaneIds);
+  const locationCache = readStorage(KEYS.locationCache);
+  if (Array.isArray(locationCache))
+    memoryStore.locationCache = cloneArray(locationCache);
+  const profileName = readStorage(KEYS.profileName);
+  if (typeof profileName === "string" && profileName.trim())
+    memoryStore.profileName = profileName;
+  const profileAvatar = readStorage(KEYS.profileAvatar);
+  if (typeof profileAvatar === "string")
+    memoryStore.profileAvatar = profileAvatar;
+  const profileGender = readStorage(KEYS.profileGender);
+  if (typeof profileGender === "string" && profileGender)
+    memoryStore.profileGender = profileGender;
+  const profileBio = readStorage(KEYS.profileBio);
+  if (typeof profileBio === "string" && profileBio.trim())
+    memoryStore.profileBio = profileBio;
+  const authUsers = readStorage(KEYS.authUsers);
+  if (Array.isArray(authUsers))
+    memoryStore.authUsers = cloneArray(authUsers);
+  const authSession = readStorage(KEYS.authSession);
+  if (authSession && typeof authSession === "object")
+    memoryStore.authSession = { ...authSession };
+  const voterKey = readStorage(KEYS.voterKey);
+  if (typeof voterKey === "string" && voterKey)
+    memoryStore.voterKey = voterKey;
+  const throwDraft = readStorage(KEYS.throwDraft);
+  if (throwDraft && typeof throwDraft === "object")
+    memoryStore.throwDraft = throwDraft;
+}
+hydrateMemoryStore();
 function getTheme() {
-  return common_vendor.index.getStorageSync(KEYS.theme) || "light";
+  return memoryStore.theme || "light";
 }
 function setTheme(theme) {
-  common_vendor.index.setStorageSync(KEYS.theme, theme);
+  memoryStore.theme = theme || "light";
+  writeStorage(KEYS.theme, memoryStore.theme);
 }
 function getCurrentLocation() {
-  return common_vendor.index.getStorageSync(KEYS.currentLocation) || "";
+  return memoryStore.currentLocation || "";
 }
 function setCurrentLocation(name) {
-  common_vendor.index.setStorageSync(KEYS.currentLocation, name || "");
-}
-function getMyPlaneIds() {
-  return common_utils.safeJsonParse(common_vendor.index.getStorageSync(KEYS.myPlaneIds), []);
-}
-function saveMyPlaneId(id) {
-  const current = getMyPlaneIds().filter((item) => item !== id);
-  current.unshift(id);
-  common_vendor.index.setStorageSync(KEYS.myPlaneIds, JSON.stringify(current.slice(0, 100)));
-}
-function getFueledPlaneIds() {
-  return common_utils.safeJsonParse(common_vendor.index.getStorageSync(KEYS.fueledPlaneIds), []);
-}
-function saveFueledPlaneId(id) {
-  const current = getFueledPlaneIds().filter((item) => item !== id);
-  current.unshift(id);
-  common_vendor.index.setStorageSync(KEYS.fueledPlaneIds, JSON.stringify(current.slice(0, 100)));
+  memoryStore.currentLocation = name || "";
+  writeStorage(KEYS.currentLocation, memoryStore.currentLocation);
 }
 function getLocationCache() {
-  return common_utils.safeJsonParse(common_vendor.index.getStorageSync(KEYS.locationCache), []);
+  return cloneArray(memoryStore.locationCache);
 }
 function setLocationCache(locations) {
-  common_vendor.index.setStorageSync(KEYS.locationCache, JSON.stringify(locations || []));
+  memoryStore.locationCache = cloneArray(locations);
+  writeStorage(KEYS.locationCache, memoryStore.locationCache);
 }
 function getProfileName() {
-  return common_vendor.index.getStorageSync(KEYS.profileName) || "纸飞机同学";
+  return memoryStore.profileName || "paperplane_user";
 }
 function setProfileName(name) {
-  common_vendor.index.setStorageSync(KEYS.profileName, (name || "").trim());
+  memoryStore.profileName = (name || "").trim() || "paperplane_user";
+  writeStorage(KEYS.profileName, memoryStore.profileName);
 }
 function getProfileAvatar() {
-  return common_vendor.index.getStorageSync(KEYS.profileAvatar) || "";
+  return memoryStore.profileAvatar || "";
 }
 function setProfileAvatar(avatar) {
-  common_vendor.index.setStorageSync(KEYS.profileAvatar, avatar || "");
+  memoryStore.profileAvatar = avatar || "";
+  writeStorage(KEYS.profileAvatar, memoryStore.profileAvatar);
 }
 function getProfileGender() {
-  return common_vendor.index.getStorageSync(KEYS.profileGender) || "secret";
+  return memoryStore.profileGender || "secret";
 }
 function setProfileGender(gender) {
-  common_vendor.index.setStorageSync(KEYS.profileGender, gender || "secret");
+  memoryStore.profileGender = gender || "secret";
+  writeStorage(KEYS.profileGender, memoryStore.profileGender);
 }
 function getProfileBio() {
-  return common_vendor.index.getStorageSync(KEYS.profileBio) || "把想说的话折进纸飞机里。";
+  return memoryStore.profileBio || "Say something to the campus breeze.";
 }
 function setProfileBio(bio) {
-  common_vendor.index.setStorageSync(KEYS.profileBio, (bio || "").trim());
+  memoryStore.profileBio = (bio || "").trim() || "Say something to the campus breeze.";
+  writeStorage(KEYS.profileBio, memoryStore.profileBio);
 }
 function getAuthSession() {
-  const session = common_utils.safeJsonParse(common_vendor.index.getStorageSync(KEYS.authSession), null);
+  let session = memoryStore.authSession;
+  if (!session || typeof session !== "object") {
+    const stored = readStorage(KEYS.authSession);
+    if (stored && typeof stored === "object") {
+      session = { ...stored };
+      memoryStore.authSession = session;
+    }
+  }
   if (!session || typeof session !== "object")
     return null;
   if (!session.accessToken && !session.refreshToken)
     return null;
-  return session;
+  return {
+    ...session
+  };
 }
 function setAuthSession(session) {
   if (!session) {
     clearAuthSession();
     return;
   }
-  common_vendor.index.setStorageSync(KEYS.authSession, JSON.stringify(session));
+  memoryStore.authSession = {
+    ...session
+  };
+  writeStorage(KEYS.authSession, memoryStore.authSession);
 }
 function clearAuthSession() {
-  common_vendor.index.removeStorageSync(KEYS.authSession);
+  memoryStore.authSession = null;
+  removeStorage(KEYS.authSession);
 }
 function getAccessToken() {
   var _a;
@@ -111,21 +269,26 @@ function setAuthSessionUser(user) {
   });
 }
 function getVoterKey() {
-  let value = common_vendor.index.getStorageSync(KEYS.voterKey);
-  if (!value) {
-    value = common_utils.randomId("voter");
-    common_vendor.index.setStorageSync(KEYS.voterKey, value);
+  if (!memoryStore.voterKey) {
+    memoryStore.voterKey = common_utils.randomId("voter");
+    writeStorage(KEYS.voterKey, memoryStore.voterKey);
   }
-  return value;
+  return memoryStore.voterKey;
 }
 function getThrowDraft() {
-  return common_utils.safeJsonParse(common_vendor.index.getStorageSync(KEYS.throwDraft), null);
+  return memoryStore.throwDraft || null;
 }
 function setThrowDraft(draft) {
-  common_vendor.index.setStorageSync(KEYS.throwDraft, JSON.stringify(draft || null));
+  memoryStore.throwDraft = draft || null;
+  if (memoryStore.throwDraft) {
+    writeStorage(KEYS.throwDraft, memoryStore.throwDraft);
+    return;
+  }
+  removeStorage(KEYS.throwDraft);
 }
 function clearThrowDraft() {
-  common_vendor.index.removeStorageSync(KEYS.throwDraft);
+  memoryStore.throwDraft = null;
+  removeStorage(KEYS.throwDraft);
 }
 exports.clearAuthSession = clearAuthSession;
 exports.clearThrowDraft = clearThrowDraft;
@@ -141,8 +304,6 @@ exports.getRefreshToken = getRefreshToken;
 exports.getTheme = getTheme;
 exports.getThrowDraft = getThrowDraft;
 exports.getVoterKey = getVoterKey;
-exports.saveFueledPlaneId = saveFueledPlaneId;
-exports.saveMyPlaneId = saveMyPlaneId;
 exports.setAuthSession = setAuthSession;
 exports.setAuthSessionUser = setAuthSessionUser;
 exports.setCurrentLocation = setCurrentLocation;

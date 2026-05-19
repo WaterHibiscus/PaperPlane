@@ -8,6 +8,7 @@ export const uiIcons = {
 	more: '/static/images/更多.png',
 	back: '/static/images/返回.png',
 	settings: '/static/images/设置.png',
+	scan: '/static/images/扫描.png',
 	close: '/static/images/关闭.png',
 	filter: '/static/images/筛选.png',
 	search: '/static/images/搜索.png',

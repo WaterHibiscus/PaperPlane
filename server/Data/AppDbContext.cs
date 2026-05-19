@@ -15,6 +15,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserRefreshToken> UserRefreshTokens => Set<UserRefreshToken>();
     public DbSet<PlaneLikeRecord> PlaneLikeRecords => Set<PlaneLikeRecord>();
     public DbSet<PlanePickRecord> PlanePickRecords => Set<PlanePickRecord>();
+    public DbSet<PlaneReportRecord> PlaneReportRecords => Set<PlaneReportRecord>();
+    public DbSet<AiVoteSuggestionConfig> AiVoteSuggestionConfigs => Set<AiVoteSuggestionConfig>();
+    public DbSet<AiVoteSuggestionLog> AiVoteSuggestionLogs => Set<AiVoteSuggestionLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -177,6 +180,78 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(r => r.AppUserId)
                 .OnDelete(DeleteBehavior.Cascade);
             e.HasQueryFilter(r => !r.Plane.IsDeleted);
+        });
+
+        modelBuilder.Entity<PlaneReportRecord>(e =>
+        {
+            e.ToTable("PlaneReportRecords", tb => tb.HasComment("举报记录表"));
+            e.HasKey(r => r.Id);
+            e.Property(r => r.ReportReason).HasMaxLength(50).IsRequired();
+            e.Property(r => r.ReportDetail).HasMaxLength(200);
+            e.HasIndex(r => r.PlaneId);
+            e.HasIndex(r => r.AppUserId);
+            e.HasOne(r => r.Plane)
+                .WithMany(p => p.ReportRecords)
+                .HasForeignKey(r => r.PlaneId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(r => r.AppUser)
+                .WithMany(u => u.ReportRecords)
+                .HasForeignKey(r => r.AppUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            e.HasIndex(r => new { r.PlaneId, r.AppUserId })
+                .IsUnique()
+                .HasFilter("[AppUserId] IS NOT NULL");
+        });
+
+        modelBuilder.Entity<AiVoteSuggestionConfig>(e =>
+        {
+            e.ToTable("AiVoteSuggestionConfigs", tb => tb.HasComment("AI投票建议配置表"));
+            e.HasKey(c => c.Id);
+            e.Property(c => c.BaseUrl).HasMaxLength(300).IsRequired();
+            e.Property(c => c.Model).HasMaxLength(100).IsRequired();
+            e.Property(c => c.ApiKey).HasMaxLength(500);
+            e.Property(c => c.SystemPrompt).HasMaxLength(4000).IsRequired();
+            e.Property(c => c.Temperature).HasPrecision(4, 2);
+            e.Property(c => c.UpdatedBy).HasMaxLength(50);
+
+            e.HasData(new AiVoteSuggestionConfig
+            {
+                Id = 1,
+                IsEnabled = false,
+                BaseUrl = "https://api.openai.com/v1",
+                Model = "gpt-4o-mini",
+                ApiKey = null,
+                SystemPrompt =
+                    "你是一个校园纸飞机应用的投票助手。根据用户输入内容，生成一个投票标题和2-4个选项。" +
+                    "输出必须是 JSON 对象，格式：{\"title\":\"...\",\"options\":[\"...\",\"...\"]}。" +
+                    "要求：标题不超过60字，选项不超过20字，避免违法、辱骂、隐私暴露等不当内容。",
+                Temperature = 0.7m,
+                MaxTokens = 300,
+                DefaultOptionCount = 3,
+                TimeoutSeconds = 20,
+                EnableFallback = true,
+                PerUserMinuteLimit = 5,
+                UpdateTime = new DateTime(2026, 4, 15, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedBy = "system"
+            });
+        });
+
+        modelBuilder.Entity<AiVoteSuggestionLog>(e =>
+        {
+            e.ToTable("AiVoteSuggestionLogs", tb => tb.HasComment("AI投票建议日志表"));
+            e.HasKey(l => l.Id);
+            e.Property(l => l.ContentPreview).HasMaxLength(200).IsRequired();
+            e.Property(l => l.Mood).HasMaxLength(20).IsRequired();
+            e.Property(l => l.LocationTag).HasMaxLength(50).IsRequired();
+            e.Property(l => l.GeneratedTitle).HasMaxLength(60);
+            e.Property(l => l.Source).HasMaxLength(20).IsRequired();
+            e.Property(l => l.Status).HasMaxLength(20).IsRequired();
+            e.Property(l => l.ErrorMessage).HasMaxLength(500);
+            e.Property(l => l.RawResponse).HasMaxLength(4000);
+            e.Property(l => l.GeneratedOptionsJson).HasColumnType("nvarchar(max)");
+            e.HasIndex(l => l.RequestId).IsUnique();
+            e.HasIndex(l => l.CreateTime);
+            e.HasIndex(l => l.AppUserId);
         });
     }
 }

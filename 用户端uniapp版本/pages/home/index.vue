@@ -8,8 +8,14 @@
 					</view>
 					<text class="brand-name">纸飞机降落点</text>
 				</view>
-				<view class="icon-btn" @tap="handleToggleTheme">
-					<image class="toggle-icon-image" :src="icons.settings" mode="aspectFit" />
+				<view class="icon-btn theme-toggle-btn" @tap="handleToggleTheme">
+					<view class="theme-toggle-icon">
+						<view class="toggle-halo"></view>
+						<view class="toggle-core"></view>
+						<view class="toggle-cutout"></view>
+						<view class="toggle-spark spark-a"></view>
+						<view class="toggle-spark spark-b"></view>
+					</view>
 				</view>
 			</view>
 
@@ -68,45 +74,45 @@
 				<view class="signal-orbit orbit-a"></view>
 				<view class="signal-orbit orbit-b"></view>
 
-				<svg class="signal-network" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-					<defs>
-						<linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-							<stop offset="0%" stop-color="rgba(47, 158, 116, 0.15)" />
-							<stop offset="45%" stop-color="rgba(47, 158, 116, 0.95)" />
-							<stop offset="100%" stop-color="rgba(242, 122, 75, 0.95)" />
-						</linearGradient>
-						<filter id="routeGlow" x="-50%" y="-50%" width="200%" height="200%">
-							<feGaussianBlur stdDeviation="1.2" result="blur" />
-							<feMerge>
-								<feMergeNode in="blur" />
-								<feMergeNode in="SourceGraphic" />
-							</feMerge>
-						</filter>
-					</defs>
+					<svg class="signal-network" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+						<defs>
+							<linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+								<stop offset="0%" stop-color="rgba(47, 158, 116, 0.15)" />
+								<stop offset="45%" stop-color="rgba(47, 158, 116, 0.95)" />
+								<stop offset="100%" stop-color="rgba(242, 122, 75, 0.95)" />
+							</linearGradient>
+							<filter id="routeGlow" x="-50%" y="-50%" width="200%" height="200%">
+								<feGaussianBlur stdDeviation="1.2" result="blur" />
+								<feMerge>
+									<feMergeNode in="blur" />
+									<feMergeNode in="SourceGraphic" />
+								</feMerge>
+							</filter>
+						</defs>
 
-					<path v-for="route in signalRoutes" :key="`route-base-${route.id}`" class="route-line"
-						:d="route.path" :style="{
-							'--route-width': route.width,
-							'--route-opacity': route.opacity,
-						}" />
-					<path v-for="route in signalRoutes" :key="`route-glow-${route.id}`" class="route-glow"
-						:d="route.path" :style="{
-							'--route-width': route.width,
-							'--route-duration': `${route.duration}s`,
-							'--route-delay': `${route.glowDelay}s`,
-						}" />
+						<path v-for="route in signalRoutes" :key="`route-base-${route.id}`" class="route-line"
+							:d="route.path" :style="{
+								'--route-width': route.width,
+								'--route-opacity': route.opacity,
+							}" />
+						<path v-for="route in signalRoutes" :key="`route-glow-${route.id}`" class="route-glow"
+							:d="route.path" :style="{
+								'--route-width': route.width,
+								'--route-duration': `${route.duration}s`,
+								'--route-delay': `${route.glowDelay}s`,
+							}" />
 
-					<g v-for="route in signalRoutes" :key="`route-packet-${route.id}`">
-						<circle class="route-packet" :r="route.packetSize">
-							<animateMotion :dur="`${route.duration}s`" :begin="route.packetBegin"
-								repeatCount="indefinite" :path="route.path" />
-						</circle>
-						<circle class="route-packet secondary" :r="route.packetSize * 0.72">
-							<animateMotion :dur="`${route.duration}s`" :begin="route.secondaryPacketBegin"
-								repeatCount="indefinite" :path="route.path" />
-						</circle>
-					</g>
-				</svg>
+						<g v-for="route in signalRoutes" :key="`route-packet-${route.id}`">
+							<circle class="route-packet" :r="route.packetSize">
+								<animateMotion :dur="`${route.duration}s`" :begin="route.packetBegin"
+									repeatCount="indefinite" :path="route.path" />
+							</circle>
+							<circle class="route-packet secondary" :r="route.packetSize * 0.72">
+								<animateMotion :dur="`${route.duration}s`" :begin="route.secondaryPacketBegin"
+									repeatCount="indefinite" :path="route.path" />
+							</circle>
+						</g>
+					</svg>
 
 				<view class="signal-hud" :style="hudStyle" @touchstart.stop="startHudDrag" @touchmove.stop.prevent="moveHudDrag"
 					@touchend.stop="endHudDrag" @touchcancel.stop="endHudDrag">
@@ -125,9 +131,14 @@
 						'--label-shift': node.labelShift,
 					}" @tap="goDiscover(node.loc.name)">
 					<view class="station-halo"></view>
-					<view class="station-core">
-						<image class="station-core-image" :src="node.loc.iconUrl || icons.location" mode="aspectFill" lazy-load />
-					</view>
+						<view class="station-core">
+							<image
+								class="station-core-image"
+								:src="node.loc.iconUrl ? getAssetUrl(node.loc.iconUrl) : icons.location"
+								mode="aspectFill"
+								lazy-load
+							/>
+						</view>
 					<view class="station-label">
 						<text class="station-name">{{ node.loc.name }}</text>
 						<text v-if="!node.hideCount" class="station-count">{{ node.loc.planeCount }} 架</text>
@@ -136,7 +147,7 @@
 			</view>
 		</view>
 
-		<view v-if="topTrending.length" class="trend-section">
+			<view v-if="topTrending.length" class="trend-section">
 			<view class="section-title">
 				<text class="section-heading">热度上升</text>
 				<text class="section-link" @tap="goTrending">查看更多</text>
@@ -154,7 +165,11 @@
 						<text class="trend-meta">{{ plane.locationTag }} · {{ getPlaneAuthorLabelText(plane) }} · {{ plane.likeCount }} 赞</text>
 					</view>
 				</view>
-				<view v-if="plane.imageUrls && plane.imageUrls.length" class="trend-media-row" @tap.stop>
+					<view
+						v-if="plane.imageUrls && plane.imageUrls.length"
+						:class="['trend-media-row', { 'is-single': plane.imageUrls.length === 1 }]"
+						@tap.stop
+					>
 					<view v-for="(imageUrl, imageIndex) in plane.imageUrls.slice(0, 3)" :key="plane.id + '-img-' + imageIndex"
 						class="trend-media-item" @tap.stop="previewTrendImages(plane, imageIndex)">
 						<image class="trend-media-image" :src="getAssetUrl(imageUrl)" mode="aspectFill" lazy-load />
@@ -163,12 +178,20 @@
 						</view>
 					</view>
 				</view>
+				</view>
 			</view>
-		</view>
 
-		<detail-open-transition :visible="detailOpenVisible" :theme="appState.theme" />
-		<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
-		<app-tabbar active="home" :theme="appState.theme" />
+			<view
+				v-if="themeRippleVisible"
+				:class="['theme-ripple-overlay', themeRippleThemeClass, { 'is-expand': themeRippleExpanding, 'is-fade': themeRippleFading }]"
+			>
+				<view class="theme-ripple-wave wave-main"></view>
+				<view class="theme-ripple-wave wave-ring"></view>
+			</view>
+
+			<detail-open-transition :visible="detailOpenVisible" :theme="appState.theme" />
+			<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
+			<app-tabbar active="home" :theme="appState.theme" />
 	</view>
 </template>
 
@@ -260,22 +283,33 @@
 				hudY: 0,
 				hudReady: false,
 				hudDragging: false,
-				hudDragOffsetX: 0,
-				hudDragOffsetY: 0,
-				mapCanvasRect: null,
-				hudDragBounds: null,
-			}
-		},
-		computed: {
-			themeClass() {
-				return this.appState.theme === 'dark' ? 'theme-dark' : 'theme-light'
+					hudDragOffsetX: 0,
+					hudDragOffsetY: 0,
+					mapCanvasRect: null,
+					hudDragBounds: null,
+					themeRippleVisible: false,
+					themeRippleExpanding: false,
+					themeRippleFading: false,
+					themeRippleTarget: 'light',
+					themeRippleStartTimer: null,
+					themeRippleToggleTimer: null,
+					themeRippleFadeTimer: null,
+					themeRippleEndTimer: null,
+				}
 			},
-			isDark() {
-				return this.appState.theme === 'dark'
-			},
-			locations() {
-				return this.appState.locations || []
-			},
+			computed: {
+				themeClass() {
+					return this.appState.theme === 'dark' ? 'theme-dark' : 'theme-light'
+				},
+				isDark() {
+					return this.appState.theme === 'dark'
+				},
+				themeRippleThemeClass() {
+					return this.themeRippleTarget === 'dark' ? 'ripple-theme-dark' : 'ripple-theme-light'
+				},
+				locations() {
+					return this.appState.locations || []
+				},
 			filteredLocations() {
 				const keyword = (this.query || '').trim()
 				if (!keyword) return this.locations
@@ -384,13 +418,21 @@
 				this.scheduleMeasureMapCanvas()
 			},
 		},
-		async onShow() {
-			await this.loadHome()
-			this.scheduleMeasureMapCanvas()
-		},
-		onReady() {
-			this.scheduleMeasureMapCanvas()
-		},
+			async onShow() {
+				await this.loadHome()
+				this.scheduleMeasureMapCanvas()
+			},
+			onHide() {
+				this.clearThemeRippleTimers()
+				this.resetThemeRipple()
+			},
+			onUnload() {
+				this.clearThemeRippleTimers()
+				this.resetThemeRipple()
+			},
+			onReady() {
+				this.scheduleMeasureMapCanvas()
+			},
 		methods: {
 		normalizePhase(value, duration) {
 			const mod = value % duration
@@ -764,8 +806,53 @@
 				}
 				this.scheduleMeasureMapCanvas()
 			},
+			clearThemeRippleTimers() {
+				if (this.themeRippleStartTimer) {
+					clearTimeout(this.themeRippleStartTimer)
+					this.themeRippleStartTimer = null
+				}
+				if (this.themeRippleToggleTimer) {
+					clearTimeout(this.themeRippleToggleTimer)
+					this.themeRippleToggleTimer = null
+				}
+				if (this.themeRippleFadeTimer) {
+					clearTimeout(this.themeRippleFadeTimer)
+					this.themeRippleFadeTimer = null
+				}
+				if (this.themeRippleEndTimer) {
+					clearTimeout(this.themeRippleEndTimer)
+					this.themeRippleEndTimer = null
+				}
+			},
+			resetThemeRipple() {
+				this.themeRippleVisible = false
+				this.themeRippleExpanding = false
+				this.themeRippleFading = false
+			},
 			handleToggleTheme() {
-				toggleTheme()
+				if (this.themeRippleVisible) return
+				this.clearThemeRippleTimers()
+				this.themeRippleTarget = this.appState.theme === 'dark' ? 'light' : 'dark'
+				this.themeRippleVisible = true
+				this.themeRippleExpanding = false
+				this.themeRippleFading = false
+
+				this.themeRippleStartTimer = setTimeout(() => {
+					this.themeRippleExpanding = true
+				}, 16)
+
+				this.themeRippleToggleTimer = setTimeout(() => {
+					toggleTheme()
+				}, 210)
+
+				this.themeRippleFadeTimer = setTimeout(() => {
+					this.themeRippleFading = true
+				}, 520)
+
+				this.themeRippleEndTimer = setTimeout(() => {
+					this.clearThemeRippleTimers()
+					this.resetThemeRipple()
+				}, 760)
 			},
 			goThrow() {
 				uni.reLaunch({
@@ -778,9 +865,13 @@
 				})
 			},
 			goDiscover(name) {
-				setCurrentLocation(name)
+				const locationName = String(name || '').trim()
+				setCurrentLocation(locationName)
+				const url = locationName
+					? `/pages/discover/index?location=${encodeURIComponent(locationName)}`
+					: '/pages/discover/index'
 				uni.reLaunch({
-					url: '/pages/discover/index',
+					url,
 				})
 			},
 			openDetail(id) {
@@ -821,6 +912,70 @@
 <style scoped>
 	.home-page {
 		padding-top: calc(env(safe-area-inset-top) + 36rpx);
+	}
+
+	.theme-ripple-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 120;
+		overflow: hidden;
+		pointer-events: none;
+		opacity: 1;
+		transition: opacity 0.24s ease;
+	}
+
+	.theme-ripple-overlay.is-fade {
+		opacity: 0;
+	}
+
+	.theme-ripple-wave {
+		position: absolute;
+		right: 44rpx;
+		top: calc(env(safe-area-inset-top) + 36rpx);
+		width: 100rpx;
+		height: 100rpx;
+		border-radius: 50%;
+		transform: translate(50%, -50%) scale(0.02);
+		transform-origin: center;
+		will-change: transform, opacity;
+	}
+
+	.wave-main {
+		transition: transform 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.wave-ring {
+		opacity: 0.72;
+		transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease;
+	}
+
+	.theme-ripple-overlay.is-expand .wave-main {
+		transform: translate(50%, -50%) scale(24);
+	}
+
+	.theme-ripple-overlay.is-expand .wave-ring {
+		transform: translate(50%, -50%) scale(28);
+		opacity: 0;
+	}
+
+	.ripple-theme-light .wave-main {
+		background:
+			radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.98), rgba(247, 242, 233, 0.98) 46%, rgba(238, 244, 241, 0.99) 75%);
+		box-shadow: 0 0 0 2rpx rgba(255, 255, 255, 0.5);
+	}
+
+	.ripple-theme-light .wave-ring {
+		border: 2rpx solid rgba(129, 150, 176, 0.28);
+	}
+
+	.ripple-theme-dark .wave-main {
+		background:
+			radial-gradient(circle at 35% 35%, rgba(36, 48, 56, 0.97), rgba(19, 27, 31, 0.99) 48%, rgba(15, 21, 25, 1) 76%);
+		box-shadow: 0 0 0 2rpx rgba(230, 237, 241, 0.08);
+	}
+
+	.ripple-theme-dark .wave-ring {
+		border: 2rpx solid rgba(164, 189, 230, 0.24);
 	}
 
 	.hero {
@@ -922,10 +1077,122 @@
 		font-weight: 700;
 	}
 
-	.toggle-icon-image {
-		width: 30rpx;
-		height: 30rpx;
-		display: block;
+	.theme-toggle-btn {
+		position: relative;
+		overflow: visible;
+		--toggle-bg: rgba(255, 255, 255, 0.74);
+		transition: background 0.32s ease, border-color 0.32s ease, box-shadow 0.32s ease, transform 0.16s ease;
+	}
+
+	.theme-dark .theme-toggle-btn {
+		--toggle-bg: rgba(20, 28, 32, 0.88);
+	}
+
+	.theme-toggle-btn:active {
+		transform: scale(0.96);
+	}
+
+	.theme-toggle-icon {
+		position: relative;
+		width: 34rpx;
+		height: 34rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.theme-dark .theme-toggle-icon {
+		transform: rotate(-10deg);
+	}
+
+	.toggle-halo {
+		position: absolute;
+		inset: 2rpx;
+		border-radius: 50%;
+		border: 2rpx solid rgba(248, 185, 86, 0.55);
+		opacity: 0.56;
+		transform: scale(1);
+		transition: border-color 0.36s ease, opacity 0.36s ease, transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.theme-dark .toggle-halo {
+		border-color: rgba(164, 189, 230, 0.42);
+		opacity: 0.4;
+		transform: scale(0.92);
+	}
+
+	.toggle-core {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 18rpx;
+		height: 18rpx;
+		margin-left: -9rpx;
+		margin-top: -9rpx;
+		border-radius: 50%;
+		background: linear-gradient(155deg, #ffd86a, #f2ab46 62%, #ea8e36);
+		box-shadow:
+			0 0 0 3rpx rgba(255, 207, 90, 0.2),
+			0 6rpx 12rpx rgba(242, 122, 75, 0.24);
+		transform: translateX(0) rotate(0deg);
+		transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), background 0.32s ease, box-shadow 0.32s ease;
+		z-index: 2;
+	}
+
+	.theme-dark .toggle-core {
+		background: linear-gradient(150deg, #dde8ff, #9fb6db);
+		box-shadow:
+			0 0 0 3rpx rgba(159, 182, 219, 0.16),
+			0 6rpx 12rpx rgba(92, 111, 136, 0.24);
+		transform: translateX(4rpx) rotate(-14deg);
+	}
+
+	.toggle-cutout {
+		position: absolute;
+		left: 16rpx;
+		top: 7rpx;
+		width: 15rpx;
+		height: 15rpx;
+		border-radius: 50%;
+		background: var(--toggle-bg);
+		opacity: 0;
+		transform: scale(0.74);
+		transition: opacity 0.26s ease, transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), background 0.32s ease;
+		z-index: 3;
+	}
+
+	.theme-dark .toggle-cutout {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	.toggle-spark {
+		position: absolute;
+		width: 4rpx;
+		height: 4rpx;
+		border-radius: 50%;
+		background: rgba(214, 228, 255, 0.95);
+		box-shadow: 0 0 8rpx rgba(159, 182, 219, 0.58);
+		opacity: 0;
+		transform: translateY(4rpx) scale(0.35);
+		transition: opacity 0.28s ease, transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+		z-index: 1;
+	}
+
+	.spark-a {
+		left: 4rpx;
+		top: 8rpx;
+	}
+
+	.spark-b {
+		right: 3rpx;
+		bottom: 8rpx;
+	}
+
+	.theme-dark .toggle-spark {
+		opacity: 1;
+		transform: translateY(0) scale(1);
 	}
 
 	.hero-title {
@@ -998,8 +1265,8 @@
 	}
 
 	.search-icon-image {
-		width: 28rpx;
-		height: 28rpx;
+		width: 68rpx;
+		height: 68rpx;
 		margin-right: 14rpx;
 		opacity: 0.82;
 	}
@@ -1520,21 +1787,31 @@
 		margin-top: 16rpx;
 	}
 
-	.trend-media-item {
-		position: relative;
-		flex: 1;
-		height: 136rpx;
+		.trend-media-item {
+			position: relative;
+			flex: 1;
+			height: 136rpx;
 		border-radius: 18rpx;
 		overflow: hidden;
 		border: 2rpx solid rgba(47, 158, 116, 0.14);
 		background: rgba(255, 255, 255, 0.6);
-		transition: transform 0.14s ease;
-	}
+			transition: transform 0.14s ease;
+		}
 
-	.theme-dark .trend-media-item {
-		border-color: rgba(230, 237, 241, 0.08);
-		background: rgba(14, 20, 24, 0.72);
-	}
+		.trend-media-row.is-single .trend-media-item {
+			height: 260rpx;
+			border-radius: 24rpx;
+			box-shadow: 0 14rpx 28rpx rgba(31, 36, 40, 0.08);
+		}
+
+		.theme-dark .trend-media-item {
+			border-color: rgba(230, 237, 241, 0.08);
+			background: rgba(14, 20, 24, 0.72);
+		}
+
+		.theme-dark .trend-media-row.is-single .trend-media-item {
+			box-shadow: 0 16rpx 30rpx rgba(0, 0, 0, 0.22);
+		}
 
 	.trend-media-item:active {
 		transform: scale(0.98);

@@ -2,9 +2,11 @@
 const common_vendor = require("../../common/vendor.js");
 const common_appState = require("../../common/app-state.js");
 const common_api = require("../../common/api.js");
+const common_planeCode = require("../../common/plane-code.js");
 const common_storage = require("../../common/storage.js");
 const common_utils = require("../../common/utils.js");
 const common_moods = require("../../common/moods.js");
+const common_uiIcons = require("../../common/ui-icons.js");
 const CommentThreadNode = () => "../../components/CommentThreadNode.js";
 const _sfc_main = {
   components: {
@@ -23,6 +25,8 @@ const _sfc_main = {
       galleryActiveIndex: 0,
       galleryScrollLeft: 0,
       composerVisible: false,
+      barcodeVisible: false,
+      barcodeImageFailed: false,
       commentIdentity: "named",
       attitudeExpanded: false,
       voterKey: common_storage.getVoterKey(),
@@ -31,8 +35,8 @@ const _sfc_main = {
         myChoice: null,
         totalCount: 0
       },
-      backIcon: "‹",
-      shareIcon: "↪",
+      backIcon: common_uiIcons.uiIcons.back,
+      shareIcon: common_uiIcons.uiIcons.more,
       labels: {
         archive: "纸飞机",
         openPlane: "详情",
@@ -41,6 +45,8 @@ const _sfc_main = {
         pick: "拾取",
         like: "点赞",
         comment: "回声",
+        archiveStatus: "已归档",
+        archiveNote: "这张纸条已经落地，但内容仍然可以查看。",
         likeAction: "续航",
         likeActionKicker: "FUEL",
         likeActionNote: "让它多飞一会",
@@ -71,6 +77,11 @@ const _sfc_main = {
         anonymousFallback: "匿名同学",
         loadingTitle: "正在打开纸飞机",
         loadingDesc: "正在载入内容和评论。",
+        barcodeTitle: "纸条二维码",
+        barcodeNote: "扫描二维码后可直接打开这张纸条",
+        barcodeLoadFailed: "二维码加载失败，请稍后重试",
+        barcodeIdLabel: "纸条编号",
+        tapToCopy: "点击复制编号",
         shareCopied: "已复制到剪贴板",
         writeBeforeSend: "写点内容再发送",
         loadFailed: "加载失败",
@@ -96,10 +107,29 @@ const _sfc_main = {
       var _a;
       return common_moods.getMoodMeta((_a = this.plane) == null ? void 0 : _a.mood);
     },
+    isArchivedPlane() {
+      var _a;
+      return Boolean(((_a = this.plane) == null ? void 0 : _a.expireTime) && common_utils.isExpired(this.plane.expireTime));
+    },
     shortId() {
+      var _a;
+      const code = String(((_a = this.plane) == null ? void 0 : _a.shortCode) || "").trim().toUpperCase();
+      if (code)
+        return code;
       if (!this.id)
         return "--";
       return String(this.id).slice(0, 8).toUpperCase();
+    },
+    planeIdText() {
+      var _a, _b, _c;
+      const code = String(((_a = this.plane) == null ? void 0 : _a.shortCode) || "").trim().toUpperCase();
+      if (code)
+        return code;
+      return common_planeCode.formatPlaneId(((_b = this.plane) == null ? void 0 : _b.id) || this.id) || String(((_c = this.plane) == null ? void 0 : _c.id) || this.id || "").toUpperCase();
+    },
+    barcodeImageUrl() {
+      var _a;
+      return common_api.getPlaneQrCodePngUrl(((_a = this.plane) == null ? void 0 : _a.id) || this.id);
     },
     planeImageUrls() {
       var _a;
@@ -185,17 +215,20 @@ const _sfc_main = {
     this.id = options.id || "";
   },
   onShow() {
+    common_appState.syncThemeWindow(this.appState.theme);
     if (this.id) {
       this.loadDetail();
     }
   },
   onHide() {
     this.composerVisible = false;
+    this.barcodeVisible = false;
     this.replyTarget = null;
     this.clearTimer();
   },
   onUnload() {
     this.composerVisible = false;
+    this.barcodeVisible = false;
     this.replyTarget = null;
     this.clearTimer();
   },
@@ -251,15 +284,16 @@ const _sfc_main = {
       this.syncGalleryThumb(index);
     },
     async loadDetail() {
-      var _a;
+      var _a, _b;
       try {
         this.reply = "";
         this.attitudeExpanded = false;
         this.galleryActiveIndex = 0;
         this.galleryScrollLeft = 0;
         this.plane = await common_api.getPlaneDetail(this.id);
+        this.id = ((_a = this.plane) == null ? void 0 : _a.id) || this.id;
         this.comments = await common_api.getComments(this.id);
-        if (Array.isArray((_a = this.plane) == null ? void 0 : _a.voteOptions) && this.plane.voteOptions.length > 0) {
+        if (Array.isArray((_b = this.plane) == null ? void 0 : _b.voteOptions) && this.plane.voteOptions.length > 0) {
           try {
             this.attitudeSummary = await common_api.getPlaneAttitudes(this.id, this.voterKey);
           } catch (error) {
@@ -307,7 +341,6 @@ const _sfc_main = {
         const result = await common_api.likePlane(this.id);
         this.plane.likeCount = result.likeCount;
         this.plane.expireTime = result.expireTime;
-        common_storage.saveFueledPlaneId(this.id);
         this.updateRemaining();
         common_vendor.index.showToast({
           title: this.labels.likeSuccess,
@@ -396,11 +429,36 @@ const _sfc_main = {
         });
       }
     },
+    openCodeSheet() {
+      if (!this.barcodeImageUrl)
+        return;
+      this.barcodeImageFailed = false;
+      this.barcodeVisible = true;
+    },
+    handleBarcodeImageError() {
+      this.barcodeImageFailed = true;
+    },
+    closeCodeSheet() {
+      this.barcodeVisible = false;
+    },
+    copyPlaneId() {
+      if (!this.planeIdText)
+        return;
+      common_vendor.index.setClipboardData({
+        data: this.planeIdText,
+        success: () => {
+          common_vendor.index.showToast({
+            title: this.labels.shareCopied,
+            icon: "none"
+          });
+        }
+      });
+    },
     handleShare() {
       if (!this.plane)
         return;
-      const text = `✈ 纸飞机降落点
-📍 ${this.plane.locationTag}
+      const text = `纸飞机降落点
+地点：${this.plane.locationTag}
 
 ${this.plane.content}`;
       common_vendor.index.setClipboardData({
@@ -421,42 +479,47 @@ if (!Array) {
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.t($data.backIcon),
+    a: $data.backIcon,
     b: common_vendor.o((...args) => $options.goBack && $options.goBack(...args)),
     c: common_vendor.t($data.labels.archive),
     d: common_vendor.t($data.labels.openPlane),
-    e: common_vendor.t($data.shareIcon),
-    f: common_vendor.o((...args) => $options.handleShare && $options.handleShare(...args)),
+    e: $data.shareIcon,
+    f: common_vendor.o((...args) => $options.openCodeSheet && $options.openCodeSheet(...args)),
     g: $data.plane
   }, $data.plane ? common_vendor.e({
     h: common_vendor.t($data.labels.dropPoint),
     i: common_vendor.t($data.plane.locationTag),
-    j: common_vendor.t($options.moodMeta.icon),
+    j: $options.moodMeta.icon,
     k: common_vendor.t($options.moodMeta.label),
     l: common_vendor.t($options.authorText),
     m: common_vendor.t($options.planeTime),
     n: common_vendor.t($data.remainingText),
-    o: common_vendor.t($data.labels.signalNote),
-    p: common_vendor.t($options.shortId),
-    q: common_vendor.t($data.plane.content),
-    r: $options.planeImageUrls.length
+    o: $options.isArchivedPlane
+  }, $options.isArchivedPlane ? {
+    p: common_vendor.t($data.labels.archiveStatus),
+    q: common_vendor.t($data.labels.archiveNote)
+  } : {}, {
+    r: common_vendor.t($data.labels.signalNote),
+    s: common_vendor.t($options.shortId),
+    t: common_vendor.t($data.plane.content),
+    v: $options.planeImageUrls.length
   }, $options.planeImageUrls.length ? common_vendor.e({
-    s: common_vendor.f($options.planeImageUrls, (image, index, i0) => {
+    w: common_vendor.f($options.planeImageUrls, (image, index, i0) => {
       return {
         a: image,
         b: `${image}-${index}`
       };
     }),
-    t: $data.galleryActiveIndex,
-    v: $options.planeImageUrls.length > 1,
-    w: $options.planeImageUrls.length > 1,
-    x: common_vendor.o((...args) => $options.handleGalleryChange && $options.handleGalleryChange(...args)),
-    y: common_vendor.t($data.galleryActiveIndex + 1),
-    z: common_vendor.t($options.planeImageUrls.length),
-    A: common_vendor.o(($event) => $options.previewPlaneImages($data.galleryActiveIndex)),
-    B: $options.planeImageUrls.length > 1
+    x: $data.galleryActiveIndex,
+    y: $options.planeImageUrls.length > 1,
+    z: $options.planeImageUrls.length > 1,
+    A: common_vendor.o((...args) => $options.handleGalleryChange && $options.handleGalleryChange(...args)),
+    B: common_vendor.t($data.galleryActiveIndex + 1),
+    C: common_vendor.t($options.planeImageUrls.length),
+    D: common_vendor.o(($event) => $options.previewPlaneImages($data.galleryActiveIndex)),
+    E: $options.planeImageUrls.length > 1
   }, $options.planeImageUrls.length > 1 ? {
-    C: common_vendor.f($options.planeImageUrls, (image, index, i0) => {
+    F: common_vendor.f($options.planeImageUrls, (image, index, i0) => {
       return {
         a: image,
         b: `${image}-${index}`,
@@ -464,32 +527,37 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         d: common_vendor.o(($event) => $options.setGalleryImage(index), `${image}-${index}`)
       };
     }),
-    D: $data.galleryScrollLeft
+    G: $data.galleryScrollLeft
   } : {}) : {}, {
-    E: common_vendor.t($data.labels.reportAction),
-    F: common_vendor.o((...args) => $options.handleReport && $options.handleReport(...args)),
-    G: common_vendor.t($data.plane.pickCount),
-    H: common_vendor.t($data.labels.pick),
-    I: common_vendor.t($data.plane.likeCount),
-    J: common_vendor.t($data.labels.like),
-    K: common_vendor.t($data.comments.length),
-    L: common_vendor.t($data.labels.comment),
-    M: common_vendor.t($data.labels.likeActionKicker),
-    N: common_vendor.t($data.labels.likeAction),
-    O: common_vendor.t($data.labels.likeActionNote),
-    P: common_vendor.o((...args) => $options.handleLike && $options.handleLike(...args)),
-    Q: $options.hasVote
+    H: common_vendor.t($data.plane.pickCount),
+    I: common_vendor.t($data.labels.pick),
+    J: common_vendor.t($data.plane.likeCount),
+    K: common_vendor.t($data.labels.like),
+    L: common_vendor.t($data.comments.length),
+    M: common_vendor.t($data.labels.comment),
+    N: !$options.isArchivedPlane
+  }, !$options.isArchivedPlane ? {
+    O: common_vendor.t($data.labels.reportAction),
+    P: common_vendor.o((...args) => $options.handleReport && $options.handleReport(...args))
+  } : {}, {
+    Q: !$options.isArchivedPlane
+  }, !$options.isArchivedPlane ? common_vendor.e({
+    R: common_vendor.t($data.labels.likeActionKicker),
+    S: common_vendor.t($data.labels.likeAction),
+    T: common_vendor.t($data.labels.likeActionNote),
+    U: common_vendor.o((...args) => $options.handleLike && $options.handleLike(...args)),
+    V: $options.hasVote
   }, $options.hasVote ? common_vendor.e({
-    R: common_vendor.t($options.voteTitleText),
-    S: common_vendor.t($data.labels.attitudeDesc),
-    T: common_vendor.t($data.attitudeSummary.totalCount),
-    U: common_vendor.t($data.labels.voteUnit),
-    V: common_vendor.t($data.attitudeExpanded ? $data.labels.collapseVotes : $data.labels.expandVotes),
-    W: common_vendor.n($data.attitudeExpanded ? "expanded" : ""),
-    X: common_vendor.o(($event) => $data.attitudeExpanded = !$data.attitudeExpanded),
-    Y: $data.attitudeExpanded
+    W: common_vendor.t($options.voteTitleText),
+    X: common_vendor.t($data.labels.attitudeDesc),
+    Y: common_vendor.t($data.attitudeSummary.totalCount),
+    Z: common_vendor.t($data.labels.voteUnit),
+    aa: common_vendor.t($data.attitudeExpanded ? $data.labels.collapseVotes : $data.labels.expandVotes),
+    ab: common_vendor.n($data.attitudeExpanded ? "expanded" : ""),
+    ac: common_vendor.o(($event) => $data.attitudeExpanded = !$data.attitudeExpanded),
+    ad: $data.attitudeExpanded
   }, $data.attitudeExpanded ? {
-    Z: common_vendor.f($options.attitudeItems, (item, k0, i0) => {
+    ae: common_vendor.f($options.attitudeItems, (item, k0, i0) => {
       return {
         a: common_vendor.t(item.icon),
         b: common_vendor.t(item.label),
@@ -501,18 +569,18 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         h: common_vendor.o(($event) => $options.handleAttitudeVote(item.key), item.key)
       };
     }),
-    aa: common_vendor.n($options.attitudeLocked ? "locked" : "")
-  } : {}) : {}, {
-    ab: common_vendor.t($data.labels.echoTitle),
-    ac: common_vendor.t($data.labels.echoDesc),
-    ad: common_vendor.t($data.comments.length),
-    ae: common_vendor.t($data.labels.echoSubtitle),
-    af: !$data.comments.length
+    af: common_vendor.n($options.attitudeLocked ? "locked" : "")
+  } : {}) : {}) : {}, {
+    ag: common_vendor.t($data.labels.echoTitle),
+    ah: common_vendor.t($data.labels.echoDesc),
+    ai: common_vendor.t($data.comments.length),
+    aj: common_vendor.t($data.labels.echoSubtitle),
+    ak: !$data.comments.length
   }, !$data.comments.length ? {
-    ag: common_vendor.t($data.labels.echoEmptyTitle),
-    ah: common_vendor.t($data.labels.echoEmptyDesc)
+    al: common_vendor.t($data.labels.echoEmptyTitle),
+    am: common_vendor.t($data.labels.echoEmptyDesc)
   } : {
-    ai: common_vendor.f($options.commentTree, (comment, k0, i0) => {
+    an: common_vendor.f($options.commentTree, (comment, k0, i0) => {
       return {
         a: comment.id,
         b: common_vendor.o($options.openComposer, comment.id),
@@ -523,41 +591,76 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     })
   }, {
-    aj: common_vendor.t($data.labels.openComposer),
-    ak: common_vendor.t($data.labels.openComposerNote),
-    al: common_vendor.t($data.comments.length),
-    am: common_vendor.o(($event) => $options.openComposer()),
-    an: common_vendor.n($data.composerVisible ? "visible" : ""),
-    ao: common_vendor.o((...args) => $options.closeComposer && $options.closeComposer(...args)),
-    ap: common_vendor.t($options.replyTargetName ? `${$data.labels.replyPrefix}${$options.replyTargetName}` : $data.labels.sheetTitle),
-    aq: common_vendor.t($data.labels.closeText),
-    ar: common_vendor.o((...args) => $options.closeComposer && $options.closeComposer(...args)),
-    as: $data.replyTarget
-  }, $data.replyTarget ? {
-    at: common_vendor.t($data.labels.replyPrefix),
-    av: common_vendor.t($options.replyTargetName),
-    aw: common_vendor.t($data.labels.cancelReply),
-    ax: common_vendor.o((...args) => $options.clearReplyTarget && $options.clearReplyTarget(...args))
+    ao: !$options.isArchivedPlane
+  }, !$options.isArchivedPlane ? {
+    ap: common_vendor.t($data.labels.openComposer),
+    aq: common_vendor.t($data.labels.openComposerNote),
+    ar: common_vendor.t($data.comments.length),
+    as: common_vendor.o(($event) => $options.openComposer())
+  } : {}) : {}, {
+    at: $data.plane
+  }, $data.plane ? {
+    av: common_vendor.n($data.barcodeVisible ? "visible" : ""),
+    aw: common_vendor.o((...args) => $options.closeCodeSheet && $options.closeCodeSheet(...args))
   } : {}, {
-    ay: $options.replyTargetName ? `${$data.labels.replyPrefix}${$options.replyTargetName}...` : $data.labels.commentPlaceholder,
-    az: $data.reply,
-    aA: common_vendor.o(($event) => $data.reply = $event.detail.value),
-    aB: common_vendor.n($data.commentIdentity === "anonymous" ? "checked" : ""),
-    aC: common_vendor.t($data.labels.anonymousSend),
-    aD: common_vendor.o(($event) => $data.commentIdentity = $data.commentIdentity === "anonymous" ? "named" : "anonymous"),
-    aE: common_vendor.t($data.commentIdentity === "named" ? $options.realNameHint : $data.labels.composerHint),
-    aF: common_vendor.t($data.labels.sendReply),
-    aG: common_vendor.o((...args) => $options.handleComment && $options.handleComment(...args)),
-    aH: common_vendor.n($data.composerVisible ? "visible" : ""),
-    aI: common_vendor.o(() => {
-    })
-  }) : {
-    aJ: common_vendor.t($data.labels.loadingTitle),
-    aK: common_vendor.t($data.labels.loadingDesc)
+    ax: $data.plane
+  }, $data.plane ? common_vendor.e({
+    ay: common_vendor.t($data.labels.barcodeTitle),
+    az: common_vendor.t($data.labels.closeText),
+    aA: common_vendor.o((...args) => $options.closeCodeSheet && $options.closeCodeSheet(...args)),
+    aB: $options.barcodeImageUrl && !$data.barcodeImageFailed
+  }, $options.barcodeImageUrl && !$data.barcodeImageFailed ? {
+    aC: $options.barcodeImageUrl,
+    aD: common_vendor.o((...args) => $options.handleBarcodeImageError && $options.handleBarcodeImageError(...args))
+  } : {
+    aE: common_vendor.t($data.labels.barcodeLoadFailed)
   }, {
-    aL: common_vendor.n($options.themeClass),
-    aM: common_vendor.s($options.detailStyle)
-  });
+    aF: common_vendor.t($data.labels.barcodeNote),
+    aG: common_vendor.t($data.labels.barcodeIdLabel),
+    aH: common_vendor.t($options.planeIdText),
+    aI: common_vendor.t($data.labels.tapToCopy),
+    aJ: common_vendor.o((...args) => $options.copyPlaneId && $options.copyPlaneId(...args)),
+    aK: common_vendor.n($data.barcodeVisible ? "visible" : ""),
+    aL: common_vendor.o(() => {
+    })
+  }) : {}, {
+    aM: $data.plane
+  }, $data.plane ? {
+    aN: common_vendor.n($data.composerVisible ? "visible" : ""),
+    aO: common_vendor.o((...args) => $options.closeComposer && $options.closeComposer(...args))
+  } : {}, {
+    aP: $data.plane
+  }, $data.plane ? common_vendor.e({
+    aQ: common_vendor.t($options.replyTargetName ? `${$data.labels.replyPrefix}${$options.replyTargetName}` : $data.labels.sheetTitle),
+    aR: common_vendor.t($data.labels.closeText),
+    aS: common_vendor.o((...args) => $options.closeComposer && $options.closeComposer(...args)),
+    aT: $data.replyTarget
+  }, $data.replyTarget ? {
+    aU: common_vendor.t($data.labels.replyPrefix),
+    aV: common_vendor.t($options.replyTargetName),
+    aW: common_vendor.t($data.labels.cancelReply),
+    aX: common_vendor.o((...args) => $options.clearReplyTarget && $options.clearReplyTarget(...args))
+  } : {}, {
+    aY: $options.replyTargetName ? `${$data.labels.replyPrefix}${$options.replyTargetName}...` : $data.labels.commentPlaceholder,
+    aZ: $data.reply,
+    ba: common_vendor.o(($event) => $data.reply = $event.detail.value),
+    bb: common_vendor.n($data.commentIdentity === "anonymous" ? "checked" : ""),
+    bc: common_vendor.t($data.labels.anonymousSend),
+    bd: common_vendor.o(($event) => $data.commentIdentity = $data.commentIdentity === "anonymous" ? "named" : "anonymous"),
+    be: common_vendor.t($data.commentIdentity === "named" ? $options.realNameHint : $data.labels.composerHint),
+    bf: common_vendor.t($data.labels.sendReply),
+    bg: common_vendor.o((...args) => $options.handleComment && $options.handleComment(...args)),
+    bh: common_vendor.n($data.composerVisible ? "visible" : ""),
+    bi: common_vendor.o(() => {
+    })
+  }) : {}, {
+    bj: common_vendor.n($options.themeClass),
+    bk: common_vendor.s($options.detailStyle),
+    bl: !$data.plane
+  }, !$data.plane ? {
+    bm: common_vendor.t($data.labels.loadingTitle),
+    bn: common_vendor.t($data.labels.loadingDesc)
+  } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-2fd5b0a7"]]);
 wx.createPage(MiniProgramPage);

@@ -30,20 +30,10 @@ function getPlaneAuthorLabel(plane) {
 function randomId(prefix = "id") {
   return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }
-function safeJsonParse(value, fallback) {
-  if (!value)
-    return fallback;
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    return fallback;
-  }
-}
 exports.formatTime = formatTime;
 exports.getPlaneAuthorLabel = getPlaneAuthorLabel;
 exports.getRemainingShort = getRemainingShort;
 exports.getRemainingText = getRemainingText;
 exports.isExpired = isExpired;
 exports.randomId = randomId;
-exports.safeJsonParse = safeJsonParse;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/common/utils.js.map

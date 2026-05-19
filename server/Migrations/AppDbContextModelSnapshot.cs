@@ -117,6 +117,166 @@ namespace server.Migrations
                         });
                 });
 
+            modelBuilder.Entity("server.Models.AiVoteSuggestionConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApiKey")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("DefaultOptionCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("EnableFallback")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxTokens")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("PerUserMinuteLimit")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SystemPrompt")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<decimal>("Temperature")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<int>("TimeoutSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AiVoteSuggestionConfigs", null, t =>
+                        {
+                            t.HasComment("AI投票建议配置表");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BaseUrl = "https://api.openai.com/v1",
+                            DefaultOptionCount = 3,
+                            EnableFallback = true,
+                            IsEnabled = false,
+                            MaxTokens = 300,
+                            Model = "gpt-4o-mini",
+                            PerUserMinuteLimit = 5,
+                            SystemPrompt = "你是一个校园纸飞机应用的投票助手。根据用户输入内容，生成一个投票标题和2-4个选项。输出必须是 JSON 对象，格式：{\"title\":\"...\",\"options\":[\"...\",\"...\"]}。要求：标题不超过60字，选项不超过20字，避免违法、辱骂、隐私暴露等不当内容。",
+                            Temperature = 0.7m,
+                            TimeoutSeconds = 20,
+                            UpdateTime = new DateTime(2026, 4, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UpdatedBy = "system"
+                        });
+                });
+
+            modelBuilder.Entity("server.Models.AiVoteSuggestionLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentPreview")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DurationMs")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GeneratedOptionsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GeneratedTitle")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("LocationTag")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Mood")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("RawResponse")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("RequestedOptionCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
+
+                    b.HasIndex("CreateTime");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("AiVoteSuggestionLogs", null, t =>
+                        {
+                            t.HasComment("AI投票建议日志表");
+                        });
+                });
+
             modelBuilder.Entity("server.Models.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -312,11 +472,6 @@ namespace server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ShortCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
                     b.Property<string>("AuthorName")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -365,6 +520,11 @@ namespace server.Migrations
 
                     b.Property<int>("ReportCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("ShortCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("VoteOptionsJson")
                         .HasColumnType("nvarchar(max)");
@@ -479,6 +639,46 @@ namespace server.Migrations
                     b.ToTable("PlanePickRecords", null, t =>
                         {
                             t.HasComment("拾取记录表");
+                        });
+                });
+
+            modelBuilder.Entity("server.Models.PlaneReportRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PlaneId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReportDetail")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ReportReason")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ReportedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
+
+                    b.HasIndex("PlaneId");
+
+                    b.HasIndex("PlaneId", "AppUserId")
+                        .IsUnique()
+                        .HasFilter("[AppUserId] IS NOT NULL");
+
+                    b.ToTable("PlaneReportRecords", null, t =>
+                        {
+                            t.HasComment("举报记录表");
                         });
                 });
 
@@ -614,6 +814,24 @@ namespace server.Migrations
                     b.Navigation("Plane");
                 });
 
+            modelBuilder.Entity("server.Models.PlaneReportRecord", b =>
+                {
+                    b.HasOne("server.Models.AppUser", "AppUser")
+                        .WithMany("ReportRecords")
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("server.Models.Plane", "Plane")
+                        .WithMany("ReportRecords")
+                        .HasForeignKey("PlaneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("Plane");
+                });
+
             modelBuilder.Entity("server.Models.UserRefreshToken", b =>
                 {
                     b.HasOne("server.Models.AppUser", "AppUser")
@@ -639,6 +857,8 @@ namespace server.Migrations
                     b.Navigation("PickRecords");
 
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("ReportRecords");
                 });
 
             modelBuilder.Entity("server.Models.Comment", b =>
@@ -655,6 +875,8 @@ namespace server.Migrations
                     b.Navigation("LikeRecords");
 
                     b.Navigation("PickRecords");
+
+                    b.Navigation("ReportRecords");
                 });
 #pragma warning restore 612, 618
         }

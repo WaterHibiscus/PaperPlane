@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 	<view :class="['app-page', 'with-tabbar', 'throw-page', themeClass, { launching: launchAnimating }]" :style="throwStyle">
 		<view :class="['throw-shell', { 'is-launching': launchAnimating }]">
 			<view :class="['throw-frame', { 'is-launching': launchAnimating }]">
@@ -49,44 +49,52 @@
 				</view>
 
 				<view class="control-card">
-					<picker mode="selector" :range="locationOptions" @change="handleLocationChange">
-						<view class="setting-row">
-							<view class="setting-meta">
-								<image class="setting-icon-image" :src="pinIcon" mode="aspectFit" />
-								<text class="setting-label">{{ labels.locationLabel }}</text>
-							</view>
-							<view class="setting-value">
-								<text>{{ locationDisplay }}</text>
-								<text class="setting-arrow">{{ arrowIcon }}</text>
-							</view>
+					<view class="setting-row picker-trigger" @tap="openSelector('location')">
+						<view class="setting-meta">
+							<image class="setting-icon-image is-location-icon" :src="currentLocationIcon" mode="aspectFit" />
+							<text class="setting-label">{{ labels.locationLabel }}</text>
 						</view>
-					</picker>
+						<view class="setting-value">
+							<text>{{ locationDisplay }}</text>
+							<text class="setting-arrow">{{ arrowIcon }}</text>
+						</view>
+					</view>
 
-					<picker mode="selector" :range="moodPickerOptions" @change="handleMoodChange">
-						<view class="setting-row">
-							<view class="setting-meta">
-								<image class="setting-icon-image" :src="moodIcon" mode="aspectFit" />
-								<text class="setting-label">{{ labels.moodLabel }}</text>
-							</view>
-							<view class="setting-value">
-								<text>{{ currentMoodLabel }}</text>
-								<text class="setting-arrow">{{ arrowIcon }}</text>
-							</view>
+					<view class="setting-row picker-trigger" @tap="openSelector('mood')">
+						<view class="setting-meta">
+							<image class="setting-icon-image" :src="currentMoodIcon" mode="aspectFit" />
+							<text class="setting-label">{{ labels.moodLabel }}</text>
 						</view>
-					</picker>
+						<view class="setting-value">
+							<text>{{ currentMoodLabel }}</text>
+							<text class="setting-arrow">{{ arrowIcon }}</text>
+						</view>
+					</view>
 
-					<picker mode="selector" :range="expirePickerOptions" @change="handleExpireChange">
-						<view class="setting-row">
-							<view class="setting-meta">
-								<image class="setting-icon-image" :src="timeIcon" mode="aspectFit" />
-								<text class="setting-label">{{ labels.expireLabel }}</text>
-							</view>
-							<view class="setting-value">
-								<text>{{ expireLabel }}</text>
-								<text class="setting-arrow">{{ arrowIcon }}</text>
-							</view>
+					<view v-if="isCustomMoodSelected" class="setting-row mood-custom-row">
+						<view class="setting-meta">
+							<image class="setting-icon-image" :src="currentMoodIcon" mode="aspectFit" />
+							<text class="setting-label">{{ labels.customMoodLabel }}</text>
 						</view>
-					</picker>
+						<input
+							v-model="customMoodText"
+							class="mood-custom-input"
+							maxlength="20"
+							:placeholder="labels.customMoodPlaceholder"
+							placeholder-class="placeholder-text"
+						/>
+					</view>
+
+					<view class="setting-row picker-trigger" @tap="openSelector('expire')">
+						<view class="setting-meta">
+							<image class="setting-icon-image" :src="timeIcon" mode="aspectFit" />
+							<text class="setting-label">{{ labels.expireLabel }}</text>
+						</view>
+						<view class="setting-value">
+							<text>{{ expireLabel }}</text>
+							<text class="setting-arrow">{{ arrowIcon }}</text>
+						</view>
+					</view>
 
 					<view class="setting-row vote-row" @tap="voteEditorOpen = !voteEditorOpen">
 						<view class="setting-meta">
@@ -101,6 +109,13 @@
 
 					<view :class="['vote-editor-wrap', voteEditorOpen ? 'open' : '']">
 						<view class="vote-editor">
+							<view class="vote-ai-row">
+								<text class="vote-ai-hint">{{ labels.voteAiHint }}</text>
+								<view :class="['vote-ai-btn', aiGenerating ? 'loading' : '']" @tap.stop="handleGenerateVoteByAi">
+									<text>{{ aiGenerating ? labels.voteAiGenerating : labels.voteAiGenerate }}</text>
+								</view>
+							</view>
+
 							<input
 								v-model="voteTitle"
 								class="vote-input"
@@ -172,6 +187,50 @@
 			</view>
 		</view>
 
+		<view v-if="selectorVisible" class="selector-popup" :class="{ open: selectorOpen }" @tap="closeSelector">
+			<view class="selector-popup-mask"></view>
+			<view class="selector-sheet" @tap.stop>
+				<view class="selector-sheet-head">
+					<text class="selector-sheet-title">{{ selectorTitle }}</text>
+					<view class="selector-sheet-close" @tap="closeSelector">
+						<text>×</text>
+					</view>
+				</view>
+					<scroll-view class="selector-sheet-body" scroll-y>
+						<view :class="['selector-option-list', { 'is-location-grid': selectorType === 'location', 'is-mood-grid': selectorType === 'mood' }]">
+							<view
+								v-for="option in selectorOptions"
+								:key="option.key"
+								:class="[
+									'selector-option',
+									{
+										active: option.value === selectorSelectedValue,
+										'is-location-grid-item': selectorType === 'location',
+										'is-mood-grid-item': selectorType === 'mood',
+										'is-mood-custom-item': selectorType === 'mood' && option.isCustom,
+									},
+								]"
+								@tap="selectSelectorOption(option.value)"
+							>
+								<view class="selector-option-left">
+									<image
+										v-if="option.icon"
+										:class="['selector-option-icon', { 'is-location-icon': selectorType === 'location', 'is-mood-icon': selectorType === 'mood' }]"
+										:src="option.icon"
+										mode="aspectFit"
+									/>
+							<text class="selector-option-text">{{ option.label }}</text>
+						</view>
+						<text v-if="option.value === selectorSelectedValue" class="selector-option-check">✓</text>
+					</view>
+						</view>
+						<view v-if="!selectorOptions.length" class="selector-empty">
+						<text>{{ selectorEmptyText }}</text>
+					</view>
+				</scroll-view>
+			</view>
+		</view>
+
 		<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
 		<app-tabbar active="throw" :theme="appState.theme" />
 	</view>
@@ -180,9 +239,11 @@
 <script>
 import AppTabbar from '../../components/AppTabbar.vue'
 import PageTransition from '../../components/PageTransition.vue'
-import { appState, fetchLocations, setCurrentLocation } from '../../common/app-state.js'
-import { throwPlane, uploadPlaneImage } from '../../common/api.js'
-import { expireOptions, moodOptions } from '../../common/moods.js'
+import { appState, fetchLocations, fetchMoodConfigs, setCurrentLocation } from '../../common/app-state.js'
+import { isLoggedIn } from '../../common/auth.js'
+import { generateVoteSuggestion, getAssetUrl, getExpireOptions, throwPlane, uploadPlaneImage } from '../../common/api.js'
+import { getMoodMeta, getMoodOptions } from '../../common/moods.js'
+import { getThrowExpireOptions, setThrowExpireOptions } from '../../common/throw-settings.js'
 import { clearThrowDraft, getThrowDraft, setThrowDraft } from '../../common/storage.js'
 import pageTransitionMixin from '../../common/page-transition.js'
 import { uiIcons } from '../../common/ui-icons.js'
@@ -193,20 +254,22 @@ export default {
 		AppTabbar,
 		PageTransition,
 	},
-	data() {
-		return {
-			appState,
-			moodOptions,
-			expireOptions,
-			content: '',
-			selectedImages: [],
-			mood: 'calm',
-			location: '',
-			isAnonymous: true,
+		data() {
+			return {
+				appState,
+				moodOptions: getMoodOptions(),
+				expireOptions: getThrowExpireOptions(),
+				content: '',
+				selectedImages: [],
+				mood: 'calm',
+				customMoodText: '',
+				location: '',
+				isAnonymous: true,
 			expireHours: 24,
 			voteEditorOpen: false,
 			voteTitle: '',
 			voteOptionInputs: ['', '', '', ''],
+			aiGenerating: false,
 			loading: false,
 			publishStage: 'idle',
 			publishProgress: 0,
@@ -214,26 +277,35 @@ export default {
 			launchAnimating: false,
 			launchTimer: null,
 			closeIcon: uiIcons.close,
-			arrowIcon: '›',
-			pinIcon: uiIcons.location,
-			timeIcon: uiIcons.hourglass,
-			moodIcon: uiIcons.emotion,
-			voteIcon: uiIcons.vote,
-			planeIcon: uiIcons.throwActive,
-			addImageIcon: uiIcons.more,
-			labels: {
+				arrowIcon: '›',
+				pinIcon: uiIcons.location,
+				timeIcon: uiIcons.hourglass,
+				voteIcon: uiIcons.vote,
+					planeIcon: uiIcons.throwActive,
+				addImageIcon: uiIcons.more,
+				selectorVisible: false,
+				selectorOpen: false,
+				selectorType: '',
+				selectorOpenTimer: null,
+				selectorCloseTimer: null,
+				labels: {
 				anonymousMode: '匿名投递',
 				realMode: '实名投递',
 				anonymousHint: '这架纸飞机会以匿名身份起飞。',
 				editorPlaceholder: '写下你想留在这里的话...',
 				imageLabel: '附加图片',
 				addImage: '添加图片',
-				locationLabel: '降落地点',
-				moodLabel: '纸飞机情绪',
-				expireLabel: '存活时间',
+					locationLabel: '降落地点',
+					moodLabel: '纸飞机情绪',
+					customMoodLabel: '自定义心情',
+					customMoodPlaceholder: '输入你的心情（最多20字）',
+					expireLabel: '存活时间',
 				voteLabel: '附加投票',
 				voteTitlePlaceholder: '投票标题',
 				voteOptionPlaceholder: '投票选项',
+				voteAiGenerate: 'AI 生成投票',
+				voteAiGenerating: 'AI 生成中...',
+				voteAiHint: '根据输入内容自动生成标题和选项',
 				launch: '放飞纸飞机',
 				launching: '正在起飞...',
 				launchFlightTitle: '这一页已经被折成纸飞机',
@@ -248,22 +320,81 @@ export default {
 		locations() {
 			return this.appState.locations || []
 		},
-		locationOptions() {
-			return this.locations.map(item => item.name)
+		currentLocationOption() {
+			return this.locations.find(item => item.name === this.location) || null
 		},
-		moodPickerOptions() {
-			return this.moodOptions.map(item => item.text)
-		},
-		expirePickerOptions() {
-			return this.expireOptions.map(item => item.text)
-		},
-		wordCount() {
-			return (this.content || '').length
-		},
-		currentMoodLabel() {
-			const current = this.moodOptions.find(item => item.value === this.mood)
-			return current ? current.text : '平静'
-		},
+			currentLocationIcon() {
+				return this.currentLocationOption?.iconUrl
+					? getAssetUrl(this.currentLocationOption.iconUrl)
+					: this.pinIcon
+			},
+			selectorTitle() {
+				if (this.selectorType === 'location') return this.labels.locationLabel
+				if (this.selectorType === 'mood') return this.labels.moodLabel
+				if (this.selectorType === 'expire') return this.labels.expireLabel
+				return '请选择'
+			},
+			selectorOptions() {
+				if (this.selectorType === 'location') {
+					return this.locations.map(item => ({
+						key: `loc-${item.id || item.name}`,
+						label: item.name,
+						value: item.name,
+						icon: item.iconUrl ? getAssetUrl(item.iconUrl) : this.pinIcon,
+					}))
+				}
+
+				if (this.selectorType === 'mood') {
+					return this.moodOptions
+						.map(item => ({
+							key: `mood-${item.value}`,
+							label: item.text,
+							value: item.value,
+							icon: item.icon || this.currentMoodIcon,
+							isCustom: Boolean(item.isCustom),
+						}))
+						.sort((left, right) => Number(left.isCustom) - Number(right.isCustom))
+				}
+
+				if (this.selectorType === 'expire') {
+					return this.expireOptions.map(item => ({
+						key: `expire-${item.value}`,
+						label: item.text,
+						value: item.value,
+						icon: this.timeIcon,
+					}))
+				}
+
+				return []
+			},
+			selectorSelectedValue() {
+				if (this.selectorType === 'location') return this.location
+				if (this.selectorType === 'mood') return this.mood
+				if (this.selectorType === 'expire') return this.expireHours
+				return ''
+			},
+			selectorEmptyText() {
+				if (this.selectorType === 'location') return '暂无可选地点'
+				return '暂无可选项'
+			},
+				wordCount() {
+					return (this.content || '').length
+				},
+			currentMoodOption() {
+				return this.moodOptions.find(item => item.value === this.mood) || null
+			},
+			isCustomMoodSelected() {
+				return this.mood === 'custom' || Boolean(this.currentMoodOption?.isCustom)
+			},
+			currentMoodIcon() {
+				return this.currentMoodOption?.icon || getMoodMeta(this.mood).icon || uiIcons.emotion
+			},
+			currentMoodLabel() {
+				if (this.isCustomMoodSelected) {
+					return this.customMoodText.trim() || this.currentMoodOption?.text || '自定义心情'
+				}
+				return this.currentMoodOption?.text || '平静'
+			},
 		expireLabel() {
 			const current = this.expireOptions.find(item => item.value === this.expireHours)
 			return current ? current.text : '24小时'
@@ -289,11 +420,12 @@ export default {
 			}
 			return '填写中'
 		},
-		canLaunch() {
-			if (!this.content.trim() || !this.location) return false
-			if (!this.hasVoteDraft) return true
-			return Boolean(this.voteTitle.trim()) && this.normalizedVoteOptions.length >= 2
-		},
+			canLaunch() {
+				if (!this.content.trim() || !this.location) return false
+				if (this.isCustomMoodSelected && !this.customMoodText.trim()) return false
+				if (!this.hasVoteDraft) return true
+				return Boolean(this.voteTitle.trim()) && this.normalizedVoteOptions.length >= 2
+			},
 		throwStyle() {
 			return {
 				'--throw-accent': '#31bc7d',
@@ -340,8 +472,9 @@ export default {
 			handler: 'persistDraft',
 			deep: true,
 		},
-		mood: 'persistDraft',
-		location: 'persistDraft',
+			mood: 'persistDraft',
+			customMoodText: 'persistDraft',
+			location: 'persistDraft',
 		isAnonymous: 'persistDraft',
 		expireHours: 'persistDraft',
 		voteEditorOpen: 'persistDraft',
@@ -351,51 +484,150 @@ export default {
 			deep: true,
 		},
 	},
-	async onShow() {
-		await fetchLocations()
-		this.restoreDraft()
-	},
-	onHide() {
-		this.persistDraft()
-		this.clearLaunchTimer()
-		this.launchAnimating = false
-		this.resetPublishState()
-	},
-	onUnload() {
-		this.persistDraft()
-		this.clearLaunchTimer()
-		this.launchAnimating = false
-		this.resetPublishState()
-	},
-	methods: {
-		goBack() {
-			uni.switchTab({
-				url: '/pages/home/index',
+		async onShow() {
+			await fetchLocations()
+			try {
+				await fetchMoodConfigs()
+			} catch (error) {
+				// Keep default mood config if remote sync fails.
+			}
+			this.refreshMoodOptions()
+			await this.refreshExpireOptions()
+			this.restoreDraft()
+		},
+		onHide() {
+			this.persistDraft()
+			this.clearLaunchTimer()
+			this.clearSelectorTimers()
+			this.selectorVisible = false
+			this.selectorOpen = false
+			this.selectorType = ''
+			this.launchAnimating = false
+			this.resetPublishState()
+		},
+		onUnload() {
+			this.persistDraft()
+			this.clearLaunchTimer()
+			this.clearSelectorTimers()
+			this.selectorVisible = false
+			this.selectorOpen = false
+			this.selectorType = ''
+			this.launchAnimating = false
+			this.resetPublishState()
+		},
+		methods: {
+			goLoginForThrow() {
+				uni.showToast({
+					title: '请先登录后再发布',
+					icon: 'none',
+				})
+				setTimeout(() => {
+					uni.navigateTo({
+						url: '/pages/login/index',
+						fail: () => {
+							uni.reLaunch({
+								url: '/pages/login/index',
+							})
+						},
+					})
+				}, 350)
+			},
+			goBack() {
+				uni.switchTab({
+					url: '/pages/home/index',
 				fail: () => {
 					uni.reLaunch({
 						url: '/pages/home/index',
 					})
-				},
-			})
-		},
-		handleLocationChange(event) {
-			const index = Number(event.detail.value)
-			this.location = this.locationOptions[index] || this.location
-		},
-		handleMoodChange(event) {
-			const index = Number(event.detail.value)
-			const current = this.moodOptions[index]
-			if (current) {
-				this.mood = current.value
-			}
-		},
-		handleExpireChange(event) {
-			const index = Number(event.detail.value)
-			const current = this.expireOptions[index]
-			if (current) {
-				this.expireHours = current.value
-			}
-		},
+					},
+				})
+			},
+			getDefaultMoodValue() {
+				const nonCustom = this.moodOptions.find(item => !item.isCustom)
+				if (nonCustom) return nonCustom.value
+				return this.moodOptions[0]?.value || 'calm'
+			},
+			getDefaultExpireValue() {
+				return this.expireOptions[0]?.value || 24
+			},
+			refreshMoodOptions() {
+				this.moodOptions = getMoodOptions()
+				if (!this.moodOptions.length) {
+					this.mood = 'calm'
+					return
+				}
+				const exists = this.moodOptions.some(item => item.value === this.mood)
+				if (!exists) {
+					this.mood = this.getDefaultMoodValue()
+				}
+			},
+			async refreshExpireOptions() {
+				try {
+					const options = await getExpireOptions()
+					setThrowExpireOptions(options)
+				} catch (error) {
+					// Keep default expire options if remote sync fails.
+				}
+				this.expireOptions = getThrowExpireOptions()
+				const exists = this.expireOptions.some(item => item.value === this.expireHours)
+				if (!exists) {
+					this.expireHours = this.getDefaultExpireValue()
+				}
+			},
+			clearSelectorTimers() {
+				if (this.selectorOpenTimer) {
+					clearTimeout(this.selectorOpenTimer)
+					this.selectorOpenTimer = null
+				}
+				if (this.selectorCloseTimer) {
+					clearTimeout(this.selectorCloseTimer)
+					this.selectorCloseTimer = null
+				}
+			},
+			openSelector(type) {
+				if (!type) return
+				if (this.selectorVisible && this.selectorType === type && this.selectorOpen) return
+				this.clearSelectorTimers()
+				this.selectorType = type
+				this.selectorVisible = true
+				this.selectorOpen = false
+				this.$nextTick(() => {
+					this.selectorOpenTimer = setTimeout(() => {
+						this.selectorOpen = true
+						this.selectorOpenTimer = null
+					}, 12)
+				})
+			},
+			closeSelector() {
+				if (!this.selectorVisible) return
+				this.clearSelectorTimers()
+				this.selectorOpen = false
+				this.selectorCloseTimer = setTimeout(() => {
+					this.selectorVisible = false
+					this.selectorType = ''
+					this.selectorCloseTimer = null
+				}, 220)
+			},
+			selectSelectorOption(value) {
+				if (this.selectorType === 'location') {
+					this.location = value || ''
+					this.closeSelector()
+					return
+				}
+
+				if (this.selectorType === 'mood') {
+					const nextMood = this.moodOptions.find(item => item.value === value)
+					if (nextMood) this.mood = nextMood.value
+					this.closeSelector()
+					return
+				}
+
+				if (this.selectorType === 'expire') {
+					const nextExpire = this.expireOptions.find(item => item.value === value)
+					if (nextExpire) this.expireHours = nextExpire.value
+					this.closeSelector()
+				}
+			},
 		chooseImages() {
 			const remainCount = 9 - this.selectedImages.length
 			if (remainCount <= 0) return
@@ -419,25 +651,29 @@ export default {
 				current: this.selectedImages[current],
 			})
 		},
-		persistDraft() {
-			const draft = {
-				content: this.content,
-				selectedImages: this.selectedImages,
-				mood: this.mood,
-				location: this.location,
-				isAnonymous: this.isAnonymous,
-				expireHours: this.expireHours,
+			persistDraft() {
+				const defaultMoodValue = this.getDefaultMoodValue()
+				const defaultExpireValue = this.getDefaultExpireValue()
+				const draft = {
+					content: this.content,
+					selectedImages: this.selectedImages,
+					mood: this.mood,
+					customMoodText: this.customMoodText,
+					location: this.location,
+					isAnonymous: this.isAnonymous,
+					expireHours: this.expireHours,
 				voteEditorOpen: this.voteEditorOpen,
 				voteTitle: this.voteTitle,
 				voteOptionInputs: this.voteOptionInputs,
 			}
-			const hasDraft =
-				Boolean(draft.content?.trim()) ||
-				draft.selectedImages.length > 0 ||
-				Boolean(draft.location) ||
-				draft.mood !== 'calm' ||
-				draft.isAnonymous !== true ||
-				draft.expireHours !== 24 ||
+				const hasDraft =
+					Boolean(draft.content?.trim()) ||
+					draft.selectedImages.length > 0 ||
+					Boolean(draft.location) ||
+					draft.mood !== defaultMoodValue ||
+					Boolean(draft.customMoodText?.trim()) ||
+					draft.isAnonymous !== true ||
+					draft.expireHours !== defaultExpireValue ||
 				Boolean(draft.voteEditorOpen) ||
 				Boolean(draft.voteTitle?.trim()) ||
 				draft.voteOptionInputs.some(item => String(item || '').trim())
@@ -449,28 +685,39 @@ export default {
 
 			setThrowDraft(draft)
 		},
-		restoreDraft() {
-			const draft = getThrowDraft()
-			if (draft) {
-				this.content = draft.content || ''
-				this.selectedImages = Array.isArray(draft.selectedImages)
-					? draft.selectedImages.slice(0, 9)
-					: []
-				this.mood = draft.mood || 'calm'
-				this.location = draft.location || this.appState.currentLocation || ''
-				this.isAnonymous = draft.isAnonymous !== false
-				this.expireHours = draft.expireHours || 24
+			restoreDraft() {
+				const draft = getThrowDraft()
+				if (draft) {
+					this.content = draft.content || ''
+					this.selectedImages = Array.isArray(draft.selectedImages)
+						? draft.selectedImages.slice(0, 9)
+						: []
+					this.mood = draft.mood || this.getDefaultMoodValue()
+					this.customMoodText = draft.customMoodText || ''
+					this.location = draft.location || this.appState.currentLocation || ''
+					this.isAnonymous = draft.isAnonymous !== false
+					this.expireHours = draft.expireHours || this.getDefaultExpireValue()
 				this.voteEditorOpen = Boolean(draft.voteEditorOpen)
 				this.voteTitle = draft.voteTitle || ''
 				this.voteOptionInputs = Array.isArray(draft.voteOptionInputs)
-					? [...draft.voteOptionInputs, '', '', '', ''].slice(0, 4)
-					: ['', '', '', '']
-				return
-			}
-			if (this.appState.currentLocation) {
-				this.location = this.appState.currentLocation
-			}
-		},
+						? [...draft.voteOptionInputs, '', '', '', ''].slice(0, 4)
+						: ['', '', '', '']
+					const moodExists = this.moodOptions.some(item => item.value === this.mood)
+					if (!moodExists) {
+						this.mood = this.getDefaultMoodValue()
+					}
+					const expireExists = this.expireOptions.some(item => item.value === this.expireHours)
+					if (!expireExists) {
+						this.expireHours = this.getDefaultExpireValue()
+					}
+					return
+				}
+				this.customMoodText = ''
+				if (this.appState.currentLocation) {
+					this.location = this.appState.currentLocation
+				}
+				this.expireHours = this.getDefaultExpireValue()
+			},
 		resetVoteDraft() {
 			this.voteEditorOpen = false
 			this.voteTitle = ''
@@ -524,25 +771,109 @@ export default {
 					})
 			})
 		},
-		async handleThrow() {
-			if (this.loading || this.launchAnimating) return
-			if (!this.content.trim()) {
+		async handleGenerateVoteByAi() {
+			if (this.aiGenerating || this.loading || this.launchAnimating) return
+
+			const content = this.content.trim()
+			if (!content) {
+				uni.showToast({
+					title: '请先输入内容',
+					icon: 'none',
+				})
+				return
+			}
+
+			this.aiGenerating = true
+			try {
+				const payload = {
+					content,
+					mood: this.isCustomMoodSelected ? (this.customMoodText.trim() || this.mood) : this.mood,
+					locationTag: this.location || '',
+					optionCount: 3,
+				}
+
+				const data = await this.withTimeout(
+					generateVoteSuggestion(payload),
+					30000,
+					'AI 生成超时，请稍后重试'
+				)
+
+				const title = String(data?.title || '').trim()
+				const options = (Array.isArray(data?.options) ? data.options : [])
+					.map(item => String(item || '').trim())
+					.filter(Boolean)
+					.filter((item, index, array) => array.indexOf(item) === index)
+					.slice(0, 4)
+
+				if (!title || options.length < 2) {
+					throw new Error('AI 返回结果不完整，请重试')
+				}
+
+				this.voteEditorOpen = true
+				this.voteTitle = title.slice(0, 60)
+				this.voteOptionInputs = [...options, '', '', '', ''].slice(0, 4).map(item => String(item).slice(0, 20))
+
+				const source = String(data?.source || '').toLowerCase()
+				const sourceDetail = String(data?.sourceDetail || '').trim()
+				uni.showToast({
+					title: source === 'ai' ? 'AI 建议已生成' : `已使用兜底建议${sourceDetail ? `(${sourceDetail})` : ''}`,
+					icon: 'none',
+				})
+			} catch (error) {
+				const message = String(error?.message || '')
+				if (message === 'Please login first' || message === 'Session expired, please login again') {
+					this.goLoginForThrow()
+					return
+				}
+				uni.showToast({
+					title: error?.message || 'AI 生成失败',
+					icon: 'none',
+				})
+			} finally {
+				this.aiGenerating = false
+			}
+		},
+			async handleThrow() {
+				if (this.loading || this.launchAnimating) return
+				if (!isLoggedIn()) {
+					this.goLoginForThrow()
+					return
+				}
+				if (!this.content.trim()) {
 				uni.showToast({
 					title: '请写点什么吧',
 					icon: 'none',
 				})
 				return
 			}
-			if (!this.location) {
-				uni.showToast({
-					title: '请选择地点',
-					icon: 'none',
-				})
-				return
-			}
+				if (!this.location) {
+					uni.showToast({
+						title: '请选择地点',
+						icon: 'none',
+					})
+					return
+				}
 
-			if (this.hasVoteDraft) {
-				if (!this.voteTitle.trim()) {
+				const customMood = this.customMoodText.trim()
+				if (this.isCustomMoodSelected) {
+					if (!customMood) {
+						uni.showToast({
+							title: '请填写自定义心情',
+							icon: 'none',
+						})
+						return
+					}
+					if (customMood.length > 20) {
+						uni.showToast({
+							title: '自定义心情最多20个字',
+							icon: 'none',
+						})
+						return
+					}
+				}
+
+				if (this.hasVoteDraft) {
+					if (!this.voteTitle.trim()) {
 					uni.showToast({
 						title: '请填写投票标题',
 						icon: 'none',
@@ -563,12 +894,12 @@ export default {
 			try {
 				const imageUrls = await this.uploadImagesInOrder(this.selectedImages)
 				this.setPublishState('submitting', 95, '正在提交纸飞机')
-				await this.withTimeout(throwPlane({
-					locationTag: this.location,
-					content: this.content.trim(),
-					mood: this.mood,
-					isAnonymous: this.isAnonymous,
-					authorName: this.isAnonymous ? '' : this.appState.profileName,
+					await this.withTimeout(throwPlane({
+						locationTag: this.location,
+						content: this.content.trim(),
+						mood: this.isCustomMoodSelected ? customMood : this.mood,
+						isAnonymous: this.isAnonymous,
+						authorName: this.isAnonymous ? '' : this.appState.profileName,
 					imageUrls,
 					expireHours: this.expireHours,
 					voteTitle: this.hasVoteDraft ? this.voteTitle.trim() : '',
@@ -576,10 +907,11 @@ export default {
 				}), 120000)
 				this.setPublishState('launching', 100, '发布成功，准备起飞')
 				setCurrentLocation(this.location)
-				await this.playLaunchAnimation()
-				this.content = ''
-				this.resetVoteDraft()
-				clearThrowDraft()
+					await this.playLaunchAnimation()
+					this.content = ''
+					this.customMoodText = ''
+					this.resetVoteDraft()
+					clearThrowDraft()
 				uni.switchTab({
 					url: '/pages/home/index',
 					fail: () => {
@@ -589,6 +921,11 @@ export default {
 					},
 				})
 			} catch (error) {
+				const message = String(error?.message || '')
+				if (message === 'Please login first' || message === 'Session expired, please login again') {
+					this.goLoginForThrow()
+					return
+				}
 				uni.showToast({
 					title: error.message || '投递失败',
 					icon: 'none',
@@ -654,7 +991,7 @@ export default {
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	padding: calc(env(safe-area-inset-top) + 22rpx) 28rpx 28rpx;
+		padding: calc(var(--status-bar-height) + 22rpx) 28rpx 28rpx;
 	background: transparent;
 	transform-origin: center 18%;
 	transition:
@@ -676,8 +1013,8 @@ export default {
 .throw-topbar {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 16rpx;
+	justify-content: flex-start;
+	gap: 12rpx;
 }
 
 .top-icon-btn {
@@ -916,6 +1253,19 @@ export default {
 	border-top-color: rgba(230, 237, 241, 0.06);
 }
 
+.picker-trigger {
+	transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.picker-trigger:active {
+	background: rgba(28, 36, 40, 0.04);
+	transform: scale(0.996);
+}
+
+.theme-dark .picker-trigger:active {
+	background: rgba(230, 237, 241, 0.04);
+}
+
 .setting-meta {
 	display: inline-flex;
 	align-items: center;
@@ -924,10 +1274,15 @@ export default {
 }
 
 .setting-icon-image {
-	width: 24rpx;
-	height: 24rpx;
+	width: 48rpx;
+	height: 48rpx;
 	display: block;
 	flex-shrink: 0;
+}
+
+.setting-icon-image.is-location-icon {
+	width: 66rpx;
+	height: 66rpx;
 }
 
 .setting-label {
@@ -945,6 +1300,23 @@ export default {
 }
 
 .theme-dark .setting-value {
+	color: rgba(226, 234, 239, 0.92);
+}
+
+.mood-custom-row {
+	align-items: center;
+}
+
+.mood-custom-input {
+	flex: 1;
+	min-width: 0;
+	text-align: right;
+	font-size: 24rpx;
+	color: var(--ink);
+	background: transparent;
+}
+
+.theme-dark .mood-custom-input {
 	color: rgba(226, 234, 239, 0.92);
 }
 
@@ -995,6 +1367,43 @@ export default {
 
 .theme-dark .vote-editor-wrap.open .vote-editor {
 	border-top-color: rgba(230, 237, 241, 0.06);
+}
+
+.vote-ai-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12rpx;
+}
+
+.vote-ai-hint {
+	font-size: 22rpx;
+	color: var(--muted);
+	flex: 1;
+	min-width: 0;
+}
+
+.vote-ai-btn {
+	height: 56rpx;
+	padding: 0 20rpx;
+	border-radius: 999rpx;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(49, 188, 125, 0.12);
+	color: #1f9d69;
+	font-size: 22rpx;
+	font-weight: 600;
+	flex-shrink: 0;
+}
+
+.vote-ai-btn.loading {
+	opacity: 0.72;
+}
+
+.theme-dark .vote-ai-btn {
+	background: rgba(49, 188, 125, 0.2);
+	color: rgba(180, 245, 214, 0.96);
 }
 
 .vote-input {
@@ -1069,6 +1478,240 @@ export default {
 	border-color: transparent;
 	color: rgba(186, 196, 202, 0.72);
 	box-shadow: none;
+}
+
+.selector-popup {
+	position: fixed;
+	inset: 0;
+	z-index: 120;
+	display: flex;
+	align-items: flex-end;
+	justify-content: stretch;
+}
+
+.selector-popup-mask {
+	position: absolute;
+	inset: 0;
+	background: rgba(11, 16, 19, 0.38);
+	opacity: 0;
+	transition: opacity 0.22s ease;
+}
+
+.selector-sheet {
+	position: relative;
+	width: 100%;
+	border-radius: 32rpx 32rpx 0 0;
+	padding: 18rpx 20rpx calc(env(safe-area-inset-bottom) + 18rpx);
+	background:
+		radial-gradient(circle at 14% 8%, rgba(208, 221, 239, 0.5), transparent 40%),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 243, 238, 0.98));
+	box-shadow: 0 -20rpx 48rpx rgba(31, 36, 40, 0.18);
+	transform: translateY(102%);
+	transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+	max-height: 72vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.selector-popup.open .selector-popup-mask {
+	opacity: 1;
+}
+
+.selector-popup.open .selector-sheet {
+	transform: translateY(0);
+}
+
+.selector-sheet-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16rpx;
+	padding: 6rpx 4rpx 14rpx;
+}
+
+.selector-sheet-title {
+	font-size: 30rpx;
+	font-weight: 700;
+	color: var(--ink);
+}
+
+.selector-sheet-close {
+	width: 52rpx;
+	height: 52rpx;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 34rpx;
+	line-height: 1;
+	color: var(--muted);
+	background: rgba(255, 255, 255, 0.7);
+	border: 2rpx solid rgba(28, 36, 40, 0.08);
+}
+
+.selector-sheet-body {
+	flex: 1;
+	min-height: 120rpx;
+}
+
+.selector-option-list {
+	display: block;
+}
+
+.selector-option-list.is-location-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12rpx;
+}
+
+.selector-option-list.is-mood-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12rpx;
+}
+
+.selector-option {
+	min-height: 88rpx;
+	border-radius: 20rpx;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18rpx;
+	padding: 0 18rpx;
+	color: var(--ink);
+	transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.selector-option + .selector-option {
+	margin-top: 8rpx;
+}
+
+.selector-option-list.is-location-grid .selector-option + .selector-option {
+	margin-top: 0;
+}
+
+.selector-option-list.is-mood-grid .selector-option + .selector-option {
+	margin-top: 0;
+}
+
+.selector-option.is-location-grid-item {
+	min-height: 96rpx;
+	padding: 0 16rpx;
+}
+
+.selector-option.is-mood-grid-item {
+	min-height: 116rpx;
+	padding: 16rpx 12rpx;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 10rpx;
+	text-align: center;
+}
+
+.selector-option.is-mood-custom-item {
+	grid-column: 1 / -1;
+	min-height: 94rpx;
+	padding: 0 22rpx;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	text-align: left;
+}
+
+.selector-option-left {
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 12rpx;
+}
+
+.selector-option.is-mood-grid-item .selector-option-left {
+	flex-direction: column;
+	justify-content: center;
+	gap: 10rpx;
+}
+
+.selector-option.is-mood-custom-item .selector-option-left {
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
+.selector-option-icon {
+	width: 28rpx;
+	height: 28rpx;
+	display: block;
+	flex-shrink: 0;
+}
+
+.selector-option-icon.is-location-icon {
+	width: 48rpx;
+	height: 48rpx;
+	border-radius: 14rpx;
+}
+
+.selector-option-icon.is-mood-icon {
+	width: 40rpx;
+	height: 40rpx;
+}
+
+.selector-option-text {
+	font-size: 28rpx;
+}
+
+.selector-option-check {
+	font-size: 30rpx;
+	color: #2fa16f;
+	font-weight: 700;
+}
+
+.selector-option.active {
+	background: rgba(47, 158, 116, 0.14);
+}
+
+.selector-option:active {
+	background: rgba(47, 158, 116, 0.2);
+	transform: scale(0.995);
+}
+
+.selector-empty {
+	padding: 40rpx 20rpx;
+	text-align: center;
+	font-size: 24rpx;
+	color: var(--muted);
+}
+
+.throw-page.theme-dark .selector-popup-mask {
+	background: rgba(0, 0, 0, 0.52);
+}
+
+.throw-page.theme-dark .selector-sheet {
+	background:
+		radial-gradient(circle at 12% 8%, rgba(70, 94, 112, 0.34), transparent 40%),
+		linear-gradient(180deg, rgba(18, 24, 27, 0.97), rgba(13, 18, 21, 0.99));
+	box-shadow: 0 -20rpx 54rpx rgba(0, 0, 0, 0.4);
+	border: 2rpx solid rgba(230, 237, 241, 0.08);
+}
+
+.throw-page.theme-dark .selector-sheet-title {
+	color: rgba(226, 234, 239, 0.94);
+}
+
+.throw-page.theme-dark .selector-sheet-close {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(230, 237, 241, 0.12);
+}
+
+.throw-page.theme-dark .selector-option {
+	color: rgba(226, 234, 239, 0.9);
+}
+
+.throw-page.theme-dark .selector-option.active {
+	background: rgba(47, 158, 116, 0.2);
+}
+
+.throw-page.theme-dark .selector-option:active {
+	background: rgba(47, 158, 116, 0.28);
 }
 
 .launch-icon-image {

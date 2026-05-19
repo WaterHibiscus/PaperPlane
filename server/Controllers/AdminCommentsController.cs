@@ -16,6 +16,8 @@ public class AdminCommentsController(AppDbContext db) : ControllerBase
     public async Task<ActionResult<PagedResponse<AdminCommentItemResponse>>> GetComments([FromQuery] AdminCommentQuery query)
     {
         var keyword = (query.Keyword ?? string.Empty).Trim();
+        var location = (query.Location ?? string.Empty).Trim();
+        var commentType = (query.CommentType ?? string.Empty).Trim().ToLowerInvariant();
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
 
@@ -28,13 +30,46 @@ public class AdminCommentsController(AppDbContext db) : ControllerBase
             commentsQuery = commentsQuery.Where(c => c.PlaneId == query.PlaneId.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(location))
+        {
+            commentsQuery = commentsQuery.Where(c => c.Plane.LocationTag.Contains(location));
+        }
+
+        if (commentType == "root")
+        {
+            commentsQuery = commentsQuery.Where(c => c.ParentCommentId == null);
+        }
+        else if (commentType == "reply")
+        {
+            commentsQuery = commentsQuery.Where(c => c.ParentCommentId != null);
+        }
+
+        if (query.HasReplies.HasValue)
+        {
+            commentsQuery = query.HasReplies.Value
+                ? commentsQuery.Where(c => db.Comments.IgnoreQueryFilters().Any(reply => reply.ParentCommentId == c.Id))
+                : commentsQuery.Where(c => !db.Comments.IgnoreQueryFilters().Any(reply => reply.ParentCommentId == c.Id));
+        }
+
+        if (query.CreateTimeStart.HasValue)
+        {
+            commentsQuery = commentsQuery.Where(c => c.CreateTime >= query.CreateTimeStart.Value);
+        }
+
+        if (query.CreateTimeEnd.HasValue)
+        {
+            commentsQuery = commentsQuery.Where(c => c.CreateTime <= query.CreateTimeEnd.Value);
+        }
+
         if (!string.IsNullOrWhiteSpace(keyword))
         {
+            var parsedGuid = Guid.TryParse(keyword, out var keywordGuid);
             commentsQuery = commentsQuery.Where(c =>
                 c.Reply.Contains(keyword) ||
                 c.NickName.Contains(keyword) ||
                 c.Plane.Content.Contains(keyword) ||
-                c.Plane.LocationTag.Contains(keyword));
+                c.Plane.LocationTag.Contains(keyword) ||
+                (parsedGuid && (c.Id == keywordGuid || c.PlaneId == keywordGuid)));
         }
 
         var total = await commentsQuery.CountAsync();

@@ -1,0 +1,1 @@
+<view class="mood-tag data-v-12578e0c" style="{{'border-color:' + c + ';' + ('color:' + d)}}"><image class="mood-icon-image data-v-12578e0c" src="{{a}}" mode="aspectFit"/><text class="mood-text data-v-12578e0c">{{b}}</text></view>

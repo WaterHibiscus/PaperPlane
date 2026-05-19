@@ -1,23 +1,35 @@
 <template>
 	<view :class="['app-page', 'detail-page', themeClass]" :style="detailStyle">
-		<view class="detail-nav">
-			<view class="nav-btn" @tap="goBack">
-				<image class="nav-icon-image" :src="backIcon" mode="aspectFit" />
+			<view class="detail-nav">
+				<view class="nav-actions-left">
+					<view class="nav-btn" @tap="goBack">
+						<image class="nav-icon-image" :src="backIcon" mode="aspectFit" />
+					</view>
+					<view class="nav-btn" @tap="openCodeSheet">
+						<image class="nav-icon-image" :src="shareIcon" mode="aspectFit" />
+					</view>
+				</view>
+				<view class="nav-center">
+					<text class="nav-kicker">{{ labels.archive }}</text>
+					<text class="nav-title">{{ labels.openPlane }}</text>
+				</view>
+				<view class="nav-actions-spacer"></view>
 			</view>
-			<view class="nav-center">
-				<text class="nav-kicker">{{ labels.archive }}</text>
-				<text class="nav-title">{{ labels.openPlane }}</text>
-			</view>
-			<view class="nav-btn" @tap="handleShare">
-				<image class="nav-icon-image" :src="shareIcon" mode="aspectFit" />
-			</view>
-		</view>
 
-		<view v-if="plane" class="detail-shell">
-			<view class="detail-head">
-				<text class="detail-kicker">{{ labels.dropPoint }}</text>
-				<text class="detail-title">{{ plane.locationTag }}</text>
-				<view class="meta-row">
+			<view v-if="plane" class="detail-shell">
+				<view class="detail-head">
+					<view class="detail-head-row">
+						<text class="detail-kicker">{{ labels.dropPoint }}</text>
+						<text
+							v-if="!isArchivedPlane"
+							class="report-link head-report-link"
+							@tap="handleReport"
+						>
+							{{ labels.reportAction }}
+						</text>
+					</view>
+					<text class="detail-title">{{ plane.locationTag }}</text>
+					<view class="meta-row">
 					<view class="meta-item mood-item">
 						<image class="mood-icon-image" :src="moodMeta.icon" mode="aspectFit" />
 						<text>{{ moodMeta.label }}</text>
@@ -26,6 +38,11 @@
 					<text class="meta-item">{{ planeTime }}</text>
 					<text class="meta-item">{{ remainingText }}</text>
 				</view>
+			</view>
+
+			<view v-if="isArchivedPlane" class="archive-card">
+				<text class="archive-badge">{{ labels.archiveStatus }}</text>
+				<text class="archive-note">{{ labels.archiveNote }}</text>
 			</view>
 
 			<view class="note-section">
@@ -76,29 +93,39 @@
 				</scroll-view>
 			</view>
 
-			<view class="report-row">
-				<text class="report-link" @tap="handleReport">{{ labels.reportAction }}</text>
-			</view>
-
-			<view class="action-section">
-				<view class="engagement-row">
-					<view class="stats-row">
-						<view class="stat-item">
-							<text class="stat-value">{{ plane.pickCount }}</text>
-							<text class="stat-label">{{ labels.pick }}</text>
-						</view>
-						<view class="stat-item">
-							<text class="stat-value">{{ plane.likeCount }}</text>
-							<text class="stat-label">{{ labels.like }}</text>
-						</view>
-						<view class="stat-item">
-							<text class="stat-value">{{ comments.length }}</text>
-							<text class="stat-label">{{ labels.comment }}</text>
-						</view>
+				<view v-if="isArchivedPlane" class="stats-row">
+					<view class="stat-item">
+						<text class="stat-value">{{ plane.pickCount }}</text>
+						<text class="stat-label">{{ labels.pick }}</text>
 					</view>
+					<view class="stat-item">
+						<text class="stat-value">{{ plane.likeCount }}</text>
+						<text class="stat-label">{{ labels.like }}</text>
+					</view>
+					<view class="stat-item">
+						<text class="stat-value">{{ comments.length }}</text>
+						<text class="stat-label">{{ labels.comment }}</text>
+					</view>
+				</view>
 
-					<view class="action-side">
-						<view class="action-btn action-primary" @tap="handleLike">
+					<view v-if="!isArchivedPlane" class="action-section">
+					<view class="engagement-row">
+						<view class="stats-row">
+							<view class="stat-item">
+								<text class="stat-value">{{ plane.pickCount }}</text>
+								<text class="stat-label">{{ labels.pick }}</text>
+							</view>
+							<view class="stat-item">
+								<text class="stat-value">{{ plane.likeCount }}</text>
+								<text class="stat-label">{{ labels.like }}</text>
+							</view>
+							<view class="stat-item">
+								<text class="stat-value">{{ comments.length }}</text>
+								<text class="stat-label">{{ labels.comment }}</text>
+							</view>
+						</view>
+						<view class="action-side">
+							<view class="action-btn action-primary" @tap="handleLike">
 							<view class="action-copy">
 								<text class="action-kicker">{{ labels.likeActionKicker }}</text>
 								<text class="action-title">{{ labels.likeAction }}</text>
@@ -173,7 +200,7 @@
 				</view>
 			</view>
 
-			<view class="composer-dock">
+			<view v-if="!isArchivedPlane" class="composer-dock">
 				<view class="composer-trigger" @tap="openComposer()">
 					<view class="composer-trigger-copy">
 						<text class="composer-trigger-title">{{ labels.openComposer }}</text>
@@ -182,10 +209,39 @@
 					<text class="composer-trigger-count">{{ comments.length }}</text>
 				</view>
 			</view>
+			</view>
 
-			<view :class="['composer-overlay', composerVisible ? 'visible' : '']" @tap="closeComposer"></view>
+		<view v-if="plane" :class="['barcode-overlay', barcodeVisible ? 'visible' : '']" @tap="closeCodeSheet"></view>
 
-			<view :class="['composer-sheet', composerVisible ? 'visible' : '']" @tap.stop>
+		<view v-if="plane" :class="['barcode-sheet', barcodeVisible ? 'visible' : '']" @tap.stop>
+			<view class="sheet-handle"></view>
+			<view class="sheet-head">
+				<text class="sheet-title">{{ labels.barcodeTitle }}</text>
+				<text class="sheet-close" @tap="closeCodeSheet">{{ labels.closeText }}</text>
+			</view>
+			<view class="barcode-panel">
+				<image
+					v-if="barcodeImageUrl && !barcodeImageFailed"
+					class="barcode-image"
+					:src="barcodeImageUrl"
+					mode="aspectFit"
+					@error="handleBarcodeImageError"
+				/>
+				<view v-else class="barcode-image-fallback">
+					<text>{{ labels.barcodeLoadFailed }}</text>
+				</view>
+				<text class="barcode-note">{{ labels.barcodeNote }}</text>
+				<view class="barcode-id-card" @tap="copyPlaneId">
+					<text class="barcode-id-label">{{ labels.barcodeIdLabel }}</text>
+					<text class="barcode-id-value">{{ planeIdText }}</text>
+					<text class="barcode-id-copy">{{ labels.tapToCopy }}</text>
+				</view>
+			</view>
+		</view>
+
+		<view v-if="plane" :class="['composer-overlay', composerVisible ? 'visible' : '']" @tap="closeComposer"></view>
+
+		<view v-if="plane" :class="['composer-sheet', composerVisible ? 'visible' : '']" @tap.stop>
 				<view class="sheet-handle"></view>
 				<view class="sheet-head">
 					<text class="sheet-title">{{ replyTargetName ? `${labels.replyPrefix}${replyTargetName}` : labels.sheetTitle }}</text>
@@ -222,19 +278,19 @@
 			</view>
 		</view>
 
-		<view v-else class="loading-state">
+			<view v-if="!plane" class="loading-state">
 			<text class="empty-title">{{ labels.loadingTitle }}</text>
 			<text class="empty-desc">{{ labels.loadingDesc }}</text>
-		</view>
 	</view>
 </template>
 
 <script>
 import CommentThreadNode from '../../components/CommentThreadNode.vue'
 import { appState, syncThemeWindow } from '../../common/app-state.js'
-import { addComment, getAssetUrl, getComments, getPlaneAttitudes, getPlaneDetail, likePlane, reportPlane, votePlaneAttitude } from '../../common/api.js'
+import { addComment, getAssetUrl, getComments, getPlaneAttitudes, getPlaneDetail, getPlaneQrCodePngUrl, likePlane, reportPlane, votePlaneAttitude } from '../../common/api.js'
+import { formatPlaneId } from '../../common/plane-code.js'
 import { getVoterKey } from '../../common/storage.js'
-import { formatTime, getPlaneAuthorLabel, getRemainingText } from '../../common/utils.js'
+import { formatTime, getPlaneAuthorLabel, getRemainingText, isExpired } from '../../common/utils.js'
 import { getMoodMeta } from '../../common/moods.js'
 import { uiIcons } from '../../common/ui-icons.js'
 
@@ -250,13 +306,24 @@ export default {
 			comments: [],
 			replyTarget: null,
 			reply: '',
-			remainingText: '',
-			timer: null,
-			galleryActiveIndex: 0,
-			galleryScrollLeft: 0,
-			composerVisible: false,
-			commentIdentity: 'named',
-			attitudeExpanded: false,
+				remainingText: '',
+					timer: null,
+						galleryActiveIndex: 0,
+						galleryScrollLeft: 0,
+						composerVisible: false,
+						barcodeVisible: false,
+						barcodeImageFailed: false,
+						commentIdentity: 'named',
+				reportSubmitting: false,
+				reportReasons: [
+					{ key: 'spam', label: '垃圾广告' },
+					{ key: 'abuse', label: '辱骂攻击' },
+					{ key: 'sexual', label: '色情低俗' },
+					{ key: 'privacy', label: '隐私泄露' },
+					{ key: 'illegal', label: '违法有害' },
+					{ key: 'other', label: '其他原因' },
+				],
+				attitudeExpanded: false,
 			voterKey: getVoterKey(),
 			attitudeSummary: {
 				options: [],
@@ -273,11 +340,20 @@ export default {
 				pick: '拾取',
 				like: '点赞',
 				comment: '回声',
+				archiveStatus: '已归档',
+				archiveNote: '这张纸条已经落地，但内容仍然可以查看。',
 				likeAction: '续航',
-				likeActionKicker: 'FUEL',
-				likeActionNote: '让它多飞一会',
-				reportAction: '举报',
-				echoTitle: '匿名回声',
+					likeActionKicker: 'FUEL',
+					likeActionNote: '让它多飞一会',
+					reportAction: '举报',
+					reportReasonTitle: '请选择举报原因',
+					reportSuccessTitle: '举报已提交',
+					reportReasonPrefix: '原因：',
+					reportReceiptPrefix: '后台已接收，当前累计举报次数：',
+					reportArchivedHint: '该内容已被自动下线',
+					reportArchivedByReportHint: '该内容因被举报次数过多已自动下线',
+					reportConfirmText: '知道了',
+					echoTitle: '匿名回声',
 				echoDesc: '善语结善缘，恶语伤人心',
 				echoSubtitle: '条',
 				attitudeDesc: '点一下，看看大家更想表达什么。',
@@ -301,8 +377,13 @@ export default {
 				composerHint: '勾选后将匿名发送。',
 				sendReply: '发送',
 				anonymousFallback: '匿名同学',
-				loadingTitle: '正在打开纸飞机',
-				loadingDesc: '正在载入内容和评论。',
+					loadingTitle: '正在打开纸飞机',
+					loadingDesc: '正在载入内容和评论。',
+					barcodeTitle: '纸条二维码',
+					barcodeNote: '扫描二维码后可直接打开这张纸条',
+					barcodeLoadFailed: '二维码加载失败，请稍后重试',
+					barcodeIdLabel: '纸条编号',
+					tapToCopy: '点击复制编号',
 				shareCopied: '已复制到剪贴板',
 				writeBeforeSend: '写点内容再发送',
 				loadFailed: '加载失败',
@@ -324,16 +405,29 @@ export default {
 		authorText() {
 			return getPlaneAuthorLabel(this.plane)
 		},
-		moodMeta() {
-			return getMoodMeta(this.plane?.mood)
-		},
-		shortId() {
-			if (!this.id) return '--'
-			return String(this.id).slice(0, 8).toUpperCase()
-		},
-		planeImageUrls() {
-			return (this.plane?.imageUrls || []).map(item => getAssetUrl(item))
-		},
+			moodMeta() {
+				return getMoodMeta(this.plane?.mood)
+			},
+			isArchivedPlane() {
+				return Boolean(this.plane?.expireTime && isExpired(this.plane.expireTime))
+			},
+			shortId() {
+				const code = String(this.plane?.shortCode || '').trim().toUpperCase()
+				if (code) return code
+				if (!this.id) return '--'
+				return String(this.id).slice(0, 8).toUpperCase()
+			},
+			planeIdText() {
+				const code = String(this.plane?.shortCode || '').trim().toUpperCase()
+				if (code) return code
+				return formatPlaneId(this.plane?.id || this.id) || String(this.plane?.id || this.id || '').toUpperCase()
+			},
+			barcodeImageUrl() {
+				return getPlaneQrCodePngUrl(this.plane?.id || this.id)
+			},
+			planeImageUrls() {
+				return (this.plane?.imageUrls || []).map(item => getAssetUrl(item))
+			},
 		hasVote() {
 			return Array.isArray(this.plane?.voteOptions) && this.plane.voteOptions.length > 0
 		},
@@ -422,16 +516,18 @@ export default {
 			this.loadDetail()
 		}
 	},
-	onHide() {
-		this.composerVisible = false
-		this.replyTarget = null
-		this.clearTimer()
-	},
-	onUnload() {
-		this.composerVisible = false
-		this.replyTarget = null
-		this.clearTimer()
-	},
+		onHide() {
+			this.composerVisible = false
+			this.barcodeVisible = false
+			this.replyTarget = null
+			this.clearTimer()
+		},
+		onUnload() {
+			this.composerVisible = false
+			this.barcodeVisible = false
+			this.replyTarget = null
+			this.clearTimer()
+		},
 	methods: {
 		hexToRgba(hex, alpha) {
 			const value = String(hex || '#909399').replace('#', '')
@@ -491,6 +587,7 @@ export default {
 				this.galleryActiveIndex = 0
 				this.galleryScrollLeft = 0
 				this.plane = await getPlaneDetail(this.id)
+				this.id = this.plane?.id || this.id
 				this.comments = await getComments(this.id)
 				if (Array.isArray(this.plane?.voteOptions) && this.plane.voteOptions.length > 0) {
 					try {
@@ -552,18 +649,46 @@ export default {
 			}
 		},
 		async handleReport() {
+			if (this.reportSubmitting) return
+			const selectedReason = await this.pickReportReason()
+			if (!selectedReason) return
+			this.reportSubmitting = true
 			try {
-				await reportPlane(this.id)
-				uni.showToast({
-					title: this.labels.reportSuccess,
-					icon: 'success',
+				const result = await reportPlane(this.id, { reason: selectedReason.key })
+				const reportCount = Number(result?.reportCount || 0)
+				const isArchived = Boolean(result?.isArchived)
+				const archivedByReportLimit = Boolean(result?.archivedByReportLimit) || result?.archiveReason === 'report_limit'
+				const countText = Number.isFinite(reportCount) && reportCount > 0 ? String(reportCount) : '--'
+				const archivedHint = archivedByReportLimit ? this.labels.reportArchivedByReportHint : this.labels.reportArchivedHint
+				const archivedLine = isArchived ? `\n${archivedHint}` : ''
+				uni.showModal({
+					title: this.labels.reportSuccessTitle,
+					content: `${this.labels.reportReasonPrefix}${selectedReason.label}\n${this.labels.reportReceiptPrefix}${countText}${archivedLine}`,
+					showCancel: false,
+					confirmText: this.labels.reportConfirmText,
 				})
 			} catch (error) {
 				uni.showToast({
 					title: error.message || this.labels.reportFailed,
 					icon: 'none',
 				})
+			} finally {
+				this.reportSubmitting = false
 			}
+		},
+		pickReportReason() {
+			return new Promise(resolve => {
+				uni.showActionSheet({
+					alertText: this.labels.reportReasonTitle,
+					itemList: this.reportReasons.map(item => item.label),
+					success: res => {
+						resolve(this.reportReasons[Number(res.tapIndex)] || null)
+					},
+					fail: () => {
+						resolve(null)
+					},
+				})
+			})
 		},
 		async handleAttitudeVote(optionKey) {
 			if (this.attitudeLocked) {
@@ -599,10 +724,10 @@ export default {
 				nickName,
 			}
 		},
-		async handleComment() {
-			if (!this.reply.trim()) {
-				uni.showToast({
-					title: this.labels.writeBeforeSend,
+			async handleComment() {
+				if (!this.reply.trim()) {
+					uni.showToast({
+						title: this.labels.writeBeforeSend,
 					icon: 'none',
 				})
 				return
@@ -623,10 +748,33 @@ export default {
 				uni.showToast({
 					title: error.message || this.labels.sendFailed,
 					icon: 'none',
+					})
+				}
+			},
+			openCodeSheet() {
+				if (!this.barcodeImageUrl) return
+				this.barcodeImageFailed = false
+				this.barcodeVisible = true
+			},
+			handleBarcodeImageError() {
+				this.barcodeImageFailed = true
+			},
+			closeCodeSheet() {
+				this.barcodeVisible = false
+			},
+			copyPlaneId() {
+				if (!this.planeIdText) return
+				uni.setClipboardData({
+					data: this.planeIdText,
+					success: () => {
+						uni.showToast({
+							title: this.labels.shareCopied,
+							icon: 'none',
+						})
+					},
 				})
-			}
-		},
-		handleShare() {
+			},
+			handleShare() {
 			if (!this.plane) return
 			const text = `纸飞机降落点\n地点：${this.plane.locationTag}\n\n${this.plane.content}`
 			uni.setClipboardData({
@@ -657,13 +805,27 @@ export default {
 	top: 0;
 	z-index: 20;
 	margin: 0 -28rpx;
-	padding: calc(env(safe-area-inset-top) + 20rpx) 28rpx 18rpx;
+	padding: calc(var(--status-bar-height) + 22rpx) 28rpx 18rpx;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	background: rgba(247, 242, 233, 0.92);
 	backdrop-filter: blur(16rpx);
 	border-bottom: 2rpx solid rgba(28, 36, 40, 0.05);
+}
+
+.nav-actions-left {
+	display: flex;
+	align-items: center;
+	gap: 12rpx;
+	flex-shrink: 0;
+}
+
+.nav-actions-spacer {
+	width: 148rpx;
+	height: 68rpx;
+	flex-shrink: 0;
+	pointer-events: none;
 }
 
 .theme-dark .detail-nav {
@@ -732,10 +894,22 @@ export default {
 	gap: 12rpx;
 }
 
+.detail-head-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16rpx;
+}
+
 .detail-kicker {
 	font-size: 18rpx;
 	letter-spacing: 3rpx;
 	color: var(--muted);
+}
+
+.head-report-link {
+	flex-shrink: 0;
+	padding: 0;
 }
 
 .detail-title {
@@ -771,6 +945,31 @@ export default {
 	height: 22rpx;
 	display: block;
 	flex-shrink: 0;
+}
+
+.archive-card {
+	padding: 18rpx 22rpx;
+	border-radius: 22rpx;
+	background: var(--mood-soft);
+	border: 2rpx solid var(--mood-line);
+}
+
+.archive-badge {
+	display: inline-flex;
+	padding: 6rpx 14rpx;
+	border-radius: 999rpx;
+	font-size: 20rpx;
+	font-weight: 600;
+	color: var(--mood-color);
+	background: rgba(255, 255, 255, 0.68);
+}
+
+.archive-note {
+	display: block;
+	margin-top: 12rpx;
+	font-size: 22rpx;
+	line-height: 1.6;
+	color: var(--ink);
 }
 
 .note-section {
@@ -867,12 +1066,6 @@ export default {
 	border-radius: 18rpx;
 }
 
-.report-row {
-	display: flex;
-	justify-content: flex-end;
-	margin-top: -10rpx;
-}
-
 .report-link {
 	padding: 8rpx 0;
 	font-size: 20rpx;
@@ -887,7 +1080,7 @@ export default {
 }
 
 .stats-row {
-	flex: 3;
+	flex: 6;
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 12rpx;
@@ -920,7 +1113,7 @@ export default {
 }
 
 .action-side {
-	flex: 2;
+	flex: 4;
 	display: flex;
 	align-items: stretch;
 }
@@ -1420,6 +1613,124 @@ export default {
 	transition: opacity 0.22s ease;
 }
 
+.barcode-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 34;
+	background: rgba(12, 17, 19, 0.36);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.22s ease;
+}
+
+.barcode-overlay.visible {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.barcode-sheet {
+	position: fixed;
+	left: 28rpx;
+	right: 28rpx;
+	top: 50%;
+	z-index: 35;
+	padding: 24rpx 24rpx 28rpx;
+	border-radius: 30rpx;
+	background: rgba(247, 242, 233, 0.98);
+	border: 2rpx solid rgba(28, 36, 40, 0.05);
+	box-shadow: 0 24rpx 52rpx rgba(31, 36, 40, 0.18);
+	transform: translateY(-50%) scale(0.96);
+	opacity: 0;
+	pointer-events: none;
+	max-height: calc(100vh - 80rpx);
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	transition: transform 0.24s ease, opacity 0.24s ease;
+}
+
+.barcode-sheet.visible {
+	transform: translateY(-50%) scale(1);
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.theme-dark .barcode-sheet {
+	background: rgba(15, 20, 22, 0.98);
+	border-color: rgba(230, 237, 241, 0.08);
+	box-shadow: 0 24rpx 52rpx rgba(0, 0, 0, 0.3);
+}
+
+.barcode-panel {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 18rpx;
+}
+
+.barcode-image {
+	width: 520rpx;
+	height: 520rpx;
+	max-width: 100%;
+	border-radius: 16rpx;
+	background: #ffffff;
+}
+
+.barcode-image-fallback {
+	width: 520rpx;
+	height: 520rpx;
+	max-width: 100%;
+	border-radius: 16rpx;
+	background: #f3f5f7;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 22rpx;
+	color: var(--muted);
+	text-align: center;
+	padding: 24rpx;
+	box-sizing: border-box;
+}
+
+.barcode-note {
+	font-size: 22rpx;
+	line-height: 1.6;
+	color: var(--muted);
+	text-align: center;
+}
+
+.barcode-id-card {
+	width: 100%;
+	padding: 18rpx 20rpx;
+	border-radius: 22rpx;
+	background: rgba(255, 255, 255, 0.72);
+	border: 2rpx solid rgba(28, 36, 40, 0.06);
+	display: flex;
+	flex-direction: column;
+	gap: 8rpx;
+}
+
+.theme-dark .barcode-id-card {
+	background: rgba(255, 255, 255, 0.04);
+	border-color: rgba(230, 237, 241, 0.08);
+}
+
+.barcode-id-label {
+	font-size: 20rpx;
+	color: var(--muted);
+}
+
+.barcode-id-value {
+	font-size: 24rpx;
+	line-height: 1.6;
+	color: var(--ink);
+	word-break: break-all;
+}
+
+.barcode-id-copy {
+	font-size: 20rpx;
+	color: var(--mood-color);
+}
+
 .composer-overlay.visible {
 	opacity: 1;
 	pointer-events: auto;
@@ -1533,3 +1844,4 @@ export default {
 	}
 }
 </style>
+

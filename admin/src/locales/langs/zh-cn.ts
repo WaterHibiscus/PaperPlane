@@ -226,6 +226,7 @@ const local: App.I18n.Schema = {
     500: '服务器错误',
     'iframe-page': '外链页面',
     home: '仪表盘',
+    'ai-manage': 'AI投票管理',
     'comment-manage': '评论管理',
     'expire-manage': '存活时间管理',
     'headline-manage': '文字滚动',

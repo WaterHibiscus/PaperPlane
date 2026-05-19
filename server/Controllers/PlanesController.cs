@@ -20,11 +20,21 @@ public class PlanesController(
     AppDbContext db,
     ContentFilterService filter,
     ExpireOptionSettingsService expireOptionSettingsService,
-    PlaneQrCodeService planeQrCodeService) : ControllerBase
+    PlaneQrCodeService planeQrCodeService,
+    ILogger<PlanesController> logger) : ControllerBase
 {
     private static readonly JsonSerializerOptions VoteJsonOptions = new(JsonSerializerDefaults.Web);
     private const string ShortCodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private const int ShortCodeLength = 10;
+    private static readonly HashSet<string> AllowedReportReasons = new(StringComparer.Ordinal)
+    {
+        "spam",
+        "abuse",
+        "sexual",
+        "privacy",
+        "illegal",
+        "other",
+    };
 
     [HttpPost]
     public async Task<ActionResult<PlaneResponse>> Throw(ThrowPlaneRequest req)
@@ -570,32 +580,109 @@ public class PlanesController(
 
     [HttpGet("reported")]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
-    public async Task<ActionResult<List<PlaneResponse>>> GetReported()
+    public async Task<ActionResult<List<ReportedPlaneResponse>>> GetReported()
     {
         var rows = await db.Planes
             .IgnoreQueryFilters()
             .Where(p => p.ReportCount > 0)
             .OrderByDescending(p => p.ReportCount)
-            .Select(p => new PlaneRow(
-                p.Id,
-                p.ShortCode,
-                p.LocationTag,
-                p.Content,
-                p.Mood,
-                p.IsAnonymous,
-                p.AuthorName,
-                p.ImageUrlsJson,
-                p.CreateTime,
-                p.ExpireTime,
-                p.PickCount,
-                p.LikeCount,
-                p.Comments.Count,
-                p.ReportCount,
-                p.VoteTitle,
-                p.VoteOptionsJson))
+            .Select(p => new
+            {
+                Plane = new PlaneRow(
+                    p.Id,
+                    p.ShortCode,
+                    p.LocationTag,
+                    p.Content,
+                    p.Mood,
+                    p.IsAnonymous,
+                    p.AuthorName,
+                    p.ImageUrlsJson,
+                    p.CreateTime,
+                    p.ExpireTime,
+                    p.PickCount,
+                    p.LikeCount,
+                    p.Comments.Count,
+                    p.ReportCount,
+                    p.VoteTitle,
+                    p.VoteOptionsJson),
+                IsDeleted = p.IsDeleted,
+                LatestReport = p.ReportRecords
+                    .OrderByDescending(r => r.ReportedAt)
+                    .Select(r => new
+                    {
+                        r.ReportReason,
+                        r.ReportDetail,
+                        r.ReportedAt
+                    })
+                    .FirstOrDefault()
+            })
             .ToListAsync();
 
-        return rows.Select(ToResponse).ToList();
+        return rows.Select(item =>
+        {
+            var plane = ToResponse(item.Plane);
+            return new ReportedPlaneResponse(
+                plane.Id,
+                plane.ShortCode,
+                plane.LocationTag,
+                plane.Content,
+                plane.Mood,
+                plane.IsAnonymous,
+                plane.AuthorName,
+                plane.ImageUrls,
+                plane.CreateTime,
+                plane.ExpireTime,
+                plane.PickCount,
+                plane.LikeCount,
+                plane.CommentCount,
+                plane.ReportCount,
+                item.IsDeleted,
+                plane.VoteTitle,
+                plane.VoteOptions,
+                item.LatestReport?.ReportReason,
+                item.LatestReport?.ReportDetail,
+                item.LatestReport?.ReportedAt
+            );
+        }).ToList();
+    }
+
+    [HttpPut("/api/admin/planes/{id:guid}/online-status")]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
+    public async Task<IActionResult> UpdateOnlineStatus(Guid id, UpdatePlaneOnlineStatusRequest req)
+    {
+        var plane = await db.Planes
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == id);
+        if (plane is null)
+            return NotFound(new { message = "纸飞机不存在" });
+
+        var targetIsDeleted = !req.IsOnline;
+        if (plane.IsDeleted == targetIsDeleted)
+        {
+            return Ok(new
+            {
+                message = req.IsOnline ? "纸飞机已处于上线状态" : "纸飞机已处于下线状态",
+                isOnline = !plane.IsDeleted,
+                isDeleted = plane.IsDeleted
+            });
+        }
+
+        plane.IsDeleted = targetIsDeleted;
+        if (req.IsOnline)
+        {
+            // 管理员手动恢复上线时，清除召回状态，避免状态冲突。
+            plane.RecalledAt = null;
+        }
+
+        await db.SaveChangesAsync();
+        logger.LogInformation("Admin updated plane online status. PlaneId={PlaneId}, IsOnline={IsOnline}", plane.Id, req.IsOnline);
+
+        return Ok(new
+        {
+            message = req.IsOnline ? "已手动上线" : "已手动下线",
+            isOnline = req.IsOnline,
+            isDeleted = plane.IsDeleted
+        });
     }
 
     [HttpPut("{id:guid}")]
@@ -734,17 +821,59 @@ public class PlanesController(
     }
 
     [HttpPost("{id}/report")]
-    public async Task<IActionResult> Report(Guid id)
+    public async Task<IActionResult> Report(Guid id, [FromBody] ReportPlaneRequest? req)
     {
-        var plane = await db.Planes.FindAsync(id);
+        var plane = await db.Planes.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         if (plane is null) return NotFound();
 
+        var reason = NormalizeReportReason(req?.Reason);
+        if (reason is null)
+            return BadRequest(new { message = "举报原因无效" });
+
+        var detail = NormalizeReportDetail(req?.Detail);
+        if (detail is null && !string.IsNullOrWhiteSpace(req?.Detail))
+            return BadRequest(new { message = "举报说明不能超过200个字符" });
+
+        var appUserId = GetCurrentAppUserIdOrNull();
+        if (appUserId.HasValue)
+        {
+            var alreadyReported = await db.PlaneReportRecords
+                .AnyAsync(r => r.PlaneId == id && r.AppUserId == appUserId.Value);
+            if (alreadyReported)
+                return Conflict(new { message = "你已经举报过这架纸飞机" });
+        }
+
+        db.PlaneReportRecords.Add(new PlaneReportRecord
+        {
+            Id = Guid.NewGuid(),
+            PlaneId = plane.Id,
+            AppUserId = appUserId,
+            ReportReason = reason,
+            ReportDetail = detail,
+            ReportedAt = DateTime.UtcNow
+        });
+
+        var archivedByReportLimit = false;
         plane.ReportCount++;
         if (plane.ReportCount >= 3)
+        {
             plane.IsDeleted = true;
+            archivedByReportLimit = true;
+        }
 
         await db.SaveChangesAsync();
-        return Ok(new { message = "举报已收到" });
+        logger.LogInformation("Plane report received. PlaneId={PlaneId}, Reason={Reason}, AppUserId={AppUserId}, ReportCount={ReportCount}",
+            plane.Id, reason, appUserId, plane.ReportCount);
+
+        return Ok(new
+        {
+            message = "举报已收到",
+            reportCount = plane.ReportCount,
+            isArchived = plane.IsDeleted,
+            reason,
+            archivedByReportLimit,
+            archiveReason = archivedByReportLimit ? "report_limit" : null
+        });
     }
 
     [HttpPost("{id}/recall")]
@@ -1106,6 +1235,20 @@ public class PlanesController(
         if (string.IsNullOrWhiteSpace(status)) return "all";
         var normalized = status.Trim().ToLowerInvariant();
         return normalized is "all" or "active" or "recalled" or "expired" ? normalized : null;
+    }
+
+    private static string? NormalizeReportReason(string? reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason)) return "other";
+        var normalized = reason.Trim().ToLowerInvariant();
+        return AllowedReportReasons.Contains(normalized) ? normalized : null;
+    }
+
+    private static string? NormalizeReportDetail(string? detail)
+    {
+        if (string.IsNullOrWhiteSpace(detail)) return null;
+        var normalized = detail.Trim();
+        return normalized.Length <= 200 ? normalized : null;
     }
 
     private static List<string> NormalizeVoteOptions(List<string>? options)

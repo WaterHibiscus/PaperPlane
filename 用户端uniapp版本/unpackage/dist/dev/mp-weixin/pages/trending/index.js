@@ -6,6 +6,7 @@ const common_detailOpenTransition = require("../../common/detail-open-transition
 const common_pageTransition = require("../../common/page-transition.js");
 const common_moods = require("../../common/moods.js");
 const common_utils = require("../../common/utils.js");
+const common_uiIcons = require("../../common/ui-icons.js");
 const AppTabbar = () => "../../components/AppTabbar.js";
 const DetailOpenTransition = () => "../../components/DetailOpenTransition.js";
 const PageTransition = () => "../../components/PageTransition.js";
@@ -21,6 +22,7 @@ const _sfc_main = {
   data() {
     return {
       appState: common_appState.appState,
+      icons: common_uiIcons.uiIcons,
       planes: [],
       loading: false
     };
@@ -40,10 +42,10 @@ const _sfc_main = {
       return this.scoredEntries[0] || null;
     },
     podiumEntries() {
-      return this.scoredEntries.slice(1, 3).filter((entry) => entry.score > 0);
+      return this.scoredEntries.slice(1, 3);
     },
     rankedEntries() {
-      return this.scoredEntries.filter((entry, index) => index >= 3 || index >= 1 && index <= 2 && entry.score <= 0);
+      return this.scoredEntries.slice(3);
     },
     hotPlaneCount() {
       return this.scoredEntries.filter((entry) => entry.score > 0).length;
@@ -156,13 +158,13 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     d: common_vendor.t($options.totalHeat),
     e: common_vendor.t($options.photoPlaneCount),
     f: common_vendor.t($options.hotPlaneCount),
-    g: common_vendor.t($data.loading ? "◌" : "↻"),
+    g: $data.icons.trendingActive,
     h: common_vendor.t($data.loading ? "刷新中..." : "刷新热榜"),
     i: common_vendor.o((...args) => $options.loadTrending && $options.loadTrending(...args)),
     j: $data.loading && !$data.planes.length
   }, $data.loading && !$data.planes.length ? {} : !$data.planes.length ? {} : common_vendor.e({
     l: common_vendor.t($options.getHeatLabel($options.featuredEntry.plane, $options.featuredEntry.rank)),
-    m: common_vendor.t($options.getPlaneMood($options.featuredEntry.plane).icon),
+    m: $options.getPlaneMood($options.featuredEntry.plane).icon,
     n: common_vendor.t($options.getPlaneMood($options.featuredEntry.plane).label),
     o: $options.getPlaneMood($options.featuredEntry.plane).color,
     p: `${$options.getPlaneMood($options.featuredEntry.plane).color}33`,
@@ -182,7 +184,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }, $options.featuredImage ? {
     C: $options.featuredImage
   } : {
-    D: common_vendor.t($options.getPlaneMood($options.featuredEntry.plane).icon),
+    D: $options.getPlaneMood($options.featuredEntry.plane).icon,
     E: $options.getPlaneMood($options.featuredEntry.plane).color,
     F: `${$options.getPlaneMood($options.featuredEntry.plane).color}48`
   }, {

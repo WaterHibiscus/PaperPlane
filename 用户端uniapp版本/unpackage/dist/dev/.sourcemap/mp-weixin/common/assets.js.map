@@ -1,1 +1,1 @@
-{"version":3,"file":"assets.js","sources":["static/images/投掷选中.png"],"sourcesContent":["export default \"__VITE_ASSET__b61338c7__\""],"names":[],"mappings":";AAAA,MAAe,aAAA;;"}
+{"version":3,"file":"assets.js","sources":["static/images/投掷选中.png","static/images/返回.png"],"sourcesContent":["export default \"__VITE_ASSET__b61338c7__\"","export default \"__VITE_ASSET__aeddfd46__\""],"names":[],"mappings":";AAAA,MAAe,aAAA;ACAf,MAAe,aAAA;;;"}
