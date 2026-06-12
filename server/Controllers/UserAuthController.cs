@@ -215,7 +215,7 @@ public class UserAuthController(
         return new AppUserInfoResponse(
             user.Id,
             user.Username,
-            user.AvatarUrl,
+            PublicAssetUrlNormalizer.NormalizeNullable(user.AvatarUrl),
             string.IsNullOrWhiteSpace(user.Gender) ? "secret" : user.Gender,
             user.Bio ?? string.Empty);
     }

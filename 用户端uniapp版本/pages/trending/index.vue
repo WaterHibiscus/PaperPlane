@@ -1,4 +1,14 @@
 <template>
+	<scroll-view
+		:scroll-y="true"
+		class="page-scroll"
+		style="height: 100vh"
+		:scroll-top="scrollTop"
+		:enhanced="true"
+		:bounces="false"
+		:show-scrollbar="false"
+		@scroll="handlePageScroll"
+	>
 	<view :class="['app-page', 'with-tabbar', 'trending-page', themeClass]">
 		<view class="trending-atmosphere">
 			<view class="trend-orb orb-left"></view>
@@ -155,6 +165,7 @@
 		<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
 		<app-tabbar active="trending" :theme="appState.theme" />
 	</view>
+	</scroll-view>
 </template>
 
 <script>
@@ -185,6 +196,7 @@ export default {
 			planes: [],
 			loading: false,
 			pageScrollTop: 0,
+			scrollTop: 0,
 			savedPageScrollTop: 0,
 			skipReloadOnNextShow: false,
 		}
@@ -256,16 +268,20 @@ export default {
 		this.loadTrending()
 	},
 	onPageScroll(event) {
-		this.pageScrollTop = event.scrollTop || 0
-		this.savedPageScrollTop = this.pageScrollTop
+		this.handlePageScroll(event)
 	},
 	methods: {
+		handlePageScroll(event) {
+			const top = event?.detail?.scrollTop ?? event?.scrollTop ?? 0
+			this.pageScrollTop = top || 0
+			this.savedPageScrollTop = this.pageScrollTop
+		},
 		restoreSavedPageScroll() {
 			const top = Math.max(0, Math.round(Number(this.savedPageScrollTop || 0)))
 			this.pageScrollTop = top
-			uni.pageScrollTo({
-				scrollTop: top,
-				duration: 0,
+			this.scrollTop = Math.max(0, top - 1)
+			this.$nextTick(() => {
+				this.scrollTop = top
 			})
 		},
 		async loadTrending() {

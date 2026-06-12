@@ -1,4 +1,5 @@
 <template>
+	<scroll-view :scroll-y="true" class="page-scroll" style="height: 100vh" :enhanced="true" :bounces="false" :show-scrollbar="false">
 	<view :class="['app-page', 'scan-page', themeClass]">
 		<view class="scan-nav">
 			<view class="nav-btn" @tap="goBack">
@@ -44,6 +45,7 @@
 			</view>
 		</view>
 	</view>
+	</scroll-view>
 </template>
 
 <script>

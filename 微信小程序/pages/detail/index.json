@@ -1,4 +1,5 @@
 {
+  "disableScroll": false,
   "navigationStyle": "custom",
   "usingComponents": {
     "comment-thread-node": "../../components/CommentThreadNode"

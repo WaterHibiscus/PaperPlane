@@ -24,10 +24,12 @@
 </script>
 <style lang="scss">
 page {
+	height: 100%;
 	min-height: 100%;
 	background: #f7f2e9;
 	color: #1c2428;
 	font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+	overflow: hidden;
 	scrollbar-width: none;
 	-ms-overflow-style: none;
 }
@@ -62,6 +64,12 @@ input,
 textarea,
 scroll-view {
 	box-sizing: border-box;
+}
+
+.page-scroll {
+	width: 100%;
+	height: 100vh;
+	display: block;
 }
 
 .theme-light {

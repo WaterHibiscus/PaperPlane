@@ -409,7 +409,21 @@ public record MyPlanesRequest(List<Guid> Ids);
 /// <param name="TodayThrows">今日投递数。</param>
 /// <param name="TotalLocations">地点总数。</param>
 /// <param name="TotalComments">评论总数。</param>
-public record StatsResponse(int TotalPlanes, int ActivePlanes, int TodayThrows, int TotalLocations, int TotalComments);
+/// <param name="ActiveMoodDistribution">当前飞行中纸飞机的心情分布。</param>
+public record StatsResponse(
+    int TotalPlanes,
+    int ActivePlanes,
+    int TodayThrows,
+    int TotalLocations,
+    int TotalComments,
+    List<MoodStatItemResponse> ActiveMoodDistribution);
+
+/// <summary>
+/// 心情统计项。
+/// </summary>
+/// <param name="Mood">心情标识或文案。</param>
+/// <param name="Count">数量。</param>
+public record MoodStatItemResponse(string Mood, int Count);
 
 /// <summary>
 /// 首页文案响应。
@@ -498,6 +512,110 @@ public record UpdateExpireOptionItemRequest(
 /// </summary>
 /// <param name="Items">配置项列表。</param>
 public record UpdateExpireOptionsRequest(List<UpdateExpireOptionItemRequest> Items);
+
+/// <summary>
+/// 敏感词配置项响应。
+/// </summary>
+/// <param name="Id">敏感词主键。</param>
+/// <param name="Word">原始敏感词内容。</param>
+/// <param name="Category">分类编码。</param>
+/// <param name="MatchMode">匹配方式。</param>
+/// <param name="HandleMode">处理方式。</param>
+/// <param name="ReplaceText">替换文本。</param>
+/// <param name="Scope">生效范围，多个范围逗号分隔。</param>
+/// <param name="Severity">严重级别。</param>
+/// <param name="Priority">优先级。</param>
+/// <param name="IsEnabled">是否启用。</param>
+/// <param name="Remark">备注说明。</param>
+public record SensitiveWordConfigResponse(
+    Guid Id,
+    string Word,
+    string Category,
+    string MatchMode,
+    string HandleMode,
+    string? ReplaceText,
+    string Scope,
+    int Severity,
+    int Priority,
+    bool IsEnabled,
+    string? Remark);
+
+/// <summary>
+/// AI 检出的待采纳敏感词响应。
+/// </summary>
+/// <param name="Id">待采纳记录 ID。</param>
+/// <param name="SuggestedWord">AI 建议敏感词。</param>
+/// <param name="Category">分类编码。</param>
+/// <param name="MatchMode">匹配方式。</param>
+/// <param name="HandleMode">处理方式。</param>
+/// <param name="ReplaceText">替换文本。</param>
+/// <param name="Scope">生效范围。</param>
+/// <param name="Severity">严重级别。</param>
+/// <param name="Priority">优先级。</param>
+/// <param name="Remark">备注。</param>
+/// <param name="SourceTextPreview">命中内容预览。</param>
+/// <param name="Reason">AI 理由。</param>
+/// <param name="Confidence">AI 置信度。</param>
+/// <param name="CreateTime">创建时间。</param>
+public record AiSensitiveWordSuggestionResponse(
+    int Id,
+    string SuggestedWord,
+    string Category,
+    string MatchMode,
+    string HandleMode,
+    string? ReplaceText,
+    string Scope,
+    int Severity,
+    int Priority,
+    string? Remark,
+    string SourceTextPreview,
+    string? Reason,
+    decimal? Confidence,
+    DateTime CreateTime);
+
+/// <summary>
+/// 更新敏感词配置项请求。
+/// </summary>
+/// <param name="Id">敏感词主键，空值表示新增。</param>
+/// <param name="Word">原始敏感词内容。</param>
+/// <param name="Category">分类编码。</param>
+/// <param name="MatchMode">匹配方式。</param>
+/// <param name="HandleMode">处理方式。</param>
+/// <param name="ReplaceText">替换文本。</param>
+/// <param name="Scope">生效范围，多个范围逗号分隔。</param>
+/// <param name="Severity">严重级别。</param>
+/// <param name="Priority">优先级。</param>
+/// <param name="IsEnabled">是否启用。</param>
+/// <param name="Remark">备注说明。</param>
+public record UpdateSensitiveWordConfigItemRequest(
+    Guid? Id,
+    string Word,
+    string Category,
+    string MatchMode,
+    string HandleMode,
+    string? ReplaceText,
+    string Scope,
+    int Severity = 3,
+    int Priority = 100,
+    bool IsEnabled = true,
+    string? Remark = null);
+
+/// <summary>
+/// 批量更新敏感词配置请求。
+/// </summary>
+/// <param name="Items">敏感词配置项列表。</param>
+public record UpdateSensitiveWordsRequest(List<UpdateSensitiveWordConfigItemRequest> Items);
+
+/// <summary>
+/// 前台敏感词规则响应。
+/// </summary>
+/// <param name="Word">敏感词内容。</param>
+/// <param name="MatchMode">匹配方式。</param>
+/// <param name="Scope">生效范围。</param>
+public record SensitiveWordPublicResponse(
+    string Word,
+    string MatchMode,
+    string Scope);
 
 /// <summary>
 /// 管理员登录请求。

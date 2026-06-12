@@ -35,6 +35,7 @@ const _sfc_main = {
       searchFocus: false,
       searchQuery: "",
       throwDraft: null,
+      mineHeaderSafeTop: 0,
       anonymousProfileId: common_storage.getVoterKey().slice(-4).toUpperCase(),
       sessionAccount: null
     };
@@ -42,6 +43,13 @@ const _sfc_main = {
   computed: {
     themeClass() {
       return this.appState.theme === "dark" ? "theme-dark" : "theme-light";
+    },
+    profileHeroStyle() {
+      if (!this.mineHeaderSafeTop)
+        return "";
+      return {
+        paddingTop: `${this.mineHeaderSafeTop}px`
+      };
     },
     profileAvatarUrl() {
       return common_api.getAssetUrl(this.appState.profileAvatar);
@@ -141,10 +149,38 @@ const _sfc_main = {
       return this.tabMotionDirection === "backward" ? "tab-panel-backward" : "tab-panel-forward";
     }
   },
+  onLoad() {
+    this.syncMineHeaderSafeTop();
+  },
   onShow() {
+    this.syncMineHeaderSafeTop();
     this.loadPageData();
   },
+  onResize() {
+    this.syncMineHeaderSafeTop();
+  },
   methods: {
+    syncMineHeaderSafeTop() {
+      let safeTop = 0;
+      try {
+        if (common_vendor.index.getMenuButtonBoundingClientRect) {
+          const menuButton = common_vendor.index.getMenuButtonBoundingClientRect();
+          if (menuButton && menuButton.bottom) {
+            safeTop = menuButton.bottom;
+          }
+        }
+      } catch (error) {
+      }
+      if (!safeTop) {
+        try {
+          const windowInfo = common_vendor.index.getWindowInfo ? common_vendor.index.getWindowInfo() : common_vendor.index.getSystemInfoSync();
+          safeTop = (windowInfo.statusBarHeight || 0) + 44;
+        } catch (error) {
+          safeTop = 64;
+        }
+      }
+      this.mineHeaderSafeTop = safeTop;
+    },
     isRecalledPlane(plane) {
       return Boolean((plane == null ? void 0 : plane.isRecalled) || (plane == null ? void 0 : plane.status) === "recalled");
     },
@@ -577,7 +613,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       active: "mine",
       theme: $data.appState.theme
     }),
-    ao: common_vendor.n($options.themeClass)
+    ao: common_vendor.n($options.themeClass),
+    ap: common_vendor.s($options.profileHeroStyle)
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-569e925a"]]);

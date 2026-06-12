@@ -238,6 +238,7 @@
     'plane-manage': 'Plane Manage',
     'location-manage': 'Location Manage',
     'report-manage': 'Report Manage',
+    'sensitive-word-manage': 'Sensitive Word Manage',
     'user-manage': 'User Manage'
   },
   page: {

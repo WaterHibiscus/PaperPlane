@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.OpenApi.Models;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using server.Data;
 using server.OpenApi;
 using server.Services;
@@ -96,11 +98,30 @@ builder.Services
         UseCookies = false,
         AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
     });
+builder.Services
+    .AddHttpClient(nameof(AiSensitiveReviewService), client =>
+    {
+        client.Timeout = Timeout.InfiniteTimeSpan;
+        client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue
+        {
+            NoCache = true,
+            NoStore = true
+        };
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+    {
+        UseCookies = false,
+        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+    });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+    options
+        .UseSqlServer(builder.Configuration.GetConnectionString("Default"))
+        .ConfigureWarnings(warnings => warnings
+            .Ignore(RelationalEventId.PendingModelChangesWarning)));
 
-builder.Services.AddSingleton<ContentFilterService>();
+builder.Services.AddScoped<ContentFilterService>();
+builder.Services.AddScoped<AiSensitiveReviewService>();
 builder.Services.AddSingleton<HomeHeadlineSettingsService>();
 builder.Services.AddSingleton<MoodSettingsService>();
 builder.Services.AddSingleton<ExpireOptionSettingsService>();
@@ -224,6 +245,8 @@ using (var scope = app.Services.CreateScope())
     var hasher = scope.ServiceProvider.GetRequiredService<PasswordHasher>();
     var adminSeed = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AdminSeedOptions>>().Value;
     db.Database.Migrate();
+    await EnsureSensitiveWordsTableAsync(db);
+    await EnsureAiSensitiveWordSuggestionsTableAsync(db);
     await AdminSeeder.SeedAsync(db, hasher, adminSeed);
 }
 
@@ -257,3 +280,86 @@ app.MapGet("/docs", () => Results.LocalRedirect("/docs/index.html"));
 app.MapControllers();
 
 app.Run();
+
+static async Task EnsureSensitiveWordsTableAsync(AppDbContext db)
+{
+    const string sql = """
+                       IF OBJECT_ID(N'dbo.SensitiveWords', N'U') IS NULL
+                       BEGIN
+                           CREATE TABLE dbo.SensitiveWords
+                           (
+                               Id uniqueidentifier NOT NULL PRIMARY KEY,
+                               Word nvarchar(100) NOT NULL,
+                               NormalizedWord nvarchar(100) NOT NULL,
+                               Category nvarchar(30) NOT NULL CONSTRAINT DF_SensitiveWords_Category DEFAULT (N'GENERAL'),
+                               MatchMode nvarchar(20) NOT NULL CONSTRAINT DF_SensitiveWords_MatchMode DEFAULT (N'CONTAINS'),
+                               HandleMode nvarchar(20) NOT NULL CONSTRAINT DF_SensitiveWords_HandleMode DEFAULT (N'BLOCK'),
+                               ReplaceText nvarchar(50) NULL,
+                               Scope nvarchar(50) NOT NULL CONSTRAINT DF_SensitiveWords_Scope DEFAULT (N'PLANE,COMMENT,NICKNAME'),
+                               Severity int NOT NULL CONSTRAINT DF_SensitiveWords_Severity DEFAULT ((3)),
+                               Priority int NOT NULL CONSTRAINT DF_SensitiveWords_Priority DEFAULT ((100)),
+                               IsEnabled bit NOT NULL CONSTRAINT DF_SensitiveWords_IsEnabled DEFAULT ((1)),
+                               Remark nvarchar(200) NULL,
+                               CreateAdminId uniqueidentifier NULL,
+                               UpdateAdminId uniqueidentifier NULL,
+                               CreateTime datetime2 NOT NULL CONSTRAINT DF_SensitiveWords_CreateTime DEFAULT (SYSUTCDATETIME()),
+                               UpdateTime datetime2 NOT NULL CONSTRAINT DF_SensitiveWords_UpdateTime DEFAULT (SYSUTCDATETIME())
+                           );
+
+                           CREATE UNIQUE NONCLUSTERED INDEX UQ_SensitiveWords_NormalizedWord ON dbo.SensitiveWords (NormalizedWord);
+                           CREATE NONCLUSTERED INDEX IX_SensitiveWords_IsEnabled_Priority ON dbo.SensitiveWords (IsEnabled, Priority);
+                           CREATE NONCLUSTERED INDEX IX_SensitiveWords_Category ON dbo.SensitiveWords (Category);
+                       END
+                       """;
+
+    try
+    {
+        await db.Database.ExecuteSqlRawAsync(sql);
+    }
+    catch (SqlException ex) when (ex.Number is 2714 or 1913)
+    {
+        // Ignore "already exists" race condition during concurrent startup.
+    }
+}
+
+static async Task EnsureAiSensitiveWordSuggestionsTableAsync(AppDbContext db)
+{
+    const string sql = """
+                       IF OBJECT_ID(N'dbo.AiSensitiveWordSuggestions', N'U') IS NULL
+                       BEGIN
+                           CREATE TABLE dbo.AiSensitiveWordSuggestions
+                           (
+                               Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                               SuggestedWord nvarchar(100) NOT NULL,
+                               NormalizedWord nvarchar(100) NOT NULL,
+                               Category nvarchar(30) NOT NULL CONSTRAINT DF_AiSensitiveWordSuggestions_Category DEFAULT (N'GENERAL'),
+                               MatchMode nvarchar(20) NOT NULL CONSTRAINT DF_AiSensitiveWordSuggestions_MatchMode DEFAULT (N'CONTAINS'),
+                               HandleMode nvarchar(20) NOT NULL CONSTRAINT DF_AiSensitiveWordSuggestions_HandleMode DEFAULT (N'BLOCK'),
+                               ReplaceText nvarchar(50) NULL,
+                               Scope nvarchar(50) NOT NULL CONSTRAINT DF_AiSensitiveWordSuggestions_Scope DEFAULT (N'PLANE'),
+                               Severity int NOT NULL CONSTRAINT DF_AiSensitiveWordSuggestions_Severity DEFAULT ((4)),
+                               Priority int NOT NULL CONSTRAINT DF_AiSensitiveWordSuggestions_Priority DEFAULT ((120)),
+                               Remark nvarchar(200) NULL,
+                               SourceTextPreview nvarchar(200) NOT NULL,
+                               Reason nvarchar(500) NULL,
+                               Confidence decimal(5,4) NULL,
+                               RawResponse nvarchar(4000) NULL,
+                               CreateTime datetime2 NOT NULL CONSTRAINT DF_AiSensitiveWordSuggestions_CreateTime DEFAULT (SYSUTCDATETIME())
+                           );
+
+                           CREATE UNIQUE NONCLUSTERED INDEX UQ_AiSensitiveWordSuggestions_NormalizedWord_Scope
+                               ON dbo.AiSensitiveWordSuggestions (NormalizedWord, Scope);
+                           CREATE NONCLUSTERED INDEX IX_AiSensitiveWordSuggestions_CreateTime
+                               ON dbo.AiSensitiveWordSuggestions (CreateTime);
+                       END
+                       """;
+
+    try
+    {
+        await db.Database.ExecuteSqlRawAsync(sql);
+    }
+    catch (SqlException ex) when (ex.Number is 2714 or 1913)
+    {
+        // Ignore "already exists" race condition during concurrent startup.
+    }
+}

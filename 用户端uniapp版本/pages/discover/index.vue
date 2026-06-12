@@ -1,4 +1,14 @@
 <template>
+	<scroll-view
+		:scroll-y="true"
+		class="page-scroll"
+		style="height: 100vh"
+		:scroll-top="scrollTop"
+		:enhanced="true"
+		:bounces="false"
+		:show-scrollbar="false"
+		@scroll="handlePageScroll"
+	>
 	<view :class="['app-page', 'with-tabbar', 'discover-page', themeClass]">
 		<view class="discover-atmosphere">
 			<view class="atmosphere-orb orb-a"></view>
@@ -329,6 +339,7 @@
 		<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
 		<app-tabbar active="discover" :theme="appState.theme" />
 	</view>
+	</scroll-view>
 </template>
 
 <script>
@@ -369,6 +380,7 @@ export default {
 				moodFoldOpen: false,
 				locationFoldOpen: false,
 				pageScrollTop: 0,
+				scrollTop: 0,
 				savedPageScrollTop: 0,
 				skipReloadOnNextShow: false,
 				toolbarPinned: false,
@@ -502,11 +514,15 @@ export default {
 		this.scheduleMeasureToolbar()
 	},
 	onPageScroll(event) {
-		this.pageScrollTop = event.scrollTop || 0
-		this.savedPageScrollTop = this.pageScrollTop
-		this.syncToolbarPinned()
+		this.handlePageScroll(event)
 	},
 	methods: {
+		handlePageScroll(event) {
+			const top = event?.detail?.scrollTop ?? event?.scrollTop ?? 0
+			this.pageScrollTop = top || 0
+			this.savedPageScrollTop = this.pageScrollTop
+			this.syncToolbarPinned()
+		},
 		decodeRouteLocation(value) {
 			const raw = String(value || '').trim()
 			if (!raw) return ''
@@ -767,9 +783,9 @@ export default {
 				const top = Math.max(0, Math.round(Number(this.savedPageScrollTop || 0)))
 				this.pageScrollTop = top
 				this.syncToolbarPinned()
-				uni.pageScrollTo({
-					scrollTop: top,
-					duration: 0,
+				this.scrollTop = Math.max(0, top - 1)
+				this.$nextTick(() => {
+					this.scrollTop = top
 				})
 			},
 			async loadPlanes() {

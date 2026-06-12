@@ -234,6 +234,7 @@ const local: App.I18n.Schema = {
     'plane-manage': '飞机管理',
     'location-manage': '地点管理',
     'report-manage': '举报管理',
+    'sensitive-word-manage': '敏感词管理',
     'user-manage': '用户管理'
   },
   page: {

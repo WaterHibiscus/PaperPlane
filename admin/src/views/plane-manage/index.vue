@@ -590,7 +590,8 @@ async function handleDeletePlane(id: string) {
     await loadPlanes();
   } catch (error) {
     console.error(error);
-    window.$message?.error('删除失败');
+    const message = error instanceof Error ? error.message : String(error || '');
+    window.$message?.error(`删除失败${message ? `：${message}` : ''}`);
   }
 }
 

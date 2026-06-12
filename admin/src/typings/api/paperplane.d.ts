@@ -11,6 +11,12 @@ declare namespace Api {
       todayThrows: number;
       totalLocations: number;
       totalComments: number;
+      activeMoodDistribution: MoodStatItem[];
+    }
+
+    interface MoodStatItem {
+      mood: string;
+      count: number;
     }
 
     interface HomeHeadlineConfig {
@@ -32,6 +38,37 @@ declare namespace Api {
       label: string;
       sortOrder: number;
       isActive: boolean;
+    }
+
+    interface SensitiveWordConfig {
+      id: string;
+      word: string;
+      category: 'GENERAL' | 'ABUSE' | 'ADS' | 'CONTACT';
+      matchMode: 'CONTAINS' | 'EXACT';
+      handleMode: 'BLOCK' | 'REVIEW' | 'REPLACE';
+      replaceText: string | null;
+      scope: string;
+      severity: number;
+      priority: number;
+      isEnabled: boolean;
+      remark: string | null;
+    }
+
+    interface SensitiveWordAiSuggestion {
+      id: number;
+      suggestedWord: string;
+      category: 'GENERAL' | 'ABUSE' | 'ADS' | 'CONTACT';
+      matchMode: 'CONTAINS' | 'EXACT';
+      handleMode: 'BLOCK' | 'REVIEW' | 'REPLACE';
+      replaceText: string | null;
+      scope: string;
+      severity: number;
+      priority: number;
+      remark: string | null;
+      sourceTextPreview: string;
+      reason: string | null;
+      confidence: number | null;
+      createTime: string;
     }
 
     interface AiVoteConfig {

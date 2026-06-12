@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
+import { useRoute } from 'vue-router';
 import { AdminLayout, LAYOUT_SCROLL_EL_ID } from '@sa/materials';
 import type { LayoutMode } from '@sa/materials';
 import { useAppStore } from '@/store/modules/app';
@@ -18,6 +19,7 @@ defineOptions({
 
 const appStore = useAppStore();
 const themeStore = useThemeStore();
+const route = useRoute();
 const { secondLevelMenus, childLevelMenus, isActiveFirstLevelMenuHasChildren } = provideMixMenuContext();
 
 const GlobalMenu = defineAsyncComponent(() => import('../modules/global-menu/index.vue'));
@@ -80,6 +82,7 @@ const isTopHybridHeaderFirst = computed(() => themeStore.layout.mode === 'top-hy
 const siderWidth = computed(() => getSiderAndCollapsedWidth(false));
 
 const siderCollapsedWidth = computed(() => getSiderAndCollapsedWidth(true));
+const footerVisible = computed(() => themeStore.footer.visible && route.path !== '/home');
 
 function getSiderAndCollapsedWidth(isCollapsed: boolean) {
   const {
@@ -132,7 +135,7 @@ function getSiderAndCollapsedWidth(isCollapsed: boolean) {
     :sider-visible="siderVisible"
     :sider-width="siderWidth"
     :sider-collapsed-width="siderCollapsedWidth"
-    :footer-visible="themeStore.footer.visible"
+    :footer-visible="footerVisible"
     :footer-height="themeStore.footer.height"
     :fixed-footer="themeStore.footer.fixed"
     :right-footer="themeStore.footer.right"

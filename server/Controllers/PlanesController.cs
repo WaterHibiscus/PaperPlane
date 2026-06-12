@@ -39,9 +39,11 @@ public class PlanesController(
     [HttpPost]
     public async Task<ActionResult<PlaneResponse>> Throw(ThrowPlaneRequest req)
     {
-        var (passed, reason) = filter.Check(req.Content);
-        if (!passed)
-            return BadRequest(new { message = reason });
+        var filterResult = await filter.CheckAsync(req.Content, "PLANE");
+        if (!filterResult.Passed)
+            return BadRequest(new { message = filterResult.Reason });
+
+        var filteredContent = filterResult.Content;
 
         var expireHours = Math.Clamp(req.ExpireHours, 1, 168);
         var activeExpireHours = expireOptionSettingsService.GetActive()
@@ -81,7 +83,7 @@ public class PlanesController(
                 ShortCode = await GenerateUniqueShortCodeAsync(),
                 CreatorUserId = GetCurrentAppUserIdOrNull(),
                 LocationTag = req.LocationTag,
-                Content = req.Content,
+                Content = filteredContent,
                 Mood = req.Mood,
                 IsAnonymous = req.IsAnonymous,
                 AuthorName = authorName,
@@ -510,7 +512,9 @@ public class PlanesController(
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<ActionResult<List<PlaneResponse>>> GetAllAdmin([FromQuery] AdminPlaneQuery request)
     {
-        var query = db.Planes.IgnoreQueryFilters().AsQueryable();
+        // Admin list defaults to online/non-deleted planes.
+        // Report page has a separate endpoint for reviewing deleted/reported rows.
+        var query = db.Planes.Where(p => !p.IsDeleted).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.Id))
         {
@@ -726,6 +730,12 @@ public class PlanesController(
 
             if (authorName.Length > 30)
                 return BadRequest(new { message = "昵称不能超过30个字符" });
+
+            var authorFilterResult = await filter.CheckAsync(authorName, "NICKNAME");
+            if (!authorFilterResult.Passed)
+                return BadRequest(new { message = authorFilterResult.Reason });
+
+            authorName = authorFilterResult.Content;
         }
 
         var voteOptions = NormalizeVoteOptions(req.VoteOptions);
@@ -1000,7 +1010,7 @@ public class PlanesController(
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var plane = await db.Planes.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == id);
+        var plane = await db.Planes.FirstOrDefaultAsync(p => p.Id == id);
         if (plane is null) return NotFound();
 
         plane.IsDeleted = true;
@@ -1011,7 +1021,6 @@ public class PlanesController(
     private async Task<ActionResult<PlaneResponse>> GetByIdentityAsync(Expression<Func<Plane, bool>> predicate)
     {
         var row = await db.Planes
-            .IgnoreQueryFilters()
             .Where(predicate)
             .Select(p => new PlaneRow(
                 p.Id,
@@ -1034,7 +1043,6 @@ public class PlanesController(
         if (row is null) return NotFound();
 
         var plane = await db.Planes
-            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(predicate);
         if (plane is null) return NotFound();
 
@@ -1283,7 +1291,10 @@ public class PlanesController(
 
         try
         {
-            return JsonSerializer.Deserialize<List<string>>(json, VoteJsonOptions) ?? [];
+            return (JsonSerializer.Deserialize<List<string>>(json, VoteJsonOptions) ?? [])
+                .Select(PublicAssetUrlNormalizer.Normalize)
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .ToList();
         }
         catch
         {

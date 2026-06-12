@@ -1,4 +1,5 @@
 <template>
+	<scroll-view :scroll-y="true" class="page-scroll" style="height: 100vh" :enhanced="true" :bounces="false" :show-scrollbar="false">
 	<view :class="['auth-page', themeClass]">
 		<view class="auth-page__float auth-page__float--a"></view>
 		<view class="auth-page__float auth-page__float--b"></view>
@@ -152,6 +153,7 @@
 			</view>
 		</view>
 	</view>
+	</scroll-view>
 </template>
 
 <script>

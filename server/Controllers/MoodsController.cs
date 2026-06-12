@@ -23,7 +23,7 @@ public class MoodsController(MoodSettingsService moodSettingsService) : Controll
         return new MoodConfigItemResponse(
             item.Key,
             item.Label,
-            item.IconUrl,
+            PublicAssetUrlNormalizer.Normalize(item.IconUrl),
             item.Color,
             item.SortOrder,
             item.IsActive,

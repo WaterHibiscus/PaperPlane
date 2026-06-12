@@ -31,6 +31,7 @@ declare module "@elegant-router/types" {
     "mood-manage": "/mood-manage";
     "plane-manage": "/plane-manage";
     "report-manage": "/report-manage";
+    "sensitive-word-manage": "/sensitive-word-manage";
     "user-manage": "/user-manage";
   };
 
@@ -77,6 +78,7 @@ declare module "@elegant-router/types" {
     | "mood-manage"
     | "plane-manage"
     | "report-manage"
+    | "sensitive-word-manage"
     | "user-manage"
   >;
 
@@ -108,6 +110,7 @@ declare module "@elegant-router/types" {
     | "mood-manage"
     | "plane-manage"
     | "report-manage"
+    | "sensitive-word-manage"
     | "user-manage"
   >;
 

@@ -1,4 +1,5 @@
 <template>
+	<scroll-view :scroll-y="true" class="page-scroll" style="height: 100vh" :enhanced="true" :bounces="false" :show-scrollbar="false">
 	<view :class="['app-page', 'with-tabbar', 'home-page', themeClass]">
 		<view class="hero glass-card">
 			<view class="hero-top">
@@ -193,6 +194,7 @@
 			<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
 			<app-tabbar active="home" :theme="appState.theme" />
 	</view>
+	</scroll-view>
 </template>
 
 <script>

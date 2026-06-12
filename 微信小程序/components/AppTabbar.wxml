@@ -1,7 +1,1 @@
-<cover-view class="{{['data-v-1a297c7c', 'cover-tabbar', j]}}" style="{{k}}">
-  <cover-view wx:for="{{i}}" wx:for-item="item" wx:key="e" class="{{['data-v-1a297c7c', 'cover-tab-item', item.f]}}" bindtap="{{item.g}}">
-    <cover-image wx:if="{{item.a}}" class="cover-tab-icon data-v-1a297c7c" src="{{item.b}}" />
-    <cover-view wx:else class="cover-tab-icon-text data-v-1a297c7c">{{item.c}}</cover-view>
-    <cover-view class="cover-tab-label data-v-1a297c7c">{{item.d}}</cover-view>
-  </cover-view>
-</cover-view>
+<view class="{{['data-v-a66d2e12', 'tabbar-shell', j]}}" style="{{k}}"><view class="tabbar-surface data-v-a66d2e12" aria-hidden="true"></view><view wx:if="{{a}}" class="transition-mask data-v-a66d2e12"><view class="mask-core data-v-a66d2e12"><image class="mask-plane-image data-v-a66d2e12" src="{{b}}" mode="aspectFit"/><text class="mask-text data-v-a66d2e12">{{c}}</text></view></view><svg wx:if="{{e}}" u-s="{{['d']}}" class="curved-bg data-v-a66d2e12" u-i="a66d2e12-0" bind:__l="__l" u-p="{{e}}"><path wx:if="{{d}}" class="data-v-a66d2e12" u-i="a66d2e12-1,a66d2e12-0" bind:__l="__l" u-p="{{d}}"></path></svg><view class="curved-bubble data-v-a66d2e12" aria-hidden="true"><image wx:if="{{f}}" class="bubble-icon-image data-v-a66d2e12" src="{{g}}" mode="aspectFit"/><text wx:else class="bubble-icon-text data-v-a66d2e12">{{h}}</text></view><view wx:for="{{i}}" wx:for-item="item" wx:key="e" class="{{['data-v-a66d2e12', 'curved-item', item.f]}}" bindtap="{{item.g}}"><view class="item-inner data-v-a66d2e12"><image wx:if="{{item.a}}" class="item-icon-image data-v-a66d2e12" src="{{item.b}}" mode="aspectFit"/><text wx:else class="item-icon-text data-v-a66d2e12">{{item.c}}</text><text class="item-label data-v-a66d2e12">{{item.d}}</text></view></view></view>

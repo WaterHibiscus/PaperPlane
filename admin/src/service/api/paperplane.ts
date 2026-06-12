@@ -21,6 +21,32 @@ export function updateExpireOptions(data: { items: Api.PaperPlane.ExpireOptionCo
   return request<Api.PaperPlane.ExpireOptionConfig[]>({ url: '/api/admin/expire-options', method: 'put', data });
 }
 
+export function fetchSensitiveWords() {
+  return request<Api.PaperPlane.SensitiveWordConfig[]>({ url: '/api/admin/sensitive-words' });
+}
+
+export function updateSensitiveWords(data: { items: Api.PaperPlane.SensitiveWordConfig[] }) {
+  return request<Api.PaperPlane.SensitiveWordConfig[]>({ url: '/api/admin/sensitive-words', method: 'put', data });
+}
+
+export function fetchSensitiveWordAiSuggestions() {
+  return request<Api.PaperPlane.SensitiveWordAiSuggestion[]>({ url: '/api/admin/sensitive-words/ai-suggestions' });
+}
+
+export function adoptSensitiveWordAiSuggestion(id: number) {
+  return request<Api.PaperPlane.SensitiveWordConfig>({
+    url: `/api/admin/sensitive-words/ai-suggestions/${id}/adopt`,
+    method: 'post'
+  });
+}
+
+export function deleteSensitiveWordAiSuggestion(id: number) {
+  return request<void>({
+    url: `/api/admin/sensitive-words/ai-suggestions/${id}`,
+    method: 'delete'
+  });
+}
+
 export function fetchMoodConfigs() {
   return request<Api.PaperPlane.MoodConfig[]>({ url: '/api/admin/moods' });
 }

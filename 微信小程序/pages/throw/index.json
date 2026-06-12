@@ -1,5 +1,6 @@
 {
-  "navigationBarTitleText": "投掷纸飞机",
+  "disableScroll": true,
+  "navigationBarTitleText": "投递纸飞机",
   "navigationStyle": "custom",
   "usingComponents": {
     "app-tabbar": "../../components/AppTabbar",

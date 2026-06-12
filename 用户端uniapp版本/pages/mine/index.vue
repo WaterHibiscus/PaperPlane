@@ -1,6 +1,7 @@
 <template>
+	<scroll-view :scroll-y="true" class="page-scroll" style="height: 100vh" :enhanced="true" :bounces="false" :show-scrollbar="false">
 	<view :class="['app-page', 'with-tabbar', 'mine-page', themeClass]">
-		<view class="profile-hero">
+		<view class="profile-hero" :style="profileHeroStyle">
 			<view class="hero-top">
 				<view class="hero-profile">
 					<view class="avatar-shell">
@@ -119,7 +120,7 @@
 				<scroll-view
 					v-else
 					class="hangar-list"
-					scroll-y
+					:scroll-y="true"
 					:show-scrollbar="false"
 					:scroll-top="scrollRestoreTop.hangar"
 					@scroll="handleListScroll('hangar', $event)"
@@ -185,7 +186,7 @@
 				<scroll-view
 					v-else
 					class="hangar-list fueled-list"
-					scroll-y
+					:scroll-y="true"
 					:show-scrollbar="false"
 					:scroll-top="scrollRestoreTop.picked"
 					@scroll="handleListScroll('picked', $event)"
@@ -228,7 +229,7 @@
 				<scroll-view
 					v-else
 					class="hangar-list fueled-list"
-					scroll-y
+					:scroll-y="true"
 					:show-scrollbar="false"
 					:scroll-top="scrollRestoreTop.fueled"
 					@scroll="handleListScroll('fueled', $event)"
@@ -256,6 +257,7 @@
 		<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
 		<app-tabbar active="mine" :theme="appState.theme" />
 	</view>
+	</scroll-view>
 </template>
 
 <script>
@@ -326,6 +328,7 @@
 						fueled: 0,
 					},
 					throwDraft: null,
+					mineHeaderSafeTop: 0,
 				anonymousProfileId: getVoterKey().slice(-4).toUpperCase(),
 				sessionAccount: null,
 			}
@@ -333,6 +336,12 @@
 		computed: {
 			themeClass() {
 				return this.appState.theme === 'dark' ? 'theme-dark' : 'theme-light'
+			},
+			profileHeroStyle() {
+				if (!this.mineHeaderSafeTop) return ''
+				return {
+					paddingTop: `${this.mineHeaderSafeTop}px`,
+				}
 			},
 			profileAvatarUrl() {
 				return getAssetUrl(this.appState.profileAvatar)
@@ -423,7 +432,11 @@
 						: 'tab-panel-forward'
 				},
 			},
+		onLoad() {
+			this.syncMineHeaderSafeTop()
+		},
 		onShow() {
+			this.syncMineHeaderSafeTop()
 			if (this.skipReloadOnNextShow) {
 				this.skipReloadOnNextShow = false
 				this.$nextTick(() => {
@@ -437,7 +450,31 @@
 				})
 			})
 		},
+		onResize() {
+			this.syncMineHeaderSafeTop()
+		},
 		methods: {
+			syncMineHeaderSafeTop() {
+				let safeTop = 0
+				try {
+					// #ifdef MP-WEIXIN
+					const menuButton = uni.getMenuButtonBoundingClientRect()
+					if (menuButton?.bottom) {
+						safeTop = menuButton.bottom
+					}
+					// #endif
+				} catch (error) {
+				}
+				if (!safeTop) {
+					try {
+						const windowInfo = uni.getWindowInfo ? uni.getWindowInfo() : uni.getSystemInfoSync()
+						safeTop = (windowInfo.statusBarHeight || 0) + 44
+					} catch (error) {
+						safeTop = 64
+					}
+				}
+				this.mineHeaderSafeTop = safeTop
+			},
 			isRecalledPlane(plane) {
 				return Boolean(plane?.isRecalled || plane?.status === 'recalled')
 			},
@@ -751,8 +788,9 @@
 	.mine-page .profile-hero {
 		flex-shrink: 0;
 		position: relative;
-		height: 344rpx;
-		padding: calc(env(safe-area-inset-top) + 80rpx) 32rpx 0;
+		height: auto;
+		min-height: 344rpx;
+		padding: calc(var(--status-bar-height) + 80rpx) 32rpx 136rpx;
 		background: linear-gradient(180deg, rgba(225, 245, 235, 1), rgba(247, 250, 248, 1));
 	}
 
@@ -877,6 +915,7 @@
 		align-items: center;
 		gap: 10rpx;
 		margin-left: 12rpx;
+		flex-shrink: 0;
 	}
 
 	.mine-page .logout-btn {

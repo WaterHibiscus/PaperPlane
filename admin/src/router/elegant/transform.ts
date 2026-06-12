@@ -177,6 +177,7 @@ const routeMap: RouteMap = {
   "mood-manage": "/mood-manage",
   "plane-manage": "/plane-manage",
   "report-manage": "/report-manage",
+  "sensitive-word-manage": "/sensitive-word-manage",
   "user-manage": "/user-manage"
 };
 

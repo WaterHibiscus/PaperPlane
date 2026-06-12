@@ -13,8 +13,9 @@
 .mine-page .profile-hero.data-v-569e925a {
 		flex-shrink: 0;
 		position: relative;
-		height: 344rpx;
-		padding: calc(env(safe-area-inset-top) + 80rpx) 32rpx 0;
+		height: auto;
+		min-height: 344rpx;
+		padding: calc(var(--status-bar-height) + 80rpx) 32rpx 136rpx;
 		background: linear-gradient(180deg, rgba(225, 245, 235, 1), rgba(247, 250, 248, 1));
 }
 .mine-page .hero-top.data-v-569e925a {
@@ -119,10 +120,12 @@
 		display: none;
 }
 .mine-page .hero-tools.data-v-569e925a {
+    height: 100rpx;
 		display: flex;
-		align-items: center;
+    align-items: flex-end;
 		gap: 10rpx;
 		margin-left: 12rpx;
+		flex-shrink: 0;
 }
 .mine-page .logout-btn.data-v-569e925a {
 		height: 58rpx;

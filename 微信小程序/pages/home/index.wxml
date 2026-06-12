@@ -1,4 +1,4 @@
-<view class="{{['data-v-04673b4a', 'app-page', 'with-tabbar', 'home-page', S]}}">
+<scroll-view scroll-y="{{true}}" class="page-scroll" style="height:100vh" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}"><view class="{{['data-v-04673b4a', 'app-page', 'with-tabbar', 'home-page', S]}}">
 	  <view class="hero glass-card data-v-04673b4a">
 	    <view class="hero-top data-v-04673b4a">
 	      <view class="brand-cluster data-v-04673b4a">
@@ -203,4 +203,4 @@
     bind:__l="__l"
     u-p="{{R}}"
   />
-</view>
+</view></scroll-view>

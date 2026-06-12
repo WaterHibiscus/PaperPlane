@@ -1,4 +1,5 @@
-﻿<template>
+<template>
+	<scroll-view :scroll-y="true" class="page-scroll" style="height: 100vh" :enhanced="true" :bounces="false" :show-scrollbar="false">
 	<view :class="['app-page', 'profile-edit-page', themeClass]">
 		<view class="profile-edit-page__nav">
 			<view class="profile-edit-page__nav-back" @tap="goBack">
@@ -96,6 +97,7 @@
 			<text>{{ saving ? '保存中...' : '保存资料' }}</text>
 		</view>
 	</view>
+	</scroll-view>
 </template>
 
 <script>

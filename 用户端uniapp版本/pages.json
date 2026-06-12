@@ -3,6 +3,7 @@
 		{
 			"path": "pages/login/index",
 			"style": {
+				"disableScroll": true,
 				"navigationStyle": "custom",
 				"navigationBarTextStyle": "black",
 				"app-plus": {
@@ -17,6 +18,7 @@
 		{
 			"path": "pages/register/index",
 			"style": {
+				"disableScroll": true,
 				"navigationStyle": "custom",
 				"navigationBarTextStyle": "black",
 				"app-plus": {
@@ -31,25 +33,29 @@
 		{
 			"path": "pages/home/index",
 			"style": {
+				"disableScroll": true,
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/discover/index",
 			"style": {
+				"disableScroll": true,
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/throw/index",
 			"style": {
-				"navigationBarTitleText": "投掷纸飞机",
+				"disableScroll": true,
+				"navigationBarTitleText": "投递纸飞机",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/trending/index",
 			"style": {
+				"disableScroll": true,
 				"navigationBarTitleText": "热门飞机",
 				"navigationStyle": "custom"
 			}
@@ -57,6 +63,7 @@
 		{
 			"path": "pages/mine/index",
 			"style": {
+				"disableScroll": true,
 				"navigationBarTitleText": "我的飞机",
 				"navigationStyle": "custom"
 			}
@@ -64,6 +71,7 @@
 		{
 			"path": "pages/profile-edit/index",
 			"style": {
+				"disableScroll": true,
 				"navigationBarTitleText": "资料设置",
 				"navigationStyle": "custom"
 			}
@@ -71,12 +79,14 @@
 		{
 			"path": "pages/detail/index",
 			"style": {
+				"disableScroll": true,
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/scan/index",
 			"style": {
+				"disableScroll": true,
 				"navigationStyle": "custom"
 			}
 		}

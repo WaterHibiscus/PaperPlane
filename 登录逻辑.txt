@@ -1,0 +1,59 @@
+3.1.4 登陆数据处理.jsp的内部逻辑
+登陆数据处理：
+	关键点两点：1，数据库连接；2，记录登陆信息及信息处理；
+1，	数据库连接： 
+ 如下：
+public class lib_system_Conn extends Object{
+	public lib_system_Conn(){
+		
+	}	 
+	 private Connection conn = null;
+	 private ResultSet rs;
+	  String re = "";
+	  //设置你的数据库ip
+	  String dbip = "127.0.0.1";
+	  //设置你的数据库用户名和密码：
+	  String use = "root";
+	  String pass = "860409";
+	  //设置您的数据库名
+	  String dbName = "lib_system";
+	  public java.sql.Connection getConn(){
+	    try{
+	     Class.forName("org.gjt.mm.mysql.Driver").newInstance();
+	     String url ="jdbc:mysql://"+dbip+":3306/"+dbName+"?user="+use+"&password="+pass+"&useUnicode=true&characterEncoding=GBK" ;
+	     conn= DriverManager.getConnection(url);
+	    }
+	    catch(Exception e){
+	    e.printStackTrace();
+	    }
+	    return this.conn ;
+	  }
+}
+//在Mysql建立lib_system数据库，之后将与数据操作相关数据与该数据库相连；
+2，	记录登陆信息及信息处理：
+当用户点击“登陆”按钮之后，数据将提交到登陆数据处理.jsp页面。 取得帐号密码这两个从页面传入的值，然后跟数据库当中管理员表中的账号和密码比较。如果正确的话，在JSP的SESSION中存入一个标记属性，表示当前已经有管理员登陆了。处理完毕后，跳转到管理页面，如果失败，则提示登陆失败，并重新进入到登陆页面。
+具体的逻辑如下：
+<%
+String username=ParamUtil.getString(request,"admin_ID");
+//取得用户名
+String password=ParamUtil.getString(request,"admin_password");
+//取得密码
+String erroMsg="";
+//错误码
+if(username!=null&&password!=null)
+	try
+	{
+		SkinUtil.login(request,response,admin_ID,admin_password);
+//在JSP的session中存如一个标记属性，表示当前已经有管理员登陆了
+Session.setAttribute(“admin_ID”,admin_ID);
+		response.sendRedirect("login_process.jsp");
+	}
+	catch(UserNotFoundException e)
+	{
+		erroMsg="错误的用户名和密码";
+		response.sendRedirect("login_process.jsp?"+response.encodeURL(erroMsg));
+	}
+else{
+	out.println("请填写好你的个人信息!");
+}
+%>

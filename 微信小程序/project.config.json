@@ -1,5 +1,5 @@
 {
-  "description": "项目配置文件。",
+  "description": "project config file",
   "packOptions": {
     "ignore": []
   },
@@ -15,7 +15,7 @@
   "compileType": "miniprogram",
   "libVersion": "",
   "appid": "wx666736fa1ed169f9",
-  "projectname": "用户端uniapp版本",
+  "projectname": "paperplane-miniapp",
   "condition": {
     "search": {
       "current": -1,

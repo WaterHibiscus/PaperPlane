@@ -280,6 +280,10 @@ export function getExpireOptions() {
 	return request({ url: '/expire-options' })
 }
 
+export function getSensitiveWords(scope) {
+	return request({ url: '/sensitive-words', data: scope ? { scope } : {} })
+}
+
 export function throwPlane(data) {
 	return request({ url: '/planes', method: 'POST', data })
 }

@@ -47,7 +47,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'ai-manage',
       i18nKey: 'route.ai-manage',
       icon: 'mdi:robot-outline',
-      order: 10
+      order: 11
     }
   },
   {
@@ -69,7 +69,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'expire-manage',
       i18nKey: 'route.expire-manage',
       icon: 'mdi:timer-sand',
-      order: 6
+      order: 10
     }
   },
   {
@@ -80,7 +80,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'headline-manage',
       i18nKey: 'route.headline-manage',
       icon: 'mdi:text-box-multiple-outline',
-      order: 7
+      order: 9
     }
   },
   {
@@ -90,7 +90,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     meta: {
       title: 'home',
       i18nKey: 'route.home',
-      icon: 'mdi:monitor-dashboard',
       order: 1
     }
   },
@@ -115,7 +114,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'location-manage',
       i18nKey: 'route.location-manage',
       icon: 'mdi:map-marker-radius-outline',
-      order: 5
+      order: 7
     }
   },
   {
@@ -138,7 +137,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'mood-manage',
       i18nKey: 'route.mood-manage',
       icon: 'mdi:emoticon-outline',
-      order: 4
+      order: 8
     }
   },
   {
@@ -160,7 +159,18 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'report-manage',
       i18nKey: 'route.report-manage',
       icon: 'mdi:flag-outline',
-      order: 8
+      order: 4
+    }
+  },
+  {
+    name: 'sensitive-word-manage',
+    path: '/sensitive-word-manage',
+    component: 'layout.base$view.sensitive-word-manage',
+    meta: {
+      title: 'sensitive-word-manage',
+      i18nKey: 'route.sensitive-word-manage',
+      icon: 'mdi:shield-alert-outline',
+      order: 5
     }
   },
   {
@@ -171,7 +181,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'user-manage',
       i18nKey: 'route.user-manage',
       icon: 'mdi:account-group',
-      order: 9
+      order: 6
     }
   }
 ];

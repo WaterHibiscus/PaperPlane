@@ -29,5 +29,6 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "mood-manage": () => import("@/views/mood-manage/index.vue"),
   "plane-manage": () => import("@/views/plane-manage/index.vue"),
   "report-manage": () => import("@/views/report-manage/index.vue"),
+  "sensitive-word-manage": () => import("@/views/sensitive-word-manage/index.vue"),
   "user-manage": () => import("@/views/user-manage/index.vue"),
 };

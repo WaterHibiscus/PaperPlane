@@ -10,7 +10,7 @@ namespace server.Controllers;
 [ApiController]
 [Authorize(Policy = AuthPolicies.AppUserOnly)]
 [Route("api/users/me")]
-public class UserProfileController(AppDbContext db, IWebHostEnvironment env) : ControllerBase
+public class UserProfileController(AppDbContext db, IWebHostEnvironment env, ContentFilterService filter) : ControllerBase
 {
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -25,7 +25,7 @@ public class UserProfileController(AppDbContext db, IWebHostEnvironment env) : C
 
         return new UserProfileResponse(
             user.Username,
-            user.AvatarUrl,
+            PublicAssetUrlNormalizer.NormalizeNullable(user.AvatarUrl),
             NormalizeGender(user.Gender),
             user.Bio ?? string.Empty);
     }
@@ -37,25 +37,33 @@ public class UserProfileController(AppDbContext db, IWebHostEnvironment env) : C
         if (user is null) return Unauthorized();
 
         var username = (req.Username ?? string.Empty).Trim();
-        var avatarUrl = (req.AvatarUrl ?? string.Empty).Trim();
+        var avatarUrl = PublicAssetUrlNormalizer.NormalizeNullable(req.AvatarUrl);
         var gender = (req.Gender ?? string.Empty).Trim().ToLowerInvariant();
         var bio = (req.Bio ?? string.Empty).Trim();
 
         if (username.Length is < 1 or > 12)
-            return BadRequest(new { message = "用户名长度需在1到12之间" });
+            return BadRequest(new { message = "用户名长度需在 1 到 12 之间" });
         if (!IsValidGender(gender))
             return BadRequest(new { message = "性别仅支持 male、female、secret" });
         if (bio.Length > 200)
-            return BadRequest(new { message = "个人简介不能超过200字" });
+            return BadRequest(new { message = "个人简介不能超过 200 字" });
 
-        user.Username = username;
-        user.AvatarUrl = string.IsNullOrWhiteSpace(avatarUrl) ? null : avatarUrl;
+        var nameFilterResult = await filter.CheckAsync(username, "NICKNAME");
+        if (!nameFilterResult.Passed)
+            return BadRequest(new { message = nameFilterResult.Reason });
+
+        user.Username = nameFilterResult.Content;
+        user.AvatarUrl = avatarUrl;
         user.Gender = gender;
         user.Bio = bio;
 
         await db.SaveChangesAsync();
 
-        return new UserProfileResponse(user.Username, user.AvatarUrl, user.Gender, user.Bio);
+        return new UserProfileResponse(
+            user.Username,
+            PublicAssetUrlNormalizer.NormalizeNullable(user.AvatarUrl),
+            user.Gender,
+            user.Bio);
     }
 
     [HttpPost("avatar")]

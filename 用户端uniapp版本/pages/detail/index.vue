@@ -1,4 +1,5 @@
 <template>
+	<scroll-view :scroll-y="true" class="page-scroll" style="height: 100vh" :enhanced="true" :bounces="false" :show-scrollbar="false">
 	<view :class="['app-page', 'detail-page', themeClass]" :style="detailStyle">
 			<view class="detail-nav">
 				<view class="nav-actions-left">
@@ -131,7 +132,7 @@
 								<text class="action-title">{{ labels.likeAction }}</text>
 								<text class="action-note">{{ labels.likeActionNote }}</text>
 							</view>
-							<text class="action-arrow">↗</text>
+							<text class="action-arrow">�?/text>
 						</view>
 					</view>
 				</view>
@@ -145,7 +146,7 @@
 						<view class="attitude-head-side">
 							<text class="attitude-total">{{ attitudeSummary.totalCount }} {{ labels.voteUnit }}</text>
 							<text class="attitude-toggle-text">{{ attitudeExpanded ? labels.collapseVotes : labels.expandVotes }}</text>
-							<text :class="['attitude-chevron', attitudeExpanded ? 'expanded' : '']">⌄</text>
+							<text :class="['attitude-chevron', attitudeExpanded ? 'expanded' : '']">�?/text>
 						</view>
 					</view>
 
@@ -282,12 +283,14 @@
 			<text class="empty-title">{{ labels.loadingTitle }}</text>
 			<text class="empty-desc">{{ labels.loadingDesc }}</text>
 	</view>
+	</scroll-view>
 </template>
 
 <script>
 import CommentThreadNode from '../../components/CommentThreadNode.vue'
 import { appState, syncThemeWindow } from '../../common/app-state.js'
 import { addComment, getAssetUrl, getComments, getPlaneAttitudes, getPlaneDetail, getPlaneQrCodePngUrl, likePlane, reportPlane, votePlaneAttitude } from '../../common/api.js'
+import { fetchSensitiveWordRules, findMatchedSensitiveWord } from '../../common/sensitive-words.js'
 import { formatPlaneId } from '../../common/plane-code.js'
 import { getVoterKey } from '../../common/storage.js'
 import { formatTime, getPlaneAuthorLabel, getRemainingText, isExpired } from '../../common/utils.js'
@@ -310,11 +313,12 @@ export default {
 					timer: null,
 						galleryActiveIndex: 0,
 						galleryScrollLeft: 0,
-						composerVisible: false,
-						barcodeVisible: false,
-						barcodeImageFailed: false,
-						commentIdentity: 'named',
-				reportSubmitting: false,
+							composerVisible: false,
+							barcodeVisible: false,
+							barcodeImageFailed: false,
+							commentIdentity: 'named',
+					commentSensitiveRules: [],
+					reportSubmitting: false,
 				reportReasons: [
 					{ key: 'spam', label: '垃圾广告' },
 					{ key: 'abuse', label: '辱骂攻击' },
@@ -333,65 +337,65 @@ export default {
 			backIcon: uiIcons.back,
 			shareIcon: uiIcons.more,
 			labels: {
-				archive: '纸飞机',
+				archive: '纸飞�?,
 				openPlane: '详情',
-				dropPoint: '降落点',
+				dropPoint: '降落�?,
 				signalNote: '纸条编号',
 				pick: '拾取',
 				like: '点赞',
 				comment: '回声',
-				archiveStatus: '已归档',
-				archiveNote: '这张纸条已经落地，但内容仍然可以查看。',
+				archiveStatus: '已归�?,
+				archiveNote: '这张纸条已经落地，但内容仍然可以查看�?,
 				likeAction: '续航',
 					likeActionKicker: 'FUEL',
-					likeActionNote: '让它多飞一会',
+					likeActionNote: '让它多飞一�?,
 					reportAction: '举报',
 					reportReasonTitle: '请选择举报原因',
-					reportSuccessTitle: '举报已提交',
-					reportReasonPrefix: '原因：',
-					reportReceiptPrefix: '后台已接收，当前累计举报次数：',
-					reportArchivedHint: '该内容已被自动下线',
+					reportSuccessTitle: '举报已提�?,
+					reportReasonPrefix: '原因�?,
+					reportReceiptPrefix: '后台已接收，当前累计举报次数�?,
+					reportArchivedHint: '该内容已被自动下�?,
 					reportArchivedByReportHint: '该内容因被举报次数过多已自动下线',
-					reportConfirmText: '知道了',
+					reportConfirmText: '知道�?,
 					echoTitle: '匿名回声',
-				echoDesc: '善语结善缘，恶语伤人心',
-				echoSubtitle: '条',
-				attitudeDesc: '点一下，看看大家更想表达什么。',
-				voteUnit: '票',
+				echoDesc: '善语结善缘，恶语伤人�?,
+				echoSubtitle: '�?,
+				attitudeDesc: '点一下，看看大家更想表达什么�?,
+				voteUnit: '�?,
 				expandVotes: '展开',
 				collapseVotes: '收起',
 				myVote: '我的选择',
 				tapVote: '点击投票',
-				voteLocked: '已投票',
-				voteDone: '你已经投过票了',
-				echoEmptyTitle: '这里还没有回声',
-				echoEmptyDesc: '如果你愿意，可以留下第一句。',
+				voteLocked: '已投�?,
+				voteDone: '你已经投过票�?,
+				echoEmptyTitle: '这里还没有回�?,
+				echoEmptyDesc: '如果你愿意，可以留下第一句�?,
 				commentPlaceholder: '写下你的回应...',
 				replyPrefix: '回复 ',
 				cancelReply: '取消回复',
-				openComposer: '写评论',
+				openComposer: '写评�?,
 				openComposerNote: '良缘一句三冬暖，恶语伤人六月寒',
 				sheetTitle: '发表评论',
 				closeText: '关闭',
-				anonymousSend: '匿名发送',
-				composerHint: '勾选后将匿名发送。',
-				sendReply: '发送',
+				anonymousSend: '匿名发�?,
+				composerHint: '勾选后将匿名发送�?,
+				sendReply: '发�?,
 				anonymousFallback: '匿名同学',
-					loadingTitle: '正在打开纸飞机',
-					loadingDesc: '正在载入内容和评论。',
-					barcodeTitle: '纸条二维码',
+					loadingTitle: '正在打开纸飞�?,
+					loadingDesc: '正在载入内容和评论�?,
+					barcodeTitle: '纸条二维�?,
 					barcodeNote: '扫描二维码后可直接打开这张纸条',
-					barcodeLoadFailed: '二维码加载失败，请稍后重试',
+					barcodeLoadFailed: '二维码加载失败，请稍后重�?,
 					barcodeIdLabel: '纸条编号',
 					tapToCopy: '点击复制编号',
-				shareCopied: '已复制到剪贴板',
-				writeBeforeSend: '写点内容再发送',
+				shareCopied: '已复制到剪贴�?,
+				writeBeforeSend: '写点内容再发�?,
 				loadFailed: '加载失败',
 				likeFailed: '点赞失败',
 				likeSuccess: '续航成功',
 				reportFailed: '举报失败',
-				reportSuccess: '举报已收到',
-				sendFailed: '发送失败',
+				reportSuccess: '举报已收�?,
+				sendFailed: '发送失�?,
 			},
 		}
 	},
@@ -443,7 +447,7 @@ export default {
 				const selected = this.attitudeSummary.myChoice === option
 				return {
 					key: option,
-					icon: ['💭', '🫶', '⚡', '💬'][index % 4],
+					icon: ['💭', '🫶', '�?, '💬'][index % 4],
 					label: option,
 					count,
 					selected,
@@ -497,7 +501,7 @@ export default {
 			return this.replyTarget?.nickName || ''
 		},
 		realNameHint() {
-			return `当前以“${this.appState.profileName}”实名发送`
+			return `当前以�?{this.appState.profileName}”实名发送`
 		},
 		detailStyle() {
 			return {
@@ -510,12 +514,19 @@ export default {
 	onLoad(options) {
 		this.id = options.id || ''
 	},
-	onShow() {
-		syncThemeWindow(this.appState.theme)
-		if (this.id) {
-			this.loadDetail()
-		}
-	},
+		onShow() {
+			syncThemeWindow(this.appState.theme)
+			fetchSensitiveWordRules('COMMENT')
+				.then(rules => {
+					this.commentSensitiveRules = rules
+				})
+				.catch(() => {
+					this.commentSensitiveRules = []
+				})
+			if (this.id) {
+				this.loadDetail()
+			}
+		},
 		onHide() {
 			this.composerVisible = false
 			this.barcodeVisible = false
@@ -717,23 +728,32 @@ export default {
 				}
 			}
 
-			const nickName = String(this.appState.profileName || '').trim().slice(0, 30) || '纸飞机同学'
+			const nickName = String(this.appState.profileName || '').trim().slice(0, 30) || '纸飞机同�?
 			return {
 				reply: text,
 				isAnonymous: false,
 				nickName,
 			}
-		},
-			async handleComment() {
-				if (!this.reply.trim()) {
+			},
+				async handleComment() {
+					const replyText = this.reply.trim()
+					if (!replyText) {
+						uni.showToast({
+							title: this.labels.writeBeforeSend,
+						icon: 'none',
+					})
+					return
+				}
+				const matchedRule = findMatchedSensitiveWord(replyText, this.commentSensitiveRules, 'COMMENT')
+				if (matchedRule) {
 					uni.showToast({
-						title: this.labels.writeBeforeSend,
-					icon: 'none',
-				})
-				return
-			}
-			const payload = this.getCommentPayload(this.reply)
-			if (!payload) return
+							 title: 'Contains sensitive words, please revise.',
+						icon: 'none',
+					})
+					return
+				}
+				const payload = this.getCommentPayload(replyText)
+				if (!payload) return
 			try {
 				const comment = await addComment(this.id, {
 					...payload,
@@ -776,7 +796,7 @@ export default {
 			},
 			handleShare() {
 			if (!this.plane) return
-			const text = `纸飞机降落点\n地点：${this.plane.locationTag}\n\n${this.plane.content}`
+			const text = `纸飞机降落点\n地点�?{this.plane.locationTag}\n\n${this.plane.content}`
 			uni.setClipboardData({
 				data: text,
 				success: () => {

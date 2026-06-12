@@ -35,14 +35,16 @@ public class CommentsController(AppDbContext db, ContentFilterService filter) : 
     public async Task<ActionResult<CommentResponse>> AddComment(Guid planeId, AddCommentRequest req)
     {
         var planeExists = await db.Planes.AnyAsync(p => p.Id == planeId);
-        if (!planeExists) return NotFound(new { message = "飞机不存在" });
+        if (!planeExists) return NotFound(new { message = "纸飞机不存在" });
 
         if (string.IsNullOrWhiteSpace(req.Reply))
             return BadRequest(new { message = "评论内容不能为空" });
 
-        var (passed, reason) = filter.Check(req.Reply);
-        if (!passed)
-            return BadRequest(new { message = reason });
+        var filterResult = await filter.CheckAsync(req.Reply, "COMMENT");
+        if (!filterResult.Passed)
+            return BadRequest(new { message = filterResult.Reason });
+
+        var filteredReply = filterResult.Content;
 
         Comment? parentComment = null;
         if (req.ParentCommentId.HasValue)
@@ -65,6 +67,12 @@ public class CommentsController(AppDbContext db, ContentFilterService filter) : 
 
             if (nickName.Length > 30)
                 return BadRequest(new { message = "昵称不能超过30个字符" });
+
+            var nameFilterResult = await filter.CheckAsync(nickName, "NICKNAME");
+            if (!nameFilterResult.Passed)
+                return BadRequest(new { message = nameFilterResult.Reason });
+
+            nickName = nameFilterResult.Content;
         }
 
         var comment = new Comment
@@ -72,7 +80,7 @@ public class CommentsController(AppDbContext db, ContentFilterService filter) : 
             Id = Guid.NewGuid(),
             PlaneId = planeId,
             ParentCommentId = parentComment?.Id,
-            Reply = req.Reply,
+            Reply = filteredReply,
             NickName = nickName,
             CreateTime = DateTime.UtcNow
         };

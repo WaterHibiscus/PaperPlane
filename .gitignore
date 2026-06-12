@@ -1,0 +1,7 @@
+_tmp_build/
+server/_tmp*/
+server/bin/
+server/obj/
+server/artifacts/
+server/_tmp_online/
+server.zip

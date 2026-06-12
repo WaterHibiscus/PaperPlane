@@ -1,4 +1,5 @@
 <template>
+	<scroll-view :scroll-y="true" class="page-scroll" style="height: 100vh" :enhanced="true" :bounces="false" :show-scrollbar="false">
 	<view :class="['app-page', 'with-tabbar', 'throw-page', themeClass, { launching: launchAnimating }]" :style="throwStyle">
 		<view :class="['throw-shell', { 'is-launching': launchAnimating }]">
 			<view :class="['throw-frame', { 'is-launching': launchAnimating }]">
@@ -221,7 +222,7 @@
 									/>
 							<text class="selector-option-text">{{ option.label }}</text>
 						</view>
-						<text v-if="option.value === selectorSelectedValue" class="selector-option-check">✓</text>
+						<text v-if="option.value === selectorSelectedValue" class="selector-option-check">�?/text>
 					</view>
 						</view>
 						<view v-if="!selectorOptions.length" class="selector-empty">
@@ -234,6 +235,7 @@
 		<page-transition :visible="pageTransitionVisible" :theme="appState.theme" />
 		<app-tabbar active="throw" :theme="appState.theme" />
 	</view>
+	</scroll-view>
 </template>
 
 <script>
@@ -242,6 +244,7 @@ import PageTransition from '../../components/PageTransition.vue'
 import { appState, fetchLocations, fetchMoodConfigs, setCurrentLocation } from '../../common/app-state.js'
 import { isLoggedIn } from '../../common/auth.js'
 import { generateVoteSuggestion, getAssetUrl, getExpireOptions, throwPlane, uploadPlaneImage } from '../../common/api.js'
+import { fetchSensitiveWordRules, findMatchedSensitiveWord } from '../../common/sensitive-words.js'
 import { getMoodMeta, getMoodOptions } from '../../common/moods.js'
 import { getThrowExpireOptions, setThrowExpireOptions } from '../../common/throw-settings.js'
 import { clearThrowDraft, getThrowDraft, setThrowDraft } from '../../common/storage.js'
@@ -277,7 +280,7 @@ export default {
 			launchAnimating: false,
 			launchTimer: null,
 			closeIcon: uiIcons.close,
-				arrowIcon: '›',
+				arrowIcon: '�?,
 				pinIcon: uiIcons.location,
 				timeIcon: uiIcons.hourglass,
 				voteIcon: uiIcons.vote,
@@ -288,28 +291,29 @@ export default {
 				selectorType: '',
 				selectorOpenTimer: null,
 				selectorCloseTimer: null,
+				planeSensitiveRules: [],
 				labels: {
-				anonymousMode: '匿名投递',
-				realMode: '实名投递',
-				anonymousHint: '这架纸飞机会以匿名身份起飞。',
+				anonymousMode: '匿名投�?,
+				realMode: '实名投�?,
+				anonymousHint: '这架纸飞机会以匿名身份起飞�?,
 				editorPlaceholder: '写下你想留在这里的话...',
 				imageLabel: '附加图片',
 				addImage: '添加图片',
 					locationLabel: '降落地点',
-					moodLabel: '纸飞机情绪',
-					customMoodLabel: '自定义心情',
-					customMoodPlaceholder: '输入你的心情（最多20字）',
+					moodLabel: '纸飞机情�?,
+					customMoodLabel: '自定义心�?,
+					customMoodPlaceholder: '输入你的心情（最�?0字）',
 					expireLabel: '存活时间',
 				voteLabel: '附加投票',
 				voteTitlePlaceholder: '投票标题',
 				voteOptionPlaceholder: '投票选项',
 				voteAiGenerate: 'AI 生成投票',
-				voteAiGenerating: 'AI 生成中...',
+				voteAiGenerating: 'AI 生成�?..',
 				voteAiHint: '根据输入内容自动生成标题和选项',
-				launch: '放飞纸飞机',
+				launch: '放飞纸飞�?,
 				launching: '正在起飞...',
-				launchFlightTitle: '这一页已经被折成纸飞机',
-				launchFlightSubtitle: '它会带着你的心情穿过风，落进某个陌生人的手心。',
+				launchFlightTitle: '这一页已经被折成纸飞�?,
+				launchFlightSubtitle: '它会带着你的心情穿过风，落进某个陌生人的手心�?,
 			},
 		}
 	},
@@ -374,7 +378,7 @@ export default {
 				return ''
 			},
 			selectorEmptyText() {
-				if (this.selectorType === 'location') return '暂无可选地点'
+				if (this.selectorType === 'location') return '暂无可选地�?
 				return '暂无可选项'
 			},
 				wordCount() {
@@ -391,7 +395,7 @@ export default {
 			},
 			currentMoodLabel() {
 				if (this.isCustomMoodSelected) {
-					return this.customMoodText.trim() || this.currentMoodOption?.text || '自定义心情'
+					return this.customMoodText.trim() || this.currentMoodOption?.text || '自定义心�?
 				}
 				return this.currentMoodOption?.text || '平静'
 			},
@@ -400,7 +404,7 @@ export default {
 			return current ? current.text : '24小时'
 		},
 		realModeHint() {
-			return `这架纸飞机会显示为“${this.appState.profileName}”发布。`
+			return `这架纸飞机会显示为�?{this.appState.profileName}”发布。`
 		},
 		locationDisplay() {
 			return this.location || '请选择地点'
@@ -413,12 +417,12 @@ export default {
 		},
 		voteSummaryText() {
 			if (!this.voteTitle.trim() && !this.normalizedVoteOptions.length) {
-				return '不设置'
+				return '不设�?
 			}
 			if (this.voteTitle.trim() && this.normalizedVoteOptions.length >= 2) {
 				return `${this.normalizedVoteOptions.length} 个选项`
 			}
-			return '填写中'
+			return '填写�?
 		},
 			canLaunch() {
 				if (!this.content.trim() || !this.location) return false
@@ -440,18 +444,18 @@ export default {
 		launchButtonText() {
 			if (!this.loading) return this.labels.launch
 			if (this.publishStage === 'uploading') {
-				return `上传中 ${this.publishProgress}%`
+				return `上传�?${this.publishProgress}%`
 			}
 			return this.publishStageText || this.labels.launching
 		},
 		publishStageText() {
 			switch (this.publishStage) {
 			case 'preparing':
-				return '准备发布中'
+				return '准备发布�?
 			case 'uploading':
-				return '图片上传中'
+				return '图片上传�?
 			case 'submitting':
-				return '提交内容中'
+				return '提交内容�?
 			case 'launching':
 				return '正在起飞'
 			default:
@@ -461,7 +465,7 @@ export default {
 		publishDetailText() {
 			if (this.publishDetail) return this.publishDetail
 			if (this.publishStage === 'uploading') return '正在传输图片数据'
-			if (this.publishStage === 'submitting') return '正在保存纸飞机内容'
+			if (this.publishStage === 'submitting') return '正在保存纸飞机内�?
 			if (this.publishStage === 'launching') return '即将完成发布'
 			return '正在处理你的请求'
 		},
@@ -484,17 +488,22 @@ export default {
 			deep: true,
 		},
 	},
-		async onShow() {
-			await fetchLocations()
-			try {
-				await fetchMoodConfigs()
-			} catch (error) {
-				// Keep default mood config if remote sync fails.
-			}
-			this.refreshMoodOptions()
-			await this.refreshExpireOptions()
-			this.restoreDraft()
-		},
+			async onShow() {
+				await fetchLocations()
+				try {
+					await fetchMoodConfigs()
+				} catch (error) {
+					// Keep default mood config if remote sync fails.
+				}
+				try {
+					this.planeSensitiveRules = await fetchSensitiveWordRules('PLANE')
+				} catch (error) {
+					this.planeSensitiveRules = []
+				}
+				this.refreshMoodOptions()
+				await this.refreshExpireOptions()
+				this.restoreDraft()
+			},
 		onHide() {
 			this.persistDraft()
 			this.clearLaunchTimer()
@@ -806,7 +815,7 @@ export default {
 					.slice(0, 4)
 
 				if (!title || options.length < 2) {
-					throw new Error('AI 返回结果不完整，请重试')
+					throw new Error('AI 返回结果不完整，请重�?)
 				}
 
 				this.voteEditorOpen = true
@@ -816,7 +825,7 @@ export default {
 				const source = String(data?.source || '').toLowerCase()
 				const sourceDetail = String(data?.sourceDetail || '').trim()
 				uni.showToast({
-					title: source === 'ai' ? 'AI 建议已生成' : `已使用兜底建议${sourceDetail ? `(${sourceDetail})` : ''}`,
+					title: source === 'ai' ? 'AI 建议已生�? : `已使用兜底建�?{sourceDetail ? `(${sourceDetail})` : ''}`,
 					icon: 'none',
 				})
 			} catch (error) {
@@ -839,14 +848,23 @@ export default {
 					this.goLoginForThrow()
 					return
 				}
-				if (!this.content.trim()) {
+				const contentText = this.content.trim()
+				if (!contentText) {
 				uni.showToast({
 					title: '请写点什么吧',
 					icon: 'none',
 				})
 				return
-			}
-				if (!this.location) {
+				}
+				const matchedRule = findMatchedSensitiveWord(contentText, this.planeSensitiveRules, 'PLANE')
+				if (matchedRule) {
+					uni.showToast({
+							 title: 'Contains sensitive words, please revise.',
+						icon: 'none',
+					})
+					return
+				}
+					if (!this.location) {
 					uni.showToast({
 						title: '请选择地点',
 						icon: 'none',
@@ -865,7 +883,7 @@ export default {
 					}
 					if (customMood.length > 20) {
 						uni.showToast({
-							title: '自定义心情最多20个字',
+							title: '自定义心情最�?0个字',
 							icon: 'none',
 						})
 						return
@@ -875,7 +893,7 @@ export default {
 				if (this.hasVoteDraft) {
 					if (!this.voteTitle.trim()) {
 					uni.showToast({
-						title: '请填写投票标题',
+						title: '请填写投票标�?,
 						icon: 'none',
 					})
 					return
@@ -893,10 +911,10 @@ export default {
 			this.setPublishState('preparing', 3, '正在准备发布内容')
 			try {
 				const imageUrls = await this.uploadImagesInOrder(this.selectedImages)
-				this.setPublishState('submitting', 95, '正在提交纸飞机')
+				this.setPublishState('submitting', 95, '正在提交纸飞�?)
 					await this.withTimeout(throwPlane({
 						locationTag: this.location,
-						content: this.content.trim(),
+							content: contentText,
 						mood: this.isCustomMoodSelected ? customMood : this.mood,
 						isAnonymous: this.isAnonymous,
 						authorName: this.isAnonymous ? '' : this.appState.profileName,
@@ -905,7 +923,7 @@ export default {
 					voteTitle: this.hasVoteDraft ? this.voteTitle.trim() : '',
 					voteOptions: this.hasVoteDraft ? this.normalizedVoteOptions : [],
 				}), 120000)
-				this.setPublishState('launching', 100, '发布成功，准备起飞')
+				this.setPublishState('launching', 100, '发布成功，准备起�?)
 				setCurrentLocation(this.location)
 					await this.playLaunchAnimation()
 					this.content = ''
@@ -927,7 +945,7 @@ export default {
 					return
 				}
 				uni.showToast({
-					title: error.message || '投递失败',
+					title: error.message || '投递失�?,
 					icon: 'none',
 				})
 			} finally {

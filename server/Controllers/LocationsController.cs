@@ -14,8 +14,7 @@ public class LocationsController(AppDbContext db) : ControllerBase
 {
     private static string? NormalizeIconUrl(string? iconUrl)
     {
-        var normalized = iconUrl?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
+        return PublicAssetUrlNormalizer.NormalizeNullable(iconUrl);
     }
 
     [HttpGet]
@@ -39,7 +38,7 @@ public class LocationsController(AppDbContext db) : ControllerBase
                 l.Name,
                 l.SortOrder,
                 db.Planes.Count(p => p.LocationTag == l.Name && p.ExpireTime > now),
-                l.IconUrl
+                PublicAssetUrlNormalizer.NormalizeNullable(l.IconUrl)
             ))
             .ToListAsync();
 

@@ -16,6 +16,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PlaneLikeRecord> PlaneLikeRecords => Set<PlaneLikeRecord>();
     public DbSet<PlanePickRecord> PlanePickRecords => Set<PlanePickRecord>();
     public DbSet<PlaneReportRecord> PlaneReportRecords => Set<PlaneReportRecord>();
+    public DbSet<SensitiveWord> SensitiveWords => Set<SensitiveWord>();
+    public DbSet<AiSensitiveWordSuggestion> AiSensitiveWordSuggestions => Set<AiSensitiveWordSuggestion>();
     public DbSet<AiVoteSuggestionConfig> AiVoteSuggestionConfigs => Set<AiVoteSuggestionConfig>();
     public DbSet<AiVoteSuggestionLog> AiVoteSuggestionLogs => Set<AiVoteSuggestionLog>();
 
@@ -201,6 +203,43 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(r => new { r.PlaneId, r.AppUserId })
                 .IsUnique()
                 .HasFilter("[AppUserId] IS NOT NULL");
+        });
+
+        modelBuilder.Entity<SensitiveWord>(e =>
+        {
+            e.ToTable("SensitiveWords", tb => tb.HasComment("敏感词库表"));
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Word).HasMaxLength(100).IsRequired();
+            e.Property(x => x.NormalizedWord).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Category).HasMaxLength(30).IsRequired();
+            e.Property(x => x.MatchMode).HasMaxLength(20).IsRequired();
+            e.Property(x => x.HandleMode).HasMaxLength(20).IsRequired();
+            e.Property(x => x.ReplaceText).HasMaxLength(50);
+            e.Property(x => x.Scope).HasMaxLength(50).IsRequired();
+            e.Property(x => x.Remark).HasMaxLength(200);
+            e.HasIndex(x => x.NormalizedWord).IsUnique();
+            e.HasIndex(x => new { x.IsEnabled, x.Priority });
+            e.HasIndex(x => x.Category);
+        });
+
+        modelBuilder.Entity<AiSensitiveWordSuggestion>(e =>
+        {
+            e.ToTable("AiSensitiveWordSuggestions", tb => tb.HasComment("AI待采纳敏感词记录表"));
+            e.HasKey(x => x.Id);
+            e.Property(x => x.SuggestedWord).HasMaxLength(100).IsRequired();
+            e.Property(x => x.NormalizedWord).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Category).HasMaxLength(30).IsRequired();
+            e.Property(x => x.MatchMode).HasMaxLength(20).IsRequired();
+            e.Property(x => x.HandleMode).HasMaxLength(20).IsRequired();
+            e.Property(x => x.ReplaceText).HasMaxLength(50);
+            e.Property(x => x.Scope).HasMaxLength(50).IsRequired();
+            e.Property(x => x.Remark).HasMaxLength(200);
+            e.Property(x => x.SourceTextPreview).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Reason).HasMaxLength(500);
+            e.Property(x => x.RawResponse).HasMaxLength(4000);
+            e.Property(x => x.Confidence).HasPrecision(5, 4);
+            e.HasIndex(x => new { x.NormalizedWord, x.Scope }).IsUnique();
+            e.HasIndex(x => x.CreateTime);
         });
 
         modelBuilder.Entity<AiVoteSuggestionConfig>(e =>

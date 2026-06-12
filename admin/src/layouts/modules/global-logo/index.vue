@@ -16,12 +16,66 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <RouterLink to="/" class="w-full flex-center nowrap-hidden">
-    <SystemLogo class="size-32px" />
-    <h2 v-show="showTitle" class="pl-8px text-16px text-primary font-bold transition duration-300 ease-in-out">
-      {{ $t('system.title') }}
-    </h2>
+  <RouterLink to="/" class="global-logo">
+    <div class="logo-slot">
+      <SystemLogo class="logo-mark" />
+    </div>
+    <div v-show="showTitle" class="title-slot">
+      <h2 class="logo-title">
+        {{ $t('system.title') }}
+      </h2>
+    </div>
   </RouterLink>
 </template>
 
-<style scoped></style>
+<style scoped>
+.global-logo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding-inline: 12px;
+}
+
+.logo-slot,
+.title-slot {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.logo-slot {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+}
+
+.title-slot {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+}
+
+.logo-mark {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+}
+
+.logo-title {
+  margin: 0;
+  overflow: hidden;
+  color: rgb(var(--primary-color));
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease;
+}
+</style>
